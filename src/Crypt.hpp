@@ -1,0 +1,38 @@
+// Copyright 2022 The Mumble Developers. All rights reserved.
+// Use of this source code is governed by a BSD-style license
+// that can be found in the LICENSE file at the root of the
+// Mumble source tree or at <https://www.mumble.info/LICENSE>.
+
+#ifndef MUMBLE_SRC_CRYPT_HPP
+#define MUMBLE_SRC_CRYPT_HPP
+
+#include "mumble/Crypt.hpp"
+
+#include <openssl/ossl_typ.h>
+
+namespace mumble {
+class Crypt::P {
+	friend Crypt;
+
+public:
+	P();
+	~P();
+
+	explicit operator bool();
+
+	uint32_t blockSize() const;
+
+	std::string_view cipher();
+	bool setCipher(const std::string_view name = {});
+
+	size_t process(const bool encrypt, const BufRef out, const BufRefConst in, const BufRef tag, const BufRefConst aad);
+
+private:
+	Buf m_key;
+	Buf m_nonce;
+	bool m_padding;
+	EVP_CIPHER_CTX *m_ctx;
+};
+} // namespace mumble
+
+#endif

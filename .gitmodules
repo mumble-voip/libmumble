@@ -1,0 +1,6 @@
+[submodule "3rdparty/MPMCQueue"]
+	path = 3rdparty/MPMCQueue
+	url = https://github.com/rigtorp/MPMCQueue.git
+[submodule "3rdparty/toml11"]
+	path = 3rdparty/toml11
+	url = https://github.com/ToruNiina/toml11.git
