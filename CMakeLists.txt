@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 3.18.4)
 
 project(libmumble)
 
+option(build-examples "Build example client and server" OFF)
 option(build-tests "Build tests" ON)
 
 if(build-tests)

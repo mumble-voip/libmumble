@@ -3,14 +3,17 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-option(build-examples "Build example client and server" OFF)
-
 find_package(OpenSSL REQUIRED)
-find_package(PkgConfig REQUIRED)
+find_package(Opus)
 find_package(Protobuf REQUIRED)
 find_package(Threads)
 
-pkg_check_modules(Opus REQUIRED opus)
+if(NOT Opus_FOUND)
+	find_package(PkgConfig REQUIRED)
+	if(PkgConfig_FOUND)
+		pkg_check_modules(Opus REQUIRED opus)
+	endif()
+endif()
 
 add_library(mumble SHARED)
 
@@ -99,6 +102,7 @@ target_link_libraries(mumble
 		protobuf::libprotobuf
 
 		${Opus_LINK_LIBRARIES}
+		$<TARGET_NAME_IF_EXISTS:Opus::opus>
 
 		$<TARGET_NAME_IF_EXISTS:Threads::Threads>
 )
