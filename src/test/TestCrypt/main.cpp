@@ -13,10 +13,13 @@
 
 static constexpr size_t iterations = 100000;
 
+static constexpr size_t minBufSize = 1;
+static constexpr size_t maxBufSize = 1024;
+
 using namespace mumble;
 
-static uint16_t bufSize(std::mt19937 &algorithm) {
-	std::uniform_int_distribution< size_t > gen(1, 1024);
+static size_t bufSize(std::mt19937 &algorithm) {
+	std::uniform_int_distribution< size_t > gen(minBufSize, maxBufSize);
 	return gen(algorithm);
 }
 
@@ -65,17 +68,18 @@ static uint8_t thread(const std::stop_token &stopToken) {
 	std::random_device device;
 	std::mt19937 algorithm(device());
 
-	std::independent_bits_engine< std::default_random_engine, std::numeric_limits< uint8_t >::digits, uint8_t > engine;
-
 	for (size_t i = 0; i < iterations; ++i) {
 		if (stopToken.stop_requested()) {
 			return 0;
 		}
 
-		std::vector< uint8_t > data(bufSize(algorithm));
-		std::generate(begin(data), end(data), engine);
+		std::vector< std::byte > in(bufSize(algorithm));
 
-		BufRefConst in(reinterpret_cast< const std::byte * >(data.data()), data.size());
+		std::generate(in.begin(), in.end(), [&algorithm]() {
+			// We use < uint16_t > because the minimum size allowed is 2 bytes.
+			std::uniform_int_distribution< uint16_t > gen(0, UINT8_MAX);
+			return static_cast< std::byte >(gen(algorithm));
+		});
 
 		auto ret = test(cryptChaCha20, in);
 		if (ret != 0) {
