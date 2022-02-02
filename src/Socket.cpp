@@ -12,7 +12,7 @@
 
 #ifdef OS_WINDOWS
 #	include <afunix.h>
-#	include <WinSock2.h>
+#	include <WS2tcpip.h>
 
 #	define poll WSAPoll
 #else
@@ -65,21 +65,27 @@ int Socket::getEndpoint(Endpoint &endpoint) {
 }
 
 int Socket::setEndpoint(const Endpoint &endpoint, const bool ipv6Only) {
-	sockaddr_in6 addr = {};
-	endpoint.ip.toSockAddr(addr);
-	addr.sin6_port = Endian::toNetwork(endpoint.port);
-
-	int value = ipv6Only;
-	if (setsockopt(m_handle.fd(), IPPROTO_IPV6, IPV6_V6ONLY, &value, sizeof(value)) != 0) {
+#ifdef OS_WINDOWS
+	// IPV6_V6ONLY demands a 4-byte integer...
+	DWORD value = ipv6Only;
+#else
+	int value       = ipv6Only;
+#endif
+	if (setsockopt(m_handle.fd(), IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast< char * >(&value), sizeof(value)) != 0) {
 		return osError();
 	}
 
 	value = 1;
 #ifdef SO_EXCLUSIVEADDRUSE
-	if (setsockopt(m_handle->fd(), SOL_SOCKET, SO_EXCLUSIVEADDRUSE, &value, sizeof(value)) != 0) {
+	if (setsockopt(m_handle.fd(), SOL_SOCKET, SO_EXCLUSIVEADDRUSE, reinterpret_cast< char * >(&value), sizeof(value))
+		!= 0) {
 		return osError();
 	}
 #endif
+	sockaddr_in6 addr = {};
+	endpoint.ip.toSockAddr(addr);
+	addr.sin6_port = Endian::toNetwork(endpoint.port);
+
 	if (bind(m_handle.fd(), reinterpret_cast< sockaddr * >(&addr), sizeof(addr)) != 0) {
 		return osError();
 	}
@@ -89,8 +95,8 @@ int Socket::setEndpoint(const Endpoint &endpoint, const bool ipv6Only) {
 
 int Socket::setBlocking(const bool enable) {
 #ifdef OS_WINDOWS
-	const u_long value = !enable;
-	if (ioctlsocket(m_handle, FIONBIO, &value) != 0) {
+	u_long value = !enable;
+	if (ioctlsocket(m_handle.fd(), FIONBIO, &value) != 0) {
 		return osError();
 	}
 #else
@@ -112,7 +118,11 @@ int Socket::setBlocking(const bool enable) {
 }
 
 bool Socket::trigger() {
+#ifdef OS_WINDOWS
+	constexpr char byte = 0;
+#else
 	constexpr uint8_t byte = 0;
+#endif
 	if (send(m_manualEvent[1].fd(), &byte, sizeof(byte), 0) < sizeof(byte)) {
 		return false;
 	}
@@ -150,7 +160,11 @@ State Socket::wait(const bool in, const bool out, const uint32_t timeout) {
 	State state = Timeout;
 
 	if (pollfds[0].revents & POLLIN) {
+#ifdef OS_WINDOWS
+		char byte;
+#else
 		uint8_t byte;
+#endif
 		recv(pollfds[0].fd, &byte, sizeof(byte), 0);
 
 		state |= Triggered;
@@ -212,6 +226,11 @@ Handle::~Handle() {
 	}
 }
 
+Handle &Handle::operator=(const int32_t fd) {
+	m_fd = fd;
+	return *this;
+}
+
 Handle::operator bool() const {
 	return m_fd != invalid;
 }
@@ -222,8 +241,50 @@ int32_t Handle::fd() const {
 
 Handle::Pair Handle::pair() {
 #ifdef OS_WINDOWS
-	// TODO: Write socketpair() emulation!
-	return {};
+	// https://github.com/microsoft/WSL/issues/4240
+	Handle listener = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (!listener) {
+		return {};
+	}
+
+	sockaddr_un addr  = {};
+	addr.sun_family   = AF_UNIX;
+	const auto length = GetTempPath(sizeof(addr.sun_path), addr.sun_path);
+	if (!length) {
+		return {};
+	}
+
+	LARGE_INTEGER ticks;
+	QueryPerformanceCounter(&ticks);
+	snprintf(addr.sun_path + length, sizeof(addr.sun_path) - length, "MumbleSocket%llu", ticks.QuadPart);
+
+	if (bind(listener.fd(), reinterpret_cast< sockaddr * >(&addr), sizeof(addr)) != 0) {
+		return {};
+	}
+
+	if (listen(listener.fd(), 1) != 0) {
+		return {};
+	}
+
+	Handle::Pair ret;
+
+	ret[0] = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (!ret[0]) {
+		return {};
+	}
+
+	if (connect(ret[0].fd(), reinterpret_cast< sockaddr * >(&addr), sizeof(addr)) != 0) {
+		return {};
+	}
+
+	DeleteFile(addr.sun_path);
+
+	ret[1] = accept(listener.fd(), nullptr, nullptr);
+	if (!ret[1]) {
+		return {};
+	}
+
+	return ret;
 #else
 	int fds[2];
 	if (socketpair(PF_LOCAL, SOCK_DGRAM, 0, fds) != 0) {

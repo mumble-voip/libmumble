@@ -6,10 +6,11 @@
 #ifndef MUMBLE_MUMBLE_HPP
 #define MUMBLE_MUMBLE_HPP
 
+#include "Macros.hpp"
 #include "Types.hpp"
 
 namespace mumble {
-class Mumble {
+class EXPORT Mumble {
 public:
 	enum class TypeUDP : uint8_t { VoiceCELTAlpha, Ping, VoiceSpeex, VoiceCELTBeta, VoiceOpus };
 
@@ -25,13 +26,13 @@ public:
 			: major(major), minor(minor), patch(patch) {}
 	};
 
-	struct PingUDP {
+	MUMBLE_PACK(struct PingUDP {
 		uint32_t versionBlob;
 		uint64_t timestamp;
 		uint32_t sessions;
 		uint32_t maxSessions;
 		uint32_t maxBandwidth;
-	} __attribute__((__packed__));
+	});
 
 	Mumble();
 	virtual ~Mumble() = delete;

@@ -9,7 +9,7 @@
 #include <cstdint>
 
 namespace mumble {
-class Endian {
+class EXPORT Endian {
 public:
 	Endian();
 	virtual ~Endian() = delete;

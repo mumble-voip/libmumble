@@ -14,6 +14,7 @@ if(build-tests)
 	include(CTest)
 endif()
 
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -24,7 +25,8 @@ if(WIN32)
 	add_definitions(
 		"-DOS_WINDOWS"
 		"-DWIN32_LEAN_AND_MEAN"
-		"-DMUMBLE_EXPORT=__declspec(dllexport)"
+		"-D_CRT_SECURE_NO_WARNINGS"
+		"-DEXPORT=__declspec(dllexport)"
 	)
 else()
 	add_definitions(
@@ -40,6 +42,11 @@ endif()
 if(MSVC)
 	add_definitions(
 		"-DCOMPILER_MSVC"
+	)
+
+	add_compile_options(
+		# https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus
+		"/Zc:__cplusplus"
 	)
 endif()
 

@@ -234,7 +234,7 @@ size_t P::process(const bool encrypt, const BufRef out, const BufRefConst in, co
 		}
 	}
 
-	if (EVP_CIPHER_CTX_encrypting(m_ctx) == encrypt) {
+	if (static_cast< bool >(EVP_CIPHER_CTX_encrypting(m_ctx)) == encrypt) {
 		if (EVP_CipherInit_ex(m_ctx, nullptr, nullptr, nullptr, nullptr, encrypt) <= 0) {
 			return {};
 		}

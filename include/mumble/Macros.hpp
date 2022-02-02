@@ -33,4 +33,10 @@
 									   static_cast< std::underlying_type< T >::type >(rhs));                           \
 	}
 
+#ifdef COMPILER_MSVC
+#	define MUMBLE_PACK(decl) __pragma(pack(push, 1)) decl __pragma(pack(pop))
+#else
+#	define MUMBLE_PACK(decl) decl __attribute__((__packed__))
+#endif
+
 #endif

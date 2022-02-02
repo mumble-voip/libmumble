@@ -9,6 +9,10 @@
 #include "mumble/Macros.hpp"
 #include "mumble/Mumble.hpp"
 
+#ifdef OS_WINDOWS
+#	include <WinSock2.h>
+#endif
+
 namespace mumble {
 class Socket {
 public:
@@ -33,6 +37,8 @@ public:
 		Handle(const int32_t fd);
 		Handle(const Type type = Type::Unknown);
 		~Handle();
+
+		Handle &operator=(const int32_t fd);
 
 		explicit operator bool() const;
 
@@ -68,6 +74,7 @@ public:
 				return Code::Success;
 #ifdef OS_WINDOWS
 			case WSAEACCES:
+			case WSAECONNREFUSED:
 				return Code::Refuse;
 			case WSAEHOSTUNREACH:
 			case WSAENETUNREACH:
@@ -86,7 +93,7 @@ public:
 			case WSAEMSGSIZE:
 			case WSAENOBUFS:
 				return Code::Memory;
-			case WSANOTINITIALIZED:
+			case WSANOTINITIALISED:
 				return Code::Init;
 			case WSAETIMEDOUT:
 				return Code::Timeout;

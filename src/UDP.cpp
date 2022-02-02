@@ -9,7 +9,7 @@
 #include "mumble/IP.hpp"
 
 #ifdef OS_WINDOWS
-#	include <WinSock2.h>
+#	include <WS2tcpip.h>
 #else
 #	include <netinet/in.h>
 #endif
@@ -22,12 +22,14 @@ SocketUDP::SocketUDP() : Socket(Type::UDP) {
 Code SocketUDP::read(Endpoint &endpoint, BufRef &buf) {
 	sockaddr_in6 addr;
 #ifdef OS_WINDOWS
-	int addrsize = sizeof(addr);
+	int addrsize   = sizeof(addr);
+	const auto ret = recvfrom(m_handle.fd(), reinterpret_cast< char * >(buf.data()), buf.size(), 0,
+							  reinterpret_cast< sockaddr * >(&addr), &addrsize);
 #else
 	socklen_t addrsize = sizeof(addr);
-#endif
 	const auto ret =
 		recvfrom(m_handle.fd(), buf.data(), buf.size(), 0, reinterpret_cast< sockaddr * >(&addr), &addrsize);
+#endif
 	if (ret <= 0) {
 		return osErrorToCode(osError());
 	}
@@ -44,9 +46,13 @@ Code SocketUDP::write(const Endpoint &endpoint, const BufRefConst buf) {
 	sockaddr_in6 addr = {};
 	endpoint.ip.toSockAddr(addr);
 	addr.sin6_port = Endian::toNetwork(endpoint.port);
-
+#ifdef OS_WINDOWS
+	const auto ret = sendto(m_handle.fd(), reinterpret_cast< const char * >(buf.data()), buf.size(), 0,
+							reinterpret_cast< sockaddr * >(&addr), sizeof(addr));
+#else
 	const auto ret =
 		sendto(m_handle.fd(), buf.data(), buf.size(), 0, reinterpret_cast< sockaddr * >(&addr), sizeof(addr));
+#endif
 	if (ret <= 0) {
 		return osErrorToCode(osError());
 	}

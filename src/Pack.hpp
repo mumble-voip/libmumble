@@ -24,10 +24,10 @@ class Pack {
 public:
 	using Type = Message::Type;
 
-	struct NetHeader {
+	MUMBLE_PACK(struct NetHeader {
 		uint16_t type = Endian::toNetwork(static_cast< uint16_t >(Type::Unknown));
 		uint32_t size = 0;
-	} __attribute__((__packed__));
+	});
 
 	Pack(NetHeader &header);
 	Pack(const Message &message);

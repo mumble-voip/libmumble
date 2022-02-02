@@ -9,7 +9,7 @@
 #include <cstring>
 
 #ifdef OS_WINDOWS
-#	include <WinSock2.h>
+#	include <WS2tcpip.h>
 #else
 #	include <arpa/inet.h>
 #endif

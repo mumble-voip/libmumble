@@ -40,14 +40,12 @@ EXPORT Client::operator bool() const {
 EXPORT std::pair< Code, Session::P * > Client::connect(const Endpoint &peerEndpoint, const Endpoint &endpoint) {
 	SocketTCP socket;
 
-	if (endpoint.port || !endpoint.ip.isWildcard()) {
-		const auto code = Socket::osErrorToCode(socket.setEndpoint(endpoint));
-		if (code != Code::Success) {
-			return { code, {} };
-		}
+	auto code = Socket::osErrorToCode(socket.setEndpoint(endpoint));
+	if (code != Code::Success) {
+		return { code, {} };
 	}
 
-	const auto code = Socket::osErrorToCode(socket.connect(peerEndpoint));
+	code = Socket::osErrorToCode(socket.connect(peerEndpoint));
 	if (code != Code::Success) {
 		return { code, {} };
 	}

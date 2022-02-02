@@ -8,6 +8,7 @@
 #include "mumble/Cert.hpp"
 #include "mumble/Key.hpp"
 
+#include <algorithm>
 #include <utility>
 
 #include <openssl/ssl.h>
