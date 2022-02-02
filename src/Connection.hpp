@@ -46,8 +46,8 @@ private:
 	Connection(const Connection &) = delete;
 	Connection &operator=(const Connection &) = delete;
 
-	mumble::Code toCode(const Code code);
 	mumble::Code handleCode(const Code code);
+	mumble::Code handleState(const State state);
 
 	mumble::Code read(const std::stop_token &stopToken, BufRef buf);
 
