@@ -178,12 +178,11 @@ void Connection::thread(const std::stop_token stopToken) {
 					return;
 				}
 
-				if (header.size > UINT16_MAX) {
+				Pack pack(header);
+				if (pack.type() == Message::Type::Unknown) {
 					m_feedback.failed(Code::Invalid);
 					return;
 				}
-
-				Pack pack(header);
 
 				if (read(stopToken, pack.data()) != Code::Success) {
 					return;

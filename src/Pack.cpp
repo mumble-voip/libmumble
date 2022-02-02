@@ -5,7 +5,6 @@
 
 #include "Pack.hpp"
 
-#include "mumble/Endian.hpp"
 #include "mumble/Mumble.hpp"
 
 #include "Mumble.pb.h"
@@ -14,8 +13,15 @@ using namespace mumble;
 
 using Type = Pack::Type;
 
-Pack::Pack(const NetHeader &header) {
-	m_buf.resize(sizeof(header) + Endian::toHost(header.size));
+Pack::Pack(NetHeader &header) {
+	const auto dataSize = Endian::toHost(header.size);
+	if (dataSize <= std::numeric_limits< uint16_t >::max()) {
+		m_buf.resize(sizeof(header) + dataSize);
+	} else {
+		header = NetHeader();
+		m_buf.resize(sizeof(header));
+	}
+
 	memcpy(m_buf.data(), &header, sizeof(header));
 }
 

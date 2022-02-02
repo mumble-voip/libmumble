@@ -6,6 +6,7 @@
 #ifndef MUMBLE_SRC_PACK_HPP
 #define MUMBLE_SRC_PACK_HPP
 
+#include "mumble/Endian.hpp"
 #include "mumble/Message.hpp"
 
 #include <array>
@@ -24,11 +25,11 @@ public:
 	using Type = Message::Type;
 
 	struct NetHeader {
-		uint16_t type = static_cast< uint16_t >(Type::Unknown);
+		uint16_t type = Endian::toNetwork(static_cast< uint16_t >(Type::Unknown));
 		uint32_t size = 0;
 	} __attribute__((__packed__));
 
-	Pack(const NetHeader &header);
+	Pack(NetHeader &header);
 	Pack(const Message &message);
 
 	Type type() const;
