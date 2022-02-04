@@ -15,14 +15,14 @@ MumbleInit::MumbleInit() {
 	const auto code = Mumble::init();
 	m_ok            = code == Code::Success;
 	if (!m_ok) {
-		printf("MumbleInit() failed with error \"%s\"!\n", toString(code).data());
+		printf("MumbleInit() failed with error \"%s\"!\n", text(code).data());
 	}
 }
 
 MumbleInit::~MumbleInit() {
 	const auto code = Mumble::deinit();
 	if (code != Code::Success) {
-		printf("~MumbleInit() failed with error \"%s\"!\n", toString(code).data());
+		printf("~MumbleInit() failed with error \"%s\"!\n", text(code).data());
 	}
 }
 

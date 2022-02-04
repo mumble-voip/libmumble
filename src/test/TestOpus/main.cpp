@@ -32,7 +32,7 @@ static uint8_t test(OpusDecoder &decoder, OpusEncoder &encoder, const BufRefCons
 template< typename T > bool initOpus(T &opus) {
 	const auto code = opus.init(sampleRate);
 	if (code != Code::Success) {
-		printf("Failed to init Opus with error \"%s\"!\n", toString(code).data());
+		printf("Failed to init Opus with error \"%s\"!\n", text(code).data());
 		return false;
 	}
 

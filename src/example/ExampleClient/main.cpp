@@ -28,7 +28,7 @@ static Session::Feedback sessionFeedback(Session &session) {
 
 	feedback.closed = []() { printf("Session closed!\n"); };
 
-	feedback.failed = [](const Code code) { printf("Session failed with error \"%s\"!\n", toString(code).data()); };
+	feedback.failed = [](const Code code) { printf("Session failed with error \"%s\"!\n", text(code).data()); };
 
 	feedback.message = [](Message *message) {
 		const auto ptr = std::unique_ptr< Message >(message);
@@ -72,7 +72,7 @@ int32_t main(const int argc, const char **argv) {
 
 	const auto ret = client.connect({ peerTcpIP, peerTcpPort }, { localTcpIP, localTcpPort });
 	if (ret.first != Code::Success) {
-		printf("Client::connect() failed with error \"%s\"!\n", toString(ret.first).data());
+		printf("Client::connect() failed with error \"%s\"!\n", text(ret.first).data());
 		return 3;
 	}
 
@@ -80,7 +80,7 @@ int32_t main(const int argc, const char **argv) {
 
 	const auto code = session.start(sessionFeedback(session));
 	if (code != Code::Success) {
-		printf("Session::start() failed with error \"%s\"!\n", toString(code).data());
+		printf("Session::start() failed with error \"%s\"!\n", text(code).data());
 		return 4;
 	}
 

@@ -72,7 +72,7 @@ using BufRefConst = std::span< const std::byte >;
 
 template< size_t size > using FixedBuf = std::array< std::byte, size >;
 
-static constexpr std::string_view toString(const Code code) {
+static constexpr std::string_view text(const Code code) {
 	switch (code) {
 		case Code::Ssl:
 			return "Ssl";

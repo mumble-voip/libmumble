@@ -23,7 +23,7 @@ Node::Node(const std::shared_ptr< UserManager > &userManager, const std::string_
 	Endpoint endpoint(tcpIP, tcpPort);
 	auto code = m_server.bindTCP(endpoint);
 	if (code != Code::Success) {
-		printf("Node(): TCP bind failed with error \"%s\"!\n", toString(code).data());
+		printf("Node(): TCP bind failed with error \"%s\"!\n", text(code).data());
 		return;
 	}
 
@@ -32,7 +32,7 @@ Node::Node(const std::shared_ptr< UserManager > &userManager, const std::string_
 	endpoint = Endpoint(udpIP, udpPort);
 	code     = m_server.bindUDP(endpoint);
 	if (code != Code::Success) {
-		printf("Node(): UDP bind failed with error \"%s\"!\n", toString(code).data());
+		printf("Node(): UDP bind failed with error \"%s\"!\n", text(code).data());
 		return;
 	}
 
@@ -53,7 +53,7 @@ bool Node::start() {
 	feedbackUDP.started = []() { printf("UDP started!\n"); };
 	feedbackUDP.stopped = []() { printf("UDP stopped!\n"); };
 
-	feedbackUDP.failed = [](const Code code) { printf("UDP failed with error \"%s\"!\n", toString(code).data()); };
+	feedbackUDP.failed = [](const Code code) { printf("UDP failed with error \"%s\"!\n", text(code).data()); };
 
 	feedbackUDP.timeout = []() { return 10000; };
 
@@ -98,7 +98,7 @@ bool Node::start() {
 
 	auto code = m_server.startUDP(feedbackUDP);
 	if (code != Code::Success) {
-		printf("Server::startUDP() failed with error \"%s\"!\n", toString(code).data());
+		printf("Server::startUDP() failed with error \"%s\"!\n", text(code).data());
 		return false;
 	}
 
@@ -107,7 +107,7 @@ bool Node::start() {
 	feedbackTCP.started = []() { printf("TCP started!\n"); };
 	feedbackTCP.stopped = []() { printf("TCP stopped!\n"); };
 
-	feedbackTCP.failed = [](const Code code) { printf("TCP failed with error \"%s\"!\n", toString(code).data()); };
+	feedbackTCP.failed = [](const Code code) { printf("TCP failed with error \"%s\"!\n", text(code).data()); };
 
 	feedbackTCP.timeout = []() { return 10000; };
 
@@ -160,7 +160,7 @@ bool Node::start() {
 				user.reset();
 				m_userManager->del(id);
 
-				printf("[#%u] Failed with error \"%s\"!\n", id, toString(code).data());
+				printf("[#%u] Failed with error \"%s\"!\n", id, text(code).data());
 			}
 		};
 
@@ -320,7 +320,7 @@ bool Node::start() {
 		if (code == Code::Success) {
 			m_userManager->add(user);
 		} else {
-			printf("Session failed to start with error \"%s\"!\n", toString(code).data());
+			printf("Session failed to start with error \"%s\"!\n", text(code).data());
 		}
 
 		return true;
@@ -328,7 +328,7 @@ bool Node::start() {
 
 	code = m_server.startTCP(feedbackTCP);
 	if (code != Code::Success) {
-		printf("Server::startTCP() failed with error \"%s\"!\n", toString(code).data());
+		printf("Server::startTCP() failed with error \"%s\"!\n", text(code).data());
 		return false;
 	}
 
