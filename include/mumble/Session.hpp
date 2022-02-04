@@ -10,8 +10,8 @@
 #include "Key.hpp"
 #include "Mumble.hpp"
 
+#include <atomic>
 #include <functional>
-#include <stop_token>
 
 namespace mumble {
 class EXPORT Session {
@@ -41,7 +41,7 @@ public:
 
 	virtual Code start(const Feedback &feedback, const Cert::Chain &cert = {}, const Key &key = {});
 
-	virtual Code sendTCP(const Message &message, const std::stop_token &stopToken = {});
+	virtual Code sendTCP(const Message &message, const std::atomic_bool &halt = {});
 	virtual Code sendUDP(const Endpoint &endpoint, const BufRefConst data);
 
 private:

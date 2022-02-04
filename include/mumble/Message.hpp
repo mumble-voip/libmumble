@@ -117,8 +117,6 @@ public:
 	virtual Type type() const { return m_type; }
 	virtual Timestamp timestamp() const { return m_timestamp; }
 
-	virtual constexpr std::string_view typeText() { return text(m_type); }
-
 	static constexpr std::string_view text(const Type type) {
 		switch (type) {
 			case Type::Version: {

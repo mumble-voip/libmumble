@@ -6,6 +6,7 @@
 #include "Key.hpp"
 
 #include <cstring>
+#include <string>
 
 #include <openssl/evp.h>
 #include <openssl/pem.h>

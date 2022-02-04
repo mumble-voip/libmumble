@@ -8,8 +8,9 @@
 
 #include <array>
 #include <memory>
-#include <span>
 #include <string>
+
+#include <boost/core/span.hpp>
 
 struct sockaddr_in6;
 
@@ -23,8 +24,8 @@ public:
 
 	using V6       = std::array< uint8_t, v6Size >;
 	using V4       = std::array< uint8_t, v4Size >;
-	using Ref      = std::span< uint8_t >;
-	using RefConst = std::span< const uint8_t >;
+	using Ref      = boost::span< uint8_t >;
+	using RefConst = boost::span< const uint8_t >;
 
 	IP();
 	IP(const IP &ip);

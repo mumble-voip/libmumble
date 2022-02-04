@@ -11,7 +11,8 @@
 #include <iomanip>
 #include <random>
 #include <sstream>
-#include <stop_token>
+
+#include <boost/thread/thread.hpp>
 
 static constexpr size_t iterations = 100000;
 
@@ -46,7 +47,7 @@ static uint8_t test(Hash &hash, const Data::List &list, const size_t index) {
 	return 0;
 }
 
-static uint8_t thread(const std::stop_token &stopToken) {
+static uint8_t thread() {
 	Hash sha2;
 	if (!sha2.setType("SHA512")) {
 		return 1;
@@ -67,7 +68,7 @@ static uint8_t thread(const std::stop_token &stopToken) {
 	std::uniform_int_distribution< size_t > gen(0, std::tuple_size< Data::List >() - 1);
 
 	for (size_t i = 0; i < iterations; ++i) {
-		if (stopToken.stop_requested()) {
+		if (boost::this_thread::interruption_requested()) {
 			return 0;
 		}
 
@@ -98,8 +99,8 @@ int32_t main() {
 	ThreadManager manager;
 
 	for (uint32_t i = 0; i < manager.physicalNum(); ++i) {
-		const ThreadManager::ThreadFunc func = [&ret, &manager](const std::stop_token stopToken) {
-			const auto threadRet = thread(stopToken);
+		const ThreadManager::ThreadFunc func = [&ret, &manager]() {
+			const auto threadRet = thread();
 			if (threadRet != 0) {
 				ret = threadRet;
 				manager.requestStop();

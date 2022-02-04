@@ -175,7 +175,7 @@ bool Node::start() {
 			using Type = Message::Type;
 
 			if (message->type() != Type::UDPTunnel) {
-				printf("[#%u] %s received!\n", user->id(), message->typeText().data());
+				printf("[#%u] %s received!\n", user->id(), Message::text(message->type()).data());
 			}
 
 			using Perm = Message::Perm;

@@ -5,7 +5,7 @@
 
 #include "ThreadManager.hpp"
 
-#include <thread>
+#include <boost/thread/thread.hpp>
 
 ThreadManager::ThreadManager() = default;
 
@@ -19,7 +19,7 @@ void ThreadManager::add(const ThreadFunc &func) {
 
 void ThreadManager::requestStop() {
 	for (auto &thread : m_threads) {
-		thread.request_stop();
+		thread.interrupt();
 	}
 }
 
@@ -32,6 +32,6 @@ void ThreadManager::wait() {
 }
 
 uint32_t ThreadManager::physicalNum() {
-	const auto num = std::jthread::hardware_concurrency();
+	const auto num = boost::thread::hardware_concurrency();
 	return num ? num : 4;
 }

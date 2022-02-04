@@ -9,7 +9,7 @@ using namespace mumble;
 
 User::User(P *p, const uint32_t id)
 	: Session(p), m_id(id), m_cryptOK(false), m_good(0), m_late(0), m_lost(0), m_packets(32),
-	  m_thread(std::bind_front(&User::thread, this)), m_decryptHistory({}) {
+	  m_thread(&User::thread, this), m_decryptHistory({}) {
 	const auto key = m_decrypt.genKey();
 	if (!m_decrypt.setKey(key) || !m_encrypt.setKey(key)) {
 		return;
@@ -25,7 +25,7 @@ User::User(P *p, const uint32_t id)
 }
 
 User::~User() {
-	m_thread.request_stop();
+	m_thread.interrupt();
 }
 
 uint32_t User::id() const {
@@ -71,7 +71,7 @@ size_t User::decrypt(const BufRef out, const BufRefConst in) {
 	const auto encrypted = in.subspan(4);
 	const auto prevNonce = m_decryptNonce;
 
-	std::span< uint8_t > nonce(reinterpret_cast< uint8_t * >(m_decryptNonce.data()), m_decryptNonce.size());
+	boost::span< uint8_t > nonce(reinterpret_cast< uint8_t * >(m_decryptNonce.data()), m_decryptNonce.size());
 
 	bool restore = false;
 
@@ -190,7 +190,7 @@ size_t User::encrypt(const BufRef out, const BufRefConst in) {
 	}
 
 	out[0] = m_encryptNonce[0];
-	std::copy_n(tag.cbegin(), 3, ++out.begin());
+	std::copy_n(tag.cbegin(), 3, out.begin() + 1);
 
 	return written + 4;
 }
@@ -216,15 +216,13 @@ void User::send(const Packet &packet) {
 	m_cond.notify_all();
 }
 
-void User::thread(const std::stop_token stopToken) {
-	std::mutex mutex;
+void User::thread() {
+	boost::mutex mutex;
 
-	while (!stopToken.stop_requested()) {
-		std::unique_lock< std::mutex > lock(mutex);
+	while (!m_thread.interruption_requested()) {
+		boost::unique_lock< boost::mutex > lock(mutex);
 
-		if (!m_cond.wait(lock, stopToken, [this]() { return !m_packets.empty(); })) {
-			continue;
-		}
+		m_cond.wait(lock);
 
 		Packet packet;
 		if (!m_packets.try_pop(packet)) {

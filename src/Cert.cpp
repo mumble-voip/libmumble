@@ -176,7 +176,7 @@ P::P(X509 *x509) : m_x509(x509) {
 }
 
 P::P(const DerRefConst der) {
-	auto bytes = std::as_bytes(der);
+	auto bytes = boost::as_bytes(der);
 	d2i_X509(&m_x509, reinterpret_cast< const unsigned char ** >(&bytes), bytes.size());
 }
 

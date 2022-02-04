@@ -10,14 +10,13 @@
 #include <functional>
 #include <vector>
 
-namespace std {
-	class jthread;
-	class stop_token;
+namespace boost {
+class thread;
 };
 
 class ThreadManager {
 public:
-	using ThreadFunc = std::function< void(const std::stop_token) >;
+	using ThreadFunc = std::function< void() >;
 
 	ThreadManager();
 	~ThreadManager();
@@ -30,7 +29,7 @@ public:
 	static uint32_t physicalNum();
 
 private:
-	std::vector< std::jthread> m_threads;
+	std::vector< boost::thread > m_threads;
 };
 
 #endif

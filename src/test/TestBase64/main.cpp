@@ -9,7 +9,8 @@
 #include "mumble/Base64.hpp"
 
 #include <random>
-#include <stop_token>
+
+#include <boost/thread/thread.hpp>
 
 static constexpr size_t iterations = 1000000;
 
@@ -51,7 +52,7 @@ static std::string encode(const Data::Entry &entry) {
 	return ret;
 }
 
-static uint8_t thread(const std::stop_token &stopToken) {
+static uint8_t thread() {
 	Base64 base64;
 
 	std::random_device device;
@@ -59,7 +60,7 @@ static uint8_t thread(const std::stop_token &stopToken) {
 	std::uniform_int_distribution< size_t > gen(0, std::tuple_size< Data::Table >() - 1);
 
 	for (size_t i = 0; i < iterations; ++i) {
-		if (stopToken.stop_requested()) {
+		if (boost::this_thread::interruption_requested()) {
 			return 0;
 		}
 
@@ -97,8 +98,8 @@ int32_t main() {
 	ThreadManager manager;
 
 	for (uint32_t i = 0; i < manager.physicalNum(); ++i) {
-		const ThreadManager::ThreadFunc func = [&ret, &manager](const std::stop_token stopToken) {
-			const auto threadRet = thread(stopToken);
+		const ThreadManager::ThreadFunc func = [&ret, &manager]() {
+			const auto threadRet = thread();
 			if (threadRet != 0) {
 				ret = threadRet;
 				manager.requestStop();

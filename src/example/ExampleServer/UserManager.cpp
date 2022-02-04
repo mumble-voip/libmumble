@@ -8,23 +8,23 @@
 #include "User.hpp"
 
 #include <mutex>
-#include <thread>
+
+#include <boost/thread/thread.hpp>
 
 using namespace mumble;
 
 using UserPtr = UserManager::UserPtr;
 
 UserManager::UserManager(const uint32_t max)
-	: m_minID(1), m_maxID(max), m_usersToDel(32),
-	  m_thread(new std::jthread(std::bind_front(&UserManager::thread, this))) {
+	: m_minID(1), m_maxID(max), m_usersToDel(32), m_thread(new boost::thread(&UserManager::thread, this)) {
 }
 
 UserManager::~UserManager() {
-	m_thread->request_stop();
+	m_thread->interrupt();
 }
 
 UserPtr UserManager::operator[](const uint32_t id) {
-	std::shared_lock lock(m_mutex);
+	boost::shared_lock lock(m_mutex);
 
 	const auto iter = m_users.find(id);
 	if (iter != m_users.cend()) {
@@ -35,7 +35,7 @@ UserPtr UserManager::operator[](const uint32_t id) {
 }
 
 UserPtr UserManager::operator[](const Endpoint &endpoint) {
-	std::shared_lock lock(m_mutex);
+	boost::shared_lock lock(m_mutex);
 
 	const auto iter = m_endpoints.find(endpoint);
 	if (iter != m_endpoints.cend()) {
@@ -54,20 +54,20 @@ uint32_t UserManager::max() {
 }
 
 uint32_t UserManager::num() {
-	std::shared_lock lock(m_mutex);
+	boost::shared_lock lock(m_mutex);
 
 	return m_users.size();
 }
 
 std::optional< uint32_t > UserManager::reserveID() {
-	std::unique_lock lock(m_mutex);
+	boost::unique_lock lock(m_mutex);
 
 	if (m_users.size() >= max()) {
 		return {};
 	}
 
 	for (uint32_t id = m_minID; id < m_maxID; ++id) {
-		if (!m_users.contains(id)) {
+		if (m_users.find(id) == m_users.cend()) {
 			m_users.emplace(id, nullptr);
 
 			return id;
@@ -78,7 +78,7 @@ std::optional< uint32_t > UserManager::reserveID() {
 }
 
 void UserManager::add(const UserPtr &user) {
-	std::unique_lock lock(m_mutex);
+	boost::unique_lock lock(m_mutex);
 
 	m_users[user->id()] = std::shared_ptr< User >(user);
 }
@@ -92,7 +92,7 @@ UserPtr UserManager::tryDecrypt(const BufRef out, const BufRefConst in, const En
 	UserPtr user;
 
 	{
-		std::shared_lock lock(m_mutex);
+		boost::shared_lock lock(m_mutex);
 
 		for (auto &iter : m_users) {
 			if (iter.second->decrypt(out, in)) {
@@ -114,13 +114,11 @@ UserPtr UserManager::tryDecrypt(const BufRef out, const BufRefConst in, const En
 	return user;
 }
 
-void UserManager::thread(const std::stop_token stopToken) {
-	while (!stopToken.stop_requested()) {
-		std::unique_lock< std::shared_mutex > lock(m_mutex);
+void UserManager::thread() {
+	while (!m_thread->interruption_requested()) {
+		boost::unique_lock< boost::shared_mutex > lock(m_mutex);
 
-		if (!m_cond.wait(lock, stopToken, [this]() { return !m_usersToDel.empty(); })) {
-			continue;
-		}
+		m_cond.wait(lock);
 
 		uint32_t id;
 		while (m_usersToDel.try_pop(id)) {

@@ -34,7 +34,7 @@ static Session::Feedback sessionFeedback(Session &session) {
 		const auto ptr = std::unique_ptr< Message >(message);
 
 		if (message->type() != Message::Type::UDPTunnel) {
-			printf("%s received!\n", message->typeText().data());
+			printf("%s received!\n", Message::text(message->type()).data());
 		}
 	};
 

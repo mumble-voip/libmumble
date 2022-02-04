@@ -10,12 +10,12 @@
 
 #include "mumble/Mumble.hpp"
 
+#include <atomic>
 #include <functional>
 
-namespace std {
-class jthread;
-class stop_token;
-} // namespace std
+namespace boost {
+class thread;
+}
 
 namespace mumble {
 class Pack;
@@ -40,7 +40,7 @@ public:
 	void start(const Feedback &feedback);
 	void stop();
 
-	mumble::Code write(const std::stop_token &stopToken, BufRefConst buf);
+	mumble::Code write(BufRefConst buf, const std::atomic_bool &halt = {});
 
 private:
 	Connection(const Connection &) = delete;
@@ -49,14 +49,14 @@ private:
 	mumble::Code handleCode(const Code code);
 	mumble::Code handleState(const State state);
 
-	mumble::Code read(const std::stop_token &stopToken, BufRef buf);
+	mumble::Code read(BufRef buf);
 
-	void thread(const std::stop_token stopToken);
+	void thread();
 
 	Feedback m_feedback;
 
 	uint32_t m_timeouts;
-	std::unique_ptr< std::jthread > m_thread;
+	std::unique_ptr< boost::thread > m_thread;
 };
 } // namespace mumble
 

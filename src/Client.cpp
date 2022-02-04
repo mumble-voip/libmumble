@@ -12,7 +12,7 @@
 
 #include "mumble/IP.hpp"
 
-#include <thread>
+#include <boost/thread/thread.hpp>
 
 using namespace mumble;
 
@@ -64,7 +64,7 @@ EXPORT Code Client::startUDP(const FeedbackUDP &feedback) {
 
 	m_p->m_feedbackUDP = feedback;
 
-	m_p->m_threadUDP = std::make_unique< std::jthread >(std::bind_front(&P::udpThread, m_p.get()));
+	m_p->m_threadUDP = std::make_unique< boost::thread >(&P::udpThread, m_p.get());
 
 	return Code::Success;
 }
@@ -78,8 +78,13 @@ EXPORT Code Client::stopUDP() {
 		return Code::Success;
 	}
 
-	m_p->m_threadUDP->request_stop();
+	m_p->m_threadUDP->interrupt();
 	m_p->m_socketUDP->trigger();
+
+	if (m_p->m_threadUDP->joinable()) {
+		m_p->m_threadUDP->join();
+	}
+
 	m_p->m_threadUDP.reset();
 
 	return Code::Success;
@@ -123,7 +128,7 @@ EXPORT Code Client::sendUDP(const Endpoint &endpoint, const BufRefConst data) {
 	return m_p->m_socketUDP->write(endpoint, data);
 }
 
-void P::udpThread(const std::stop_token stopToken) {
+void P::udpThread() {
 	if (m_feedbackUDP.started) {
 		m_feedbackUDP.started();
 	}
@@ -132,7 +137,7 @@ void P::udpThread(const std::stop_token stopToken) {
 
 	auto state = Socket::InReady;
 
-	while (!stopToken.stop_requested()) {
+	while (!m_threadUDP->interruption_requested()) {
 		while (state & Socket::InReady) {
 			Endpoint endpoint;
 			BufRef bufRef(buf);

@@ -12,7 +12,7 @@
 
 #include "mumble/IP.hpp"
 
-#include <thread>
+#include <boost/thread/thread.hpp>
 
 using namespace mumble;
 
@@ -49,7 +49,7 @@ EXPORT Code Server::startTCP(const FeedbackTCP &feedback) {
 
 	m_p->m_feedbackTCP = feedback;
 
-	m_p->m_threadTCP = std::make_unique< std::jthread >(std::bind_front(&P::tcpThread, m_p.get()));
+	m_p->m_threadTCP = std::make_unique< boost::thread >(&P::tcpThread, m_p.get());
 
 	return Code::Success;
 }
@@ -63,8 +63,13 @@ EXPORT Code Server::stopTCP() {
 		return Code::Success;
 	}
 
-	m_p->m_threadTCP->request_stop();
+	m_p->m_threadTCP->interrupt();
 	m_p->m_socketTCP->trigger();
+
+	if (m_p->m_threadTCP->joinable()) {
+		m_p->m_threadTCP->join();
+	}
+
 	m_p->m_threadTCP.reset();
 
 	return Code::Success;
@@ -81,7 +86,7 @@ EXPORT Code Server::startUDP(const FeedbackUDP &feedback) {
 
 	m_p->m_feedbackUDP = feedback;
 
-	m_p->m_threadUDP = std::make_unique< std::jthread >(std::bind_front(&P::udpThread, m_p.get()));
+	m_p->m_threadUDP = std::make_unique< boost::thread >(&P::udpThread, m_p.get());
 
 	return Code::Success;
 }
@@ -95,8 +100,13 @@ EXPORT Code Server::stopUDP() {
 		return Code::Success;
 	}
 
-	m_p->m_threadUDP->request_stop();
+	m_p->m_threadUDP->interrupt();
 	m_p->m_socketUDP->trigger();
+
+	if (m_p->m_threadUDP->joinable()) {
+		m_p->m_threadUDP->join();
+	}
+
 	m_p->m_threadUDP.reset();
 
 	return Code::Success;
@@ -179,14 +189,14 @@ EXPORT Code Server::sendUDP(const Endpoint &endpoint, const BufRefConst data) {
 	return m_p->m_socketUDP->write(endpoint, data);
 }
 
-void P::tcpThread(const std::stop_token stopToken) {
+void P::tcpThread() {
 	if (m_feedbackTCP.started) {
 		m_feedbackTCP.started();
 	}
 
 	auto state = Socket::InReady;
 
-	while (!stopToken.stop_requested()) {
+	while (!m_threadTCP->interruption_requested()) {
 		while (state & Socket::InReady) {
 			Endpoint endpoint;
 			const auto ret = m_socketTCP->accept(endpoint);
@@ -230,7 +240,7 @@ void P::tcpThread(const std::stop_token stopToken) {
 	}
 }
 
-void P::udpThread(const std::stop_token stopToken) {
+void P::udpThread() {
 	if (m_feedbackUDP.started) {
 		m_feedbackUDP.started();
 	}
@@ -239,7 +249,7 @@ void P::udpThread(const std::stop_token stopToken) {
 
 	auto state = Socket::InReady;
 
-	while (!stopToken.stop_requested()) {
+	while (!m_threadUDP->interruption_requested()) {
 		while (state & Socket::InReady) {
 			Endpoint endpoint;
 			BufRef bufRef(buf);

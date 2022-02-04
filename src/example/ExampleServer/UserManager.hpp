@@ -8,16 +8,13 @@
 
 #include "Endpoints.hpp"
 
-#include <condition_variable>
 #include <optional>
-#include <shared_mutex>
 #include <unordered_map>
 
-#include <rigtorp/MPMCQueue.h>
+#include <boost/thread/condition_variable.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
-namespace std {
-class jthread;
-}
+#include <rigtorp/MPMCQueue.h>
 
 class User;
 
@@ -47,16 +44,16 @@ public:
 	UserPtr tryDecrypt(const BufRef out, const BufRefConst in, const Endpoint &endpoint);
 
 private:
-	void thread(const std::stop_token stopToken);
+	void thread();
 
 	uint32_t m_minID, m_maxID;
 	std::unordered_map< uint32_t, UserPtr > m_users;
 	std::unordered_map< Endpoint, UserPtr > m_endpoints;
 	rigtorp::MPMCQueue< uint32_t > m_usersToDel;
 
-	std::shared_mutex m_mutex;
-	std::condition_variable_any m_cond;
-	std::unique_ptr< std::jthread > m_thread;
+	boost::shared_mutex m_mutex;
+	boost::condition_variable_any m_cond;
+	std::unique_ptr< boost::thread > m_thread;
 };
 
 #endif

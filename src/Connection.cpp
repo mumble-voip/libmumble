@@ -7,7 +7,7 @@
 
 #include "Pack.hpp"
 
-#include <thread>
+#include <boost/thread/thread.hpp>
 
 using namespace mumble;
 
@@ -24,11 +24,11 @@ void Connection::start(const Feedback &feedback) {
 
 	m_timeouts = 0;
 
-	m_thread = std::make_unique< std::jthread >(std::bind_front(&Connection::thread, this));
+	m_thread = std::make_unique< boost::thread >(&Connection::thread, this);
 }
 
 void Connection::stop() {
-	m_thread->request_stop();
+	m_thread->interrupt();
 
 	trigger();
 
@@ -101,10 +101,10 @@ mumble::Code Connection::handleState(const State state) {
 	return Code::Unknown;
 }
 
-mumble::Code Connection::read(const std::stop_token &stopToken, BufRef buf) {
+mumble::Code Connection::read(BufRef buf) {
 	using Code = mumble::Code;
 
-	while (!stopToken.stop_requested()) {
+	while (!m_thread->interruption_requested()) {
 		const auto code = handleCode(SocketTLS::read(buf));
 		if (code == Code::Retry) {
 			continue;
@@ -116,10 +116,10 @@ mumble::Code Connection::read(const std::stop_token &stopToken, BufRef buf) {
 	return Code::Cancel;
 }
 
-mumble::Code Connection::write(const std::stop_token &stopToken, BufRefConst buf) {
+mumble::Code Connection::write(BufRefConst buf, const std::atomic_bool &halt) {
 	using Code = mumble::Code;
 
-	while (!stopToken.stop_requested()) {
+	while (!halt && !m_thread->interruption_requested()) {
 		const auto code = handleCode(SocketTLS::write(buf));
 		if (code == Code::Retry) {
 			continue;
@@ -131,10 +131,11 @@ mumble::Code Connection::write(const std::stop_token &stopToken, BufRefConst buf
 	return Code::Cancel;
 }
 
-void Connection::thread(const std::stop_token stopToken) {
-	using Code = mumble::Code;
+void Connection::thread() {
+	using Code       = mumble::Code;
+	namespace Thread = boost::this_thread;
 
-	while (!stopToken.stop_requested()) {
+	while (!Thread::interruption_requested()) {
 		const auto code = handleCode(m_server ? accept() : connect());
 		if (code == Code::Success) {
 			break;
@@ -147,7 +148,7 @@ void Connection::thread(const std::stop_token stopToken) {
 		return;
 	}
 
-	if (stopToken.stop_requested()) {
+	if (Thread::interruption_requested()) {
 		return;
 	}
 
@@ -155,14 +156,13 @@ void Connection::thread(const std::stop_token stopToken) {
 
 	auto state = Socket::InReady;
 
-	while (!stopToken.stop_requested()) {
+	while (!Thread::interruption_requested()) {
 		switch (handleState(state)) {
 			case Code::Success:
 			case Code::Retry:
 				do {
 					Pack::NetHeader header;
-					if (read(stopToken, { reinterpret_cast< std::byte * >(&header), sizeof(header) })
-						!= Code::Success) {
+					if (read({ reinterpret_cast< std::byte * >(&header), sizeof(header) }) != Code::Success) {
 						return;
 					}
 
@@ -172,7 +172,7 @@ void Connection::thread(const std::stop_token stopToken) {
 						return;
 					}
 
-					if (read(stopToken, pack.data()) != Code::Success) {
+					if (read(pack.data()) != Code::Success) {
 						return;
 					}
 

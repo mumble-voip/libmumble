@@ -68,9 +68,9 @@ EXPORT Code Session::start(const Feedback &feedback, const Cert::Chain &cert, co
 	return Code::Success;
 }
 
-EXPORT Code Session::sendTCP(const Message &message, const std::stop_token &stopToken) {
+EXPORT Code Session::sendTCP(const Message &message, const std::atomic_bool &halt) {
 	const Pack pack(message);
-	return m_p->m_connection->write(stopToken, pack.buf());
+	return m_p->m_connection->write(pack.buf(), halt);
 }
 
 EXPORT Code Session::sendUDP(const Endpoint &endpoint, const BufRefConst data) {

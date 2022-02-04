@@ -27,8 +27,8 @@ public:
 	static constexpr uint8_t shiftBits = 31;
 #endif
 	using KeyBlock         = std::array< SubBlock, subBlocks >;
-	using KeyBlockRef      = std::span< SubBlock, subBlocks >;
-	using KeyBlockRefConst = std::span< const SubBlock, subBlocks >;
+	using KeyBlockRef      = boost::span< SubBlock, subBlocks >;
+	using KeyBlockRefConst = boost::span< const SubBlock, subBlocks >;
 
 	static constexpr uint8_t blockSize = 128 / 8;
 	static constexpr uint8_t keySize   = 128 / 8;

@@ -3,10 +3,13 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
+find_package(Boost REQUIRED
+	COMPONENTS
+		thread
+)
 find_package(OpenSSL REQUIRED)
 find_package(Opus)
 find_package(Protobuf REQUIRED)
-find_package(Threads)
 
 if(NOT Opus_FOUND)
 	find_package(PkgConfig REQUIRED)
@@ -96,6 +99,7 @@ target_sources(mumble
 
 target_link_libraries(mumble
 	PRIVATE
+		Boost::thread
 		MPMCQueue
 		OpenSSL::Crypto
 		OpenSSL::SSL
@@ -103,8 +107,6 @@ target_link_libraries(mumble
 
 		${Opus_LINK_LIBRARIES}
 		$<TARGET_NAME_IF_EXISTS:Opus::opus>
-
-		$<TARGET_NAME_IF_EXISTS:Threads::Threads>
 )
 
 if(build-examples)

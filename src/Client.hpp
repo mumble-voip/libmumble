@@ -8,10 +8,9 @@
 
 #include "mumble/Client.hpp"
 
-namespace std {
-class jthread;
-class stop_token;
-} // namespace std
+namespace boost {
+class thread;
+}
 
 namespace mumble {
 class SocketTCP;
@@ -28,12 +27,12 @@ private:
 	P(const P &) = delete;
 	P &operator=(const P &) = delete;
 
-	void udpThread(const std::stop_token stopToken);
+	void udpThread();
 
 	FeedbackUDP m_feedbackUDP;
 
 	std::shared_ptr< SocketUDP > m_socketUDP;
-	std::unique_ptr< std::jthread > m_threadUDP;
+	std::unique_ptr< boost::thread > m_threadUDP;
 };
 } // namespace mumble
 

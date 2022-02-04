@@ -7,7 +7,7 @@
 
 #include "mumble/Opus.hpp"
 
-#include <stop_token>
+#include <boost/thread/thread.hpp>
 
 static constexpr size_t iterations = 1000;
 
@@ -39,7 +39,7 @@ template< typename T > bool initOpus(T &opus) {
 	return true;
 }
 
-static uint8_t thread(const std::stop_token &stopToken) {
+static uint8_t thread() {
 	OpusDecoder monoDecoder(1);
 	if (!initOpus(monoDecoder)) {
 		return 1;
@@ -68,7 +68,7 @@ static uint8_t thread(const std::stop_token &stopToken) {
 		BufRef out(reinterpret_cast< std::byte * >(buf.data()), buf.size() * sizeof(float));
 
 		for (size_t i = 0; i < iterations; ++i) {
-			if (stopToken.stop_requested()) {
+			if (boost::this_thread::interruption_requested()) {
 				return 0;
 			}
 
@@ -86,8 +86,8 @@ int32_t main() {
 	ThreadManager manager;
 
 	for (uint32_t i = 0; i < manager.physicalNum(); ++i) {
-		const ThreadManager::ThreadFunc func = [&ret, &manager](const std::stop_token stopToken) {
-			const auto threadRet = thread(stopToken);
+		const ThreadManager::ThreadFunc func = [&ret, &manager]() {
+			const auto threadRet = thread();
 			if (threadRet != 0) {
 				ret = threadRet;
 				manager.requestStop();

@@ -9,7 +9,8 @@
 #include "mumble/CryptOCB2.hpp"
 
 #include <random>
-#include <stop_token>
+
+#include <boost/thread/thread.hpp>
 
 static constexpr size_t iterations = 100000;
 
@@ -52,7 +53,7 @@ template< typename T > static uint8_t test(T &crypt, const BufRefConst in) {
 	return 0;
 }
 
-static uint8_t thread(const std::stop_token &stopToken) {
+static uint8_t thread() {
 	Crypt cryptChaCha20;
 	if (!cryptChaCha20.setCipher("ChaCha20-Poly1305")) {
 		return 1;
@@ -69,7 +70,7 @@ static uint8_t thread(const std::stop_token &stopToken) {
 	std::mt19937 algorithm(device());
 
 	for (size_t i = 0; i < iterations; ++i) {
-		if (stopToken.stop_requested()) {
+		if (boost::this_thread::interruption_requested()) {
 			return 0;
 		}
 
@@ -106,8 +107,8 @@ int32_t main() {
 	ThreadManager manager;
 
 	for (uint32_t i = 0; i < manager.physicalNum(); ++i) {
-		const ThreadManager::ThreadFunc func = [&ret, &manager](const std::stop_token stopToken) {
-			const auto threadRet = thread(stopToken);
+		const ThreadManager::ThreadFunc func = [&ret, &manager]() {
+			const auto threadRet = thread();
 			if (threadRet != 0) {
 				ret = threadRet;
 				manager.requestStop();

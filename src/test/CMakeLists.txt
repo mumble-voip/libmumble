@@ -3,8 +3,6 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-find_package(Threads)
-
 list(APPEND TESTS
 	"TestBase64"
 	"TestCrypt"
@@ -27,8 +25,8 @@ target_sources(Test
 )
 
 target_link_libraries(Test
-	PRIVATE
-		$<TARGET_NAME_IF_EXISTS:Threads::Threads>
+	PUBLIC
+		Boost::thread
 )
 
 # All tests follow the convention of naming their subdirectory the same as their target.

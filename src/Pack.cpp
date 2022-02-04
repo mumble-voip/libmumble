@@ -508,11 +508,11 @@ BufRefConst Pack::buf() const {
 }
 
 BufRefConst Pack::data() const {
-	return { m_buf.begin() + sizeof(NetHeader), m_buf.end() };
+	return { m_buf.data() + sizeof(NetHeader), m_buf.size() - sizeof(NetHeader) };
 }
 
 BufRef Pack::data() {
-	return { m_buf.begin() + sizeof(NetHeader), m_buf.end() };
+	return { m_buf.data() + sizeof(NetHeader), m_buf.size() - sizeof(NetHeader) };
 }
 
 bool Pack::isPingUDP(const BufRefConst packet) {

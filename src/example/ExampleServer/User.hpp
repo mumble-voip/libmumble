@@ -11,8 +11,7 @@
 #include "mumble/CryptOCB2.hpp"
 #include "mumble/Session.hpp"
 
-#include <condition_variable>
-#include <thread>
+#include <boost/thread/thread.hpp>
 
 #include <rigtorp/MPMCQueue.h>
 
@@ -68,7 +67,7 @@ public:
 	void send(const Packet &packet);
 
 private:
-	void thread(const std::stop_token stopToken);
+	void thread();
 
 	uint32_t m_id;
 	bool m_cryptOK;
@@ -77,8 +76,8 @@ private:
 	uint32_t m_lost;
 	Endpoints m_endpoints;
 	rigtorp::MPMCQueue< Packet > m_packets;
-	std::condition_variable_any m_cond;
-	std::jthread m_thread;
+	boost::condition_variable m_cond;
+	boost::thread m_thread;
 	mumble::CryptOCB2 m_decrypt;
 	mumble::CryptOCB2 m_encrypt;
 	std::vector< std::byte > m_decryptNonce;

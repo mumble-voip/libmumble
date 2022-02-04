@@ -7,6 +7,8 @@
 
 #include "mumble/Endian.hpp"
 
+#include <algorithm>
+
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
@@ -120,7 +122,7 @@ EXPORT size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst t
 	}
 
 	KeyBlock delta;
-	const auto deltaBytes = std::as_writable_bytes(KeyBlockRef(delta));
+	const auto deltaBytes = boost::as_writable_bytes(KeyBlockRef(delta));
 
 	if (!m_p->process(true, deltaBytes, m_p->m_nonce)) {
 		return {};
@@ -129,7 +131,7 @@ EXPORT size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst t
 	size_t written = 0;
 
 	KeyBlock checksum{}, tmp;
-	const auto tmpBytes = std::as_writable_bytes(KeyBlockRef(tmp));
+	const auto tmpBytes = boost::as_writable_bytes(KeyBlockRef(tmp));
 
 	while (in.size() > P::blockSize) {
 		P::s2(delta);
@@ -155,7 +157,7 @@ EXPORT size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst t
 	P::xorBlock(tmp, tmp, delta);
 
 	KeyBlock pad;
-	const auto padBytes = std::as_writable_bytes(KeyBlockRef(pad));
+	const auto padBytes = boost::as_writable_bytes(KeyBlockRef(pad));
 
 	if (!m_p->process(true, padBytes, tmpBytes)) {
 		return {};
@@ -209,14 +211,14 @@ EXPORT size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
 	}
 
 	KeyBlock delta;
-	if (!m_p->process(true, std::as_writable_bytes(KeyBlockRef(delta)), m_p->m_nonce)) {
+	if (!m_p->process(true, boost::as_writable_bytes(KeyBlockRef(delta)), m_p->m_nonce)) {
 		return {};
 	}
 
 	size_t written = 0;
 
 	KeyBlock checksum{}, tmp;
-	const auto tmpBytes = std::as_writable_bytes(KeyBlockRef(tmp));
+	const auto tmpBytes = boost::as_writable_bytes(KeyBlockRef(tmp));
 
 	while (in.size() > P::blockSize) {
 		// Counter-cryptanalysis described in section 9 of https://eprint.iacr.org/2019/311
@@ -271,7 +273,7 @@ EXPORT size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
 	P::xorBlock(tmp, tmp, delta);
 
 	KeyBlock pad;
-	const auto padBytes = std::as_writable_bytes(KeyBlockRef(pad));
+	const auto padBytes = boost::as_writable_bytes(KeyBlockRef(pad));
 
 	if (!m_p->process(true, padBytes, tmpBytes)) {
 		return {};

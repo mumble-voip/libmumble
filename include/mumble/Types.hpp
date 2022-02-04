@@ -46,7 +46,7 @@ struct Endpoint {
 	virtual Endpoint &operator=(const Endpoint &endpoint) = default;
 	virtual Endpoint &operator=(Endpoint &&endpoint) = default;
 
-	virtual bool operator==(const Endpoint &endpoint) const = default;
+	virtual bool operator==(const Endpoint &endpoint) const { return endpoint.ip == ip && endpoint.port == port; }
 };
 
 class Base64;
@@ -67,8 +67,8 @@ static constexpr uint32_t infinite32 = UINT32_MAX;
 static constexpr uint64_t infinite64 = UINT64_MAX;
 
 using Buf         = std::vector< std::byte >;
-using BufRef      = std::span< std::byte >;
-using BufRefConst = std::span< const std::byte >;
+using BufRef      = boost::span< std::byte >;
+using BufRefConst = boost::span< const std::byte >;
 
 template< size_t size > using FixedBuf = std::array< std::byte, size >;
 
