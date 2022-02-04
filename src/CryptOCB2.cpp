@@ -153,7 +153,7 @@ EXPORT size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst t
 	P::s2(delta);
 
 	tmp        = {};
-	tmp.back() = Endian::swap(in.size() * 8);
+	tmp.back() = Endian::swap(static_cast< SubBlock >(in.size() * 8));
 	P::xorBlock(tmp, tmp, delta);
 
 	KeyBlock pad;
@@ -269,7 +269,7 @@ EXPORT size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
 	P::s2(delta);
 
 	tmp        = {};
-	tmp.back() = Endian::swap(in.size() * 8);
+	tmp.back() = Endian::swap(static_cast< SubBlock >(in.size() * 8));
 	P::xorBlock(tmp, tmp, delta);
 
 	KeyBlock pad;
