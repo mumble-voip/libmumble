@@ -7,7 +7,6 @@
 #define MUMBLE_IP_HPP
 
 #include <array>
-#include <memory>
 #include <string>
 
 #include <boost/core/span.hpp>
@@ -53,7 +52,7 @@ public:
 	virtual void toSockAddr(sockaddr_in6 &sockaddr) const;
 
 private:
-	std::unique_ptr< P > m_p;
+	std::array< uint8_t, v6Size > m_bytes;
 };
 } // namespace mumble
 

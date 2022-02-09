@@ -5,8 +5,6 @@
 
 #include "TCP.hpp"
 
-#include "IP.hpp"
-
 #include "mumble/Endian.hpp"
 
 #ifdef OS_WINDOWS

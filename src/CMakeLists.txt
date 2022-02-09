@@ -55,7 +55,6 @@ target_sources(mumble
 		"Hash.cpp"
 		"Hash.hpp"
 		"IP.cpp"
-		"IP.hpp"
 		"Key.cpp"
 		"Key.hpp"
 		"Mumble.cpp"

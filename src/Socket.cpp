@@ -5,8 +5,6 @@
 
 #include "Socket.hpp"
 
-#include "IP.hpp"
-
 #include "mumble/Endian.hpp"
 #include "mumble/Mumble.hpp"
 
