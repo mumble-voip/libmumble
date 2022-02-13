@@ -7,9 +7,21 @@
 #include "Node.hpp"
 #include "UserManager.hpp"
 
-#include <cstdio>
+#include "mumble/Types.hpp"
 
-#include <toml.hpp>
+#include <cstdint>
+#include <cstdio>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include <toml/comments.hpp>
+#include <toml/get.hpp>
+#include <toml/parser.hpp>
+#include <toml/value.hpp>
 
 using namespace mumble;
 

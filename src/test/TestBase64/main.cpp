@@ -7,10 +7,17 @@
 #include "ThreadManager.hpp"
 
 #include "mumble/Base64.hpp"
+#include "mumble/Types.hpp"
 
+#include <array>
+#include <cstddef>
+#include <cstdint>
 #include <random>
+#include <string>
+#include <string_view>
+#include <utility>
 
-#include <boost/thread/thread.hpp>
+#include <boost/thread/interruption.hpp>
 
 static constexpr size_t iterations = 1000000;
 

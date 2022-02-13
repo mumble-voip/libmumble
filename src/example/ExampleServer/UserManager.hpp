@@ -8,6 +8,10 @@
 
 #include "Endpoints.hpp"
 
+#include "mumble/Types.hpp"
+
+#include <cstdint>
+#include <memory>
 #include <optional>
 #include <unordered_map>
 
@@ -15,6 +19,10 @@
 #include <boost/thread/shared_mutex.hpp>
 
 #include <rigtorp/MPMCQueue.h>
+
+namespace boost {
+class thread;
+}
 
 class User;
 

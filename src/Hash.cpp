@@ -5,6 +5,13 @@
 
 #include "Hash.hpp"
 
+#include "mumble/Types.hpp"
+
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <utility>
+
 #include <openssl/evp.h>
 
 #define CHECK      \

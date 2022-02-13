@@ -7,10 +7,15 @@
 
 #include "mumble/Crypt.hpp"
 #include "mumble/CryptOCB2.hpp"
+#include "mumble/Types.hpp"
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <random>
+#include <vector>
 
-#include <boost/thread/thread.hpp>
+#include <boost/thread/interruption.hpp>
 
 static constexpr size_t iterations = 100000;
 

@@ -5,9 +5,12 @@
 
 #include "MumbleInit.hpp"
 
+#include "mumble/IP.hpp"
 #include "mumble/Mumble.hpp"
+#include "mumble/Types.hpp"
 
 #include <cstdio>
+#include <string_view>
 
 using namespace mumble;
 

@@ -9,6 +9,8 @@
 #include "Macros.hpp"
 #include "Types.hpp"
 
+#include <cstdint>
+
 namespace mumble {
 class EXPORT Mumble {
 public:

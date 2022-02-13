@@ -7,7 +7,19 @@
 
 #include "Connection.hpp"
 #include "Pack.hpp"
+#include "TCP.hpp"
+#include "TLS.hpp"
 #include "UDP.hpp"
+
+#include "mumble/Cert.hpp"
+#include "mumble/Key.hpp"
+#include "mumble/Message.hpp"
+#include "mumble/Types.hpp"
+
+#include <atomic>
+#include <cstdint>
+#include <functional>
+#include <utility>
 
 using namespace mumble;
 

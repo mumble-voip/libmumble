@@ -10,6 +10,15 @@
 #include "mumble/Key.hpp"
 #include "mumble/Server.hpp"
 
+#include <cstdint>
+#include <memory>
+#include <string_view>
+#include <vector>
+
+namespace mumble {
+class Session;
+}
+
 class UserManager;
 
 class Node {

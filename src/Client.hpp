@@ -8,19 +8,20 @@
 
 #include "mumble/Client.hpp"
 
+#include <memory>
+
 namespace boost {
 class thread;
 }
 
 namespace mumble {
-class SocketTCP;
 class SocketUDP;
 
 class Client::P {
 	friend Client;
 
 public:
-	P()  = default;
+	P();
 	~P() = default;
 
 private:

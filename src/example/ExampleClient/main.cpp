@@ -7,10 +7,22 @@
 
 #include "mumble/Client.hpp"
 #include "mumble/Message.hpp"
+#include "mumble/Mumble.hpp"
+#include "mumble/Session.hpp"
+#include "mumble/Types.hpp"
 
+#include <cstdint>
 #include <cstdio>
+#include <functional>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <utility>
 
-#include <toml.hpp>
+#include <toml/get.hpp>
+#include <toml/parser.hpp>
+#include <toml/value.hpp>
 
 using namespace mumble;
 

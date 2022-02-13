@@ -5,11 +5,17 @@
 
 #include "UserManager.hpp"
 
+#include "Endpoints.hpp"
 #include "User.hpp"
 
 #include <mutex>
+#include <unordered_set>
+#include <utility>
 
-#include <boost/thread/thread.hpp>
+#include <boost/thread/lock_types.hpp>
+#include <boost/thread/thread_only.hpp>
+
+#include <rigtorp/MPMCQueue.h>
 
 using namespace mumble;
 

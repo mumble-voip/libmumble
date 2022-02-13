@@ -6,7 +6,9 @@
 #include "Socket.hpp"
 
 #include "mumble/Endian.hpp"
-#include "mumble/Mumble.hpp"
+#include "mumble/IP.hpp"
+
+#include <utility>
 
 #ifdef OS_WINDOWS
 #	include <afunix.h>
@@ -19,10 +21,8 @@
 #	include <poll.h>
 #	include <unistd.h>
 
-#	include <arpa/inet.h>
-
+#	include <netinet/in.h>
 #	include <sys/socket.h>
-#	include <sys/types.h>
 #endif
 
 using namespace mumble;

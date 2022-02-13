@@ -6,9 +6,15 @@
 #ifndef MUMBLE_TYPES_HPP
 #define MUMBLE_TYPES_HPP
 
+// For "include-what-you-use":
+// https://github.com/include-what-you-use/include-what-you-use/issues/828
+namespace mumble {};
+
 #include "IP.hpp"
 
 #include <vector>
+
+#include <boost/core/span.hpp>
 
 namespace mumble {
 enum class Code : int8_t {
@@ -48,18 +54,6 @@ struct Endpoint {
 
 	virtual bool operator==(const Endpoint &endpoint) const { return endpoint.ip == ip && endpoint.port == port; }
 };
-
-class Base64;
-class Cert;
-class Client;
-class Crypt;
-class CryptOCB2;
-class Endian;
-class Key;
-class Message;
-class Mumble;
-class Server;
-class Session;
 
 static constexpr uint8_t infinite8   = UINT8_MAX;
 static constexpr uint16_t infinite16 = UINT16_MAX;

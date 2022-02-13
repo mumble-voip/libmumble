@@ -5,6 +5,17 @@
 
 #include "User.hpp"
 
+#include "Endpoints.hpp"
+
+#include <algorithm>
+#include <cstdint>
+
+#include <boost/core/span.hpp>
+
+#include <boost/thread/lock_types.hpp>
+
+#include <rigtorp/MPMCQueue.h>
+
 using namespace mumble;
 
 User::User(P *p, const uint32_t id)

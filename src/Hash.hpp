@@ -8,6 +8,8 @@
 
 #include "mumble/Hash.hpp"
 
+#include <string_view>
+
 #include <openssl/ossl_typ.h>
 
 namespace mumble {

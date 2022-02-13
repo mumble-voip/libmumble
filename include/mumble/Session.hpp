@@ -14,6 +14,8 @@
 #include <functional>
 
 namespace mumble {
+class Message;
+
 class EXPORT Session {
 public:
 	class P;

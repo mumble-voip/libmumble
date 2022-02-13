@@ -6,10 +6,23 @@
 #include "Cert.hpp"
 
 #include "mumble/Key.hpp"
+#include "mumble/Types.hpp"
 
+#include <cstddef>
 #include <cstring>
+#include <memory>
+#include <utility>
 
+#include <boost/core/span.hpp>
+
+#include <openssl/asn1.h>
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
+#include <openssl/crypto.h>
+#include <openssl/obj_mac.h>
+#include <openssl/objects.h>
 #include <openssl/pem.h>
+#include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
 #define CHECK      \

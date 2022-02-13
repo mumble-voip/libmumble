@@ -8,6 +8,8 @@
 
 #include "mumble/Server.hpp"
 
+#include <memory>
+
 namespace boost {
 class thread;
 }

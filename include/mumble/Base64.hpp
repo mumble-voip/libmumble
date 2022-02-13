@@ -8,6 +8,8 @@
 
 #include "Types.hpp"
 
+#include <memory>
+
 namespace mumble {
 class EXPORT Base64 {
 public:

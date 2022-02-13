@@ -9,12 +9,14 @@
 #include "TCP.hpp"
 
 #include "mumble/Cert.hpp"
+#include "mumble/Key.hpp"
+#include "mumble/Types.hpp"
+
+#include <cstdint>
 
 #include <openssl/ossl_typ.h>
 
 namespace mumble {
-class Key;
-
 class SocketTLS : public SocketTCP {
 public:
 	enum Code : int8_t { Memory = -3, Failure, Unknown, Success, Retry, Shutdown, WaitIn, WaitOut };

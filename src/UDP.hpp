@@ -6,6 +6,8 @@
 #ifndef MUMBLE_SRC_UDP_HPP
 #define MUMBLE_SRC_UDP_HPP
 
+#include "mumble/Types.hpp"
+
 #include "Socket.hpp"
 
 namespace mumble {

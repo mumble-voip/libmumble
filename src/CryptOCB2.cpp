@@ -8,6 +8,9 @@
 #include "mumble/Endian.hpp"
 
 #include <algorithm>
+#include <memory>
+
+#include <boost/core/span.hpp>
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>

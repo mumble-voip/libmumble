@@ -10,6 +10,7 @@
 #include "IP.hpp"
 #include "Macros.hpp"
 #include "Mumble.hpp"
+#include "Types.hpp"
 
 #include <chrono>
 #include <optional>
@@ -19,8 +20,6 @@
 	virtual ~name() = default;
 
 namespace mumble {
-class Version;
-
 class EXPORT Message {
 public:
 	using Clock     = std::chrono::high_resolution_clock;

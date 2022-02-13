@@ -5,6 +5,8 @@
 
 #include "mumble/Mumble.hpp"
 
+#include "mumble/Types.hpp"
+
 #ifdef OS_WINDOWS
 #	include <WinSock2.h>
 #endif

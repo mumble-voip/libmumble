@@ -10,10 +10,21 @@
 
 #include "mumble/CryptOCB2.hpp"
 #include "mumble/Session.hpp"
+#include "mumble/Types.hpp"
 
-#include <boost/thread/thread.hpp>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <utility>
+#include <vector>
+
+#include <boost/thread/thread_only.hpp>
 
 #include <rigtorp/MPMCQueue.h>
+
+namespace mumble {
+class Message;
+}
 
 class User : public mumble::Session {
 public:

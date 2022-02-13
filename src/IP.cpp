@@ -6,12 +6,17 @@
 #include "mumble/IP.hpp"
 
 #include <algorithm>
+#include <cstdio>
 #include <cstring>
+
+#include <boost/core/span.hpp>
 
 #ifdef OS_WINDOWS
 #	include <WS2tcpip.h>
 #else
 #	include <arpa/inet.h>
+#	include <netinet/in.h>
+#	include <sys/socket.h>
 #endif
 
 static constexpr uint8_t v6StrSize = 46;
@@ -72,7 +77,7 @@ EXPORT RefConst IP::v6() const {
 }
 
 EXPORT RefConst IP::v4() const {
-	return { m_bytes.cbegin() + 12, m_bytes.cend() };
+	return { m_bytes.data() + 12, m_bytes.size() - 12 };
 }
 
 EXPORT Ref IP::v6() {
@@ -80,7 +85,7 @@ EXPORT Ref IP::v6() {
 }
 
 EXPORT Ref IP::v4() {
-	return { m_bytes.begin() + 12, m_bytes.end() };
+	return { m_bytes.data() + 12, m_bytes.size() - 12 };
 }
 
 EXPORT bool IP::isV6() const {

@@ -7,7 +7,9 @@
 #define MUMBLE_IP_HPP
 
 #include <array>
+#include <cstdint>
 #include <string>
+#include <string_view>
 
 #include <boost/core/span.hpp>
 

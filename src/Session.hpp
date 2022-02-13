@@ -6,9 +6,11 @@
 #ifndef MUMBLE_SRC_SESSION_HPP
 #define MUMBLE_SRC_SESSION_HPP
 
+#include "mumble/Session.hpp"
+
 #include "Connection.hpp"
 
-#include "mumble/Session.hpp"
+#include <memory>
 
 namespace mumble {
 class SocketTCP;

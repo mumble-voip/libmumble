@@ -8,6 +8,14 @@
 
 #include "mumble/CryptOCB2.hpp"
 
+#include "mumble/Types.hpp"
+
+#include <array>
+#include <cstddef>
+#include <cstdint>
+
+#include <boost/core/span.hpp>
+
 #include <openssl/ossl_typ.h>
 
 namespace mumble {

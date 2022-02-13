@@ -5,7 +5,13 @@
 
 #include "Opus.hpp"
 
+#include "mumble/Types.hpp"
+
+#include <utility>
+
 #include <opus.h>
+#include <opus_defines.h>
+#include <opus_types.h>
 
 #define CHECK      \
 	if (!*this) {  \

@@ -5,13 +5,20 @@
 
 #include "TLS.hpp"
 
+#include "Socket.hpp"
+
 #include "mumble/Cert.hpp"
 #include "mumble/Key.hpp"
 
 #include <algorithm>
+#include <cstddef>
+#include <memory>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <openssl/ssl.h>
+#include <openssl/x509.h>
 
 using namespace mumble;
 

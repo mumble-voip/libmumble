@@ -7,12 +7,18 @@
 
 #include "Pack.hpp"
 #include "Session.hpp"
-#include "TLS.hpp"
+#include "Socket.hpp"
+#include "TCP.hpp"
 #include "UDP.hpp"
 
-#include "mumble/IP.hpp"
+#include "mumble/Mumble.hpp"
+#include "mumble/Session.hpp"
+#include "mumble/Types.hpp"
 
-#include <boost/thread/thread.hpp>
+#include <functional>
+#include <utility>
+
+#include <boost/thread/thread_only.hpp>
 
 using namespace mumble;
 

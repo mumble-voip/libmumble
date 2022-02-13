@@ -5,8 +5,11 @@
 
 #include "Base64.hpp"
 
+#include "mumble/Types.hpp"
+
 #include <cmath>
-#include <string>
+#include <cstddef>
+#include <memory>
 
 #include <openssl/evp.h>
 

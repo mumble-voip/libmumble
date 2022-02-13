@@ -5,7 +5,7 @@
 
 #include "ThreadManager.hpp"
 
-#include <boost/thread/thread.hpp>
+#include <boost/thread/thread_only.hpp>
 
 ThreadManager::ThreadManager() = default;
 

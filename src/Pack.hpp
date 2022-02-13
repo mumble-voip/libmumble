@@ -7,10 +7,13 @@
 #define MUMBLE_SRC_PACK_HPP
 
 #include "mumble/Endian.hpp"
+#include "mumble/Macros.hpp"
 #include "mumble/Message.hpp"
+#include "mumble/Types.hpp"
 
-#include <array>
-#include <span>
+#include <cstddef>
+#include <cstdint>
+#include <string_view>
 
 namespace google {
 namespace protobuf {

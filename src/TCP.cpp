@@ -6,11 +6,13 @@
 #include "TCP.hpp"
 
 #include "mumble/Endian.hpp"
+#include "mumble/IP.hpp"
 
 #ifdef OS_WINDOWS
 #	include <WS2tcpip.h>
 #else
 #	include <netinet/in.h>
+#	include <sys/socket.h>
 #endif
 
 using namespace mumble;

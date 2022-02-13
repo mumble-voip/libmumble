@@ -12,6 +12,7 @@
 #	include <WS2tcpip.h>
 #else
 #	include <netinet/in.h>
+#	include <sys/socket.h>
 #endif
 
 using namespace mumble;

@@ -5,6 +5,10 @@
 
 #include "Crypt.hpp"
 
+#include <cstddef>
+#include <memory>
+#include <utility>
+
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 

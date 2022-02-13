@@ -5,9 +5,23 @@
 
 #include "Pack.hpp"
 
+#include "mumble/Cert.hpp"
+#include "mumble/IP.hpp"
 #include "mumble/Mumble.hpp"
 
 #include "Mumble.pb.h"
+
+#include <algorithm>
+#include <cstdint>
+#include <cstring>
+#include <limits>
+#include <optional>
+#include <string>
+#include <vector>
+
+#include <boost/core/span.hpp>
+
+#include <google/protobuf/message.h>
 
 using namespace mumble;
 

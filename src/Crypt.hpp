@@ -8,6 +8,12 @@
 
 #include "mumble/Crypt.hpp"
 
+#include "mumble/Types.hpp"
+
+#include <cstddef>
+#include <cstdint>
+#include <string_view>
+
 #include <openssl/ossl_typ.h>
 
 namespace mumble {

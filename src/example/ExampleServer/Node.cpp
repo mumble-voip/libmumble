@@ -5,15 +5,26 @@
 
 #include "Node.hpp"
 
+#include "Endpoints.hpp"
 #include "User.hpp"
 #include "UserManager.hpp"
 
 #include "mumble/Endian.hpp"
 #include "mumble/IP.hpp"
 #include "mumble/Message.hpp"
+#include "mumble/Mumble.hpp"
+#include "mumble/Session.hpp"
+#include "mumble/Types.hpp"
 
+#include <cstddef>
+#include <cstdio>
 #include <fstream>
+#include <functional>
+#include <map>
+#include <optional>
 #include <sstream>
+#include <string>
+#include <utility>
 
 using namespace mumble;
 

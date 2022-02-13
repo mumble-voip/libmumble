@@ -8,6 +8,10 @@
 
 #include "mumble/Opus.hpp"
 
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+
 struct OpusDecoder;
 struct OpusEncoder;
 

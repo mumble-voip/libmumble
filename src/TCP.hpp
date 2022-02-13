@@ -8,9 +8,12 @@
 
 #include "Socket.hpp"
 
-namespace mumble {
-class IP;
+#include "mumble/Types.hpp"
 
+#include <memory>
+#include <utility>
+
+namespace mumble {
 class SocketTCP : public Socket {
 public:
 	using AcceptPtr = std::unique_ptr< SocketTCP >;

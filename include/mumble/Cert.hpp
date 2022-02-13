@@ -8,7 +8,10 @@
 
 #include "Types.hpp"
 
+#include "mumble/Key.hpp"
+
 #include <map>
+#include <memory>
 
 namespace mumble {
 class EXPORT Cert {

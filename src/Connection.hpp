@@ -8,10 +8,14 @@
 
 #include "TLS.hpp"
 
-#include "mumble/Mumble.hpp"
+#include "Socket.hpp"
+
+#include "mumble/Types.hpp"
 
 #include <atomic>
+#include <cstdint>
 #include <functional>
+#include <memory>
 
 namespace boost {
 class thread;

@@ -7,10 +7,15 @@
 #define MUMBLE_SRC_SOCKET_HPP
 
 #include "mumble/Macros.hpp"
-#include "mumble/Mumble.hpp"
+#include "mumble/Types.hpp"
+
+#include <array>
+#include <cstdint>
 
 #ifdef OS_WINDOWS
 #	include <WinSock2.h>
+#else
+#	include <errno.h>
 #endif
 
 namespace mumble {

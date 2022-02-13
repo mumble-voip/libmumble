@@ -8,6 +8,9 @@
 
 #include "mumble/Cert.hpp"
 
+#include <string>
+#include <string_view>
+
 #include <openssl/ossl_typ.h>
 
 namespace mumble {

@@ -6,8 +6,15 @@
 #include "ThreadManager.hpp"
 
 #include "mumble/Opus.hpp"
+#include "mumble/Types.hpp"
 
-#include <boost/thread/thread.hpp>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <vector>
+
+#include <boost/thread/interruption.hpp>
 
 static constexpr size_t iterations = 1000;
 

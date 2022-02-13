@@ -7,7 +7,13 @@
 
 #include "Pack.hpp"
 
-#include <boost/thread/thread.hpp>
+#include "mumble/Message.hpp"
+
+#include <cstddef>
+#include <utility>
+
+#include <boost/thread/interruption.hpp>
+#include <boost/thread/thread_only.hpp>
 
 using namespace mumble;
 
