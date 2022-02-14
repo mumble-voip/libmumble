@@ -5,9 +5,9 @@
 
 #include "MumbleInit.hpp"
 
-#include "mumble/Client.hpp"
 #include "mumble/Message.hpp"
 #include "mumble/Mumble.hpp"
+#include "mumble/Peer.hpp"
 #include "mumble/Session.hpp"
 #include "mumble/Types.hpp"
 
@@ -80,7 +80,7 @@ int32_t main(const int argc, const char **argv) {
 	const auto peerTcpIP   = toml::find< std::string_view >(peer, "tcpIP");
 	const auto peerTcpPort = toml::find< uint16_t >(peer, "tcpPort");
 
-	Client client;
+	Peer client;
 
 	const auto ret = client.connect({ peerTcpIP, peerTcpPort }, { localTcpIP, localTcpPort });
 	if (ret.first != Code::Success) {

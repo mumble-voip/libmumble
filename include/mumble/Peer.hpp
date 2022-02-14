@@ -3,13 +3,13 @@
 // that can be found in the LICENSE file at the root of the
 // Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-#ifndef MUMBLE_SERVER_HPP
-#define MUMBLE_SERVER_HPP
+#ifndef MUMBLE_PEER_HPP
+#define MUMBLE_PEER_HPP
 
 #include "Session.hpp"
 
 namespace mumble {
-class EXPORT Server {
+class EXPORT Peer {
 public:
 	class P;
 
@@ -37,13 +37,15 @@ public:
 		std::function< void(Endpoint &endpoint, BufRef buf) > encrypted;
 	};
 
-	Server();
-	Server(Server &&server);
-	virtual ~Server();
+	Peer();
+	Peer(Peer &&peer);
+	virtual ~Peer();
 
-	virtual Server &operator=(Server &&server);
+	virtual Peer &operator=(Peer &&peer);
 
 	virtual explicit operator bool() const;
+
+	virtual std::pair< Code, Session::P * > connect(const Endpoint &peerEndpoint, const Endpoint &endpoint = {});
 
 	virtual Code startTCP(const FeedbackTCP &feedback);
 	virtual Code stopTCP();
@@ -60,8 +62,8 @@ public:
 	virtual Code sendUDP(const Endpoint &endpoint, const BufRefConst data);
 
 private:
-	Server(const Server &)  = delete;
-	virtual Server &operator=(const Server &) = delete;
+	Peer(const Peer &)    = delete;
+	virtual Peer &operator=(const Peer &) = delete;
 
 	std::unique_ptr< P > m_p;
 };

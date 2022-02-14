@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file at the root of the
 // Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-#include "Server.hpp"
+#include "Peer.hpp"
 
 #include "Pack.hpp"
 #include "Session.hpp"
@@ -22,29 +22,45 @@
 
 using namespace mumble;
 
-using P = Server::P;
+using P = Peer::P;
 
-EXPORT Server::Server() : m_p(new P) {
+EXPORT Peer::Peer() : m_p(new P) {
 }
 
-EXPORT Server::Server(Server &&server) : m_p(std::exchange(server.m_p, nullptr)) {
+EXPORT Peer::Peer(Peer &&peer) : m_p(std::exchange(peer.m_p, nullptr)) {
 }
 
-EXPORT Server::~Server() {
+EXPORT Peer::~Peer() {
 	stopTCP();
 	stopUDP();
 }
 
-EXPORT Server &Server::operator=(Server &&server) {
-	m_p = std::exchange(server.m_p, nullptr);
+EXPORT Peer &Peer::operator=(Peer &&peer) {
+	m_p = std::exchange(peer.m_p, nullptr);
 	return *this;
 }
 
-EXPORT Server::operator bool() const {
+EXPORT Peer::operator bool() const {
 	return static_cast< bool >(m_p);
 }
 
-EXPORT Code Server::startTCP(const FeedbackTCP &feedback) {
+EXPORT std::pair< Code, Session::P * > Peer::connect(const Endpoint &peerEndpoint, const Endpoint &endpoint) {
+	SocketTCP socket;
+
+	auto code = Socket::osErrorToCode(socket.setEndpoint(endpoint));
+	if (code != Code::Success) {
+		return { code, {} };
+	}
+
+	code = Socket::osErrorToCode(socket.connect(peerEndpoint));
+	if (code != Code::Success) {
+		return { code, {} };
+	}
+
+	return { Code::Success, new Session::P(std::move(socket), m_p->m_socketUDP, false) };
+}
+
+EXPORT Code Peer::startTCP(const FeedbackTCP &feedback) {
 	if (!*this) {
 		return Code::Invalid;
 	}
@@ -60,7 +76,7 @@ EXPORT Code Server::startTCP(const FeedbackTCP &feedback) {
 	return Code::Success;
 }
 
-EXPORT Code Server::stopTCP() {
+EXPORT Code Peer::stopTCP() {
 	if (!*this) {
 		return Code::Invalid;
 	}
@@ -81,7 +97,7 @@ EXPORT Code Server::stopTCP() {
 	return Code::Success;
 }
 
-EXPORT Code Server::startUDP(const FeedbackUDP &feedback) {
+EXPORT Code Peer::startUDP(const FeedbackUDP &feedback) {
 	if (!*this) {
 		return Code::Invalid;
 	}
@@ -97,7 +113,7 @@ EXPORT Code Server::startUDP(const FeedbackUDP &feedback) {
 	return Code::Success;
 }
 
-EXPORT Code Server::stopUDP() {
+EXPORT Code Peer::stopUDP() {
 	if (!*this) {
 		return Code::Invalid;
 	}
@@ -118,7 +134,7 @@ EXPORT Code Server::stopUDP() {
 	return Code::Success;
 }
 
-EXPORT Code Server::bindTCP(Endpoint &endpoint, const bool ipv6Only) {
+EXPORT Code Peer::bindTCP(Endpoint &endpoint, const bool ipv6Only) {
 	if (!*this) {
 		return Code::Invalid;
 	}
@@ -143,7 +159,7 @@ EXPORT Code Server::bindTCP(Endpoint &endpoint, const bool ipv6Only) {
 	return Code::Success;
 }
 
-EXPORT Code Server::unbindTCP() {
+EXPORT Code Peer::unbindTCP() {
 	if (!*this) {
 		return Code::Invalid;
 	}
@@ -157,7 +173,7 @@ EXPORT Code Server::unbindTCP() {
 	return Code::Success;
 }
 
-EXPORT Code Server::bindUDP(Endpoint &endpoint, const bool ipv6Only) {
+EXPORT Code Peer::bindUDP(Endpoint &endpoint, const bool ipv6Only) {
 	if (!*this) {
 		return Code::Invalid;
 	}
@@ -177,7 +193,7 @@ EXPORT Code Server::bindUDP(Endpoint &endpoint, const bool ipv6Only) {
 	return Code::Success;
 }
 
-EXPORT Code Server::unbindUDP() {
+EXPORT Code Peer::unbindUDP() {
 	if (!*this) {
 		return Code::Invalid;
 	}
@@ -191,7 +207,7 @@ EXPORT Code Server::unbindUDP() {
 	return Code::Success;
 }
 
-EXPORT Code Server::sendUDP(const Endpoint &endpoint, const BufRefConst data) {
+EXPORT Code Peer::sendUDP(const Endpoint &endpoint, const BufRefConst data) {
 	return m_p->m_socketUDP->write(endpoint, data);
 }
 

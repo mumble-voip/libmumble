@@ -8,7 +8,7 @@
 
 #include "mumble/Cert.hpp"
 #include "mumble/Key.hpp"
-#include "mumble/Server.hpp"
+#include "mumble/Peer.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -44,7 +44,7 @@ private:
 	std::vector< mumble::Cert > m_certChain;
 	mumble::Key m_certKey;
 
-	mumble::Server m_server;
+	mumble::Peer m_server;
 };
 
 #endif

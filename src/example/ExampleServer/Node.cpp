@@ -59,7 +59,7 @@ Node::operator bool() const {
 }
 
 bool Node::start() {
-	Server::FeedbackUDP feedbackUDP;
+	Peer::FeedbackUDP feedbackUDP;
 
 	feedbackUDP.started = []() { printf("UDP started!\n"); };
 	feedbackUDP.stopped = []() { printf("UDP stopped!\n"); };
@@ -109,11 +109,11 @@ bool Node::start() {
 
 	auto code = m_server.startUDP(feedbackUDP);
 	if (code != Code::Success) {
-		printf("Server::startUDP() failed with error \"%s\"!\n", text(code).data());
+		printf("Peer::startUDP() failed with error \"%s\"!\n", text(code).data());
 		return false;
 	}
 
-	Server::FeedbackTCP feedbackTCP;
+	Peer::FeedbackTCP feedbackTCP;
 
 	feedbackTCP.started = []() { printf("TCP started!\n"); };
 	feedbackTCP.stopped = []() { printf("TCP stopped!\n"); };
@@ -339,7 +339,7 @@ bool Node::start() {
 
 	code = m_server.startTCP(feedbackTCP);
 	if (code != Code::Success) {
-		printf("Server::startTCP() failed with error \"%s\"!\n", text(code).data());
+		printf("Peer::startTCP() failed with error \"%s\"!\n", text(code).data());
 		return false;
 	}
 
