@@ -9,11 +9,11 @@
 #include "User.hpp"
 #include "UserManager.hpp"
 
+#include "mumble/Connection.hpp"
 #include "mumble/Endian.hpp"
 #include "mumble/IP.hpp"
 #include "mumble/Message.hpp"
 #include "mumble/Mumble.hpp"
-#include "mumble/Session.hpp"
 #include "mumble/Types.hpp"
 
 #include <cstddef>
@@ -59,60 +59,14 @@ Node::operator bool() const {
 }
 
 bool Node::start() {
-	Peer::FeedbackUDP feedbackUDP;
-
-	feedbackUDP.started = []() { printf("UDP started!\n"); };
-	feedbackUDP.stopped = []() { printf("UDP stopped!\n"); };
-
-	feedbackUDP.failed = [](const Code code) { printf("UDP failed with error \"%s\"!\n", text(code).data()); };
-
-	feedbackUDP.timeout = []() { return 10000; };
-
-	feedbackUDP.ping = [this](Endpoint &endpoint, Mumble::PingUDP &ping) {
-		ping.versionBlob  = Endian::toNetwork(Mumble::version().blob());
-		ping.sessions     = Endian::toNetwork(m_userManager->num());
-		ping.maxSessions  = Endian::toNetwork(m_userManager->max());
-		ping.maxBandwidth = Endian::toNetwork(m_bandwidth);
-
-		m_server.sendUDP(endpoint, { reinterpret_cast< std::byte * >(&ping), sizeof(ping) });
-	};
-
-	feedbackUDP.encrypted = [this](Endpoint &endpoint, BufRef buf) {
-		auto user = (*m_userManager)[endpoint];
-
-		Buf decrypted(buf.size());
-
-		if (!user) {
-			user = m_userManager->tryDecrypt(decrypted, buf, endpoint);
-			if (user) {
-				printf("[%s]:%u <-> #%u association added to cache!\n", endpoint.ip.text().data(), endpoint.port,
-					   user->id());
-			} else {
-				return;
-			}
-		}
-
-		auto size = user->decrypt(decrypted, buf);
-		if (!size) {
-			return;
-		}
-
-		if (Mumble::packetType(decrypted) == Mumble::TypeUDP::Ping) {
-			size = user->encrypt(buf, { decrypted.data(), size });
-			if (!size) {
-				return;
-			}
-
-			user->send({ endpoint, buf.first(size) });
-		}
-	};
-
-	auto code = m_server.startUDP(feedbackUDP);
-	if (code != Code::Success) {
-		printf("Peer::startUDP() failed with error \"%s\"!\n", text(code).data());
+	if (!startTCP()) {
 		return false;
 	}
 
+	return startUDP();
+}
+
+bool Node::startTCP() {
 	Peer::FeedbackTCP feedbackTCP;
 
 	feedbackTCP.started = []() { printf("TCP started!\n"); };
@@ -122,41 +76,53 @@ bool Node::start() {
 
 	feedbackTCP.timeout = []() { return 10000; };
 
-	feedbackTCP.connection = [this](const Endpoint &endpoint) {
+	feedbackTCP.connection = [this](const Endpoint &endpoint, int32_t fd) {
 		printf("Incoming connection from [%s]:%u\n", endpoint.ip.text().data(), endpoint.port);
-		return !m_userManager->full();
-	};
 
-	feedbackTCP.session = [this](Session::P *p) {
+		if (m_userManager->full()) {
+			return false;
+		}
+
 		const auto id = m_userManager->reserveID();
 		if (!id) {
 			return false;
 		}
 
-		auto user    = std::make_shared< User >(p, id.value());
+		auto user    = std::make_shared< User >(fd, id.value());
 		auto userPtr = std::weak_ptr< User >(user);
 
-		Session::Feedback feedback;
+		Connection::Feedback feedback;
 
-		feedback.opened = [userPtr]() {
+		feedback.opened = [this, userPtr]() {
 			if (const auto user = userPtr.lock()) {
+				m_userManager->add(user);
+
 				printf("[#%u] Created!\n", user->id());
 
-				const auto certChain = user->peerCert();
-				if (!certChain.size()) {
+				const auto certChain = user->connection()->peerCert();
+				if (certChain.size()) {
+					const auto attributes = certChain[0].subjectAttributes();
+					for (const auto &attribute : attributes) {
+						printf("[#%u] %s: %s\n", user->id(), attribute.first.data(), attribute.second.data());
+					}
+				} else {
 					printf("[#%u] Didn't provide a certificate!\n", user->id());
+				}
+
+				const auto code = user->connection()->process();
+				if (code != Code::Success) {
+					printf("[#%u] Connection::process() failed with error \"%s\"!\n", user->id(), text(code).data());
 					return;
 				}
 
-				const auto attributes = certChain[0].subjectAttributes();
-				for (const auto &attribute : attributes) {
-					printf("[#%u] %s: %s\n", user->id(), attribute.first.data(), attribute.second.data());
-				}
+				m_server.addTCP(user->connection());
 			}
 		};
 
 		feedback.closed = [this, userPtr]() {
 			if (auto user = userPtr.lock()) {
+				m_server.delTCP(user->connection());
+
 				const auto id = user->id();
 				user.reset();
 				m_userManager->del(id);
@@ -167,6 +133,8 @@ bool Node::start() {
 
 		feedback.failed = [this, userPtr](const Code code) {
 			if (auto user = userPtr.lock()) {
+				m_server.delTCP(user->connection());
+
 				const auto id = user->id();
 				user.reset();
 				m_userManager->del(id);
@@ -307,8 +275,8 @@ bool Node::start() {
 					stats->fromClient.late = target->late();
 					stats->fromClient.lost = target->lost();
 
-					stats->address      = target->peerEndpoint().ip;
-					stats->certificates = target->peerCert();
+					stats->address      = target->connection()->peerEndpoint().ip;
+					stats->certificates = target->connection()->peerCert();
 					stats->opus         = true;
 
 					user->send(*stats);
@@ -327,19 +295,76 @@ bool Node::start() {
 			}
 		};
 
-		const auto code = user->start(feedback, m_certChain, m_certKey);
-		if (code == Code::Success) {
-			m_userManager->add(user);
-		} else {
-			printf("Session failed to start with error \"%s\"!\n", text(code).data());
+		const auto code = user->connect(feedback, m_certChain, m_certKey);
+		if (code != Code::Success) {
+			return false;
 		}
 
 		return true;
 	};
 
-	code = m_server.startTCP(feedbackTCP);
+	const auto code = m_server.startTCP(feedbackTCP);
 	if (code != Code::Success) {
 		printf("Peer::startTCP() failed with error \"%s\"!\n", text(code).data());
+		return false;
+	}
+
+	return true;
+}
+
+bool Node::startUDP() {
+	Peer::FeedbackUDP feedbackUDP;
+
+	feedbackUDP.started = []() { printf("UDP started!\n"); };
+	feedbackUDP.stopped = []() { printf("UDP stopped!\n"); };
+
+	feedbackUDP.failed = [](const Code code) { printf("UDP failed with error \"%s\"!\n", text(code).data()); };
+
+	feedbackUDP.timeout = []() { return 10000; };
+
+	feedbackUDP.ping = [this](Endpoint &endpoint, Mumble::PingUDP &ping) {
+		ping.versionBlob  = Endian::toNetwork(Mumble::version().blob());
+		ping.sessions     = Endian::toNetwork(m_userManager->num());
+		ping.maxSessions  = Endian::toNetwork(m_userManager->max());
+		ping.maxBandwidth = Endian::toNetwork(m_bandwidth);
+
+		m_server.sendUDP(endpoint, { reinterpret_cast< std::byte * >(&ping), sizeof(ping) });
+	};
+
+	feedbackUDP.encrypted = [this](Endpoint &endpoint, BufRef buf) {
+		auto user = (*m_userManager)[endpoint];
+
+		Buf decrypted(buf.size());
+
+		if (!user) {
+			user = m_userManager->tryDecrypt(decrypted, buf, endpoint);
+			if (user) {
+				printf("[%s]:%u <-> #%u association added to cache!\n", endpoint.ip.text().data(), endpoint.port,
+					   user->id());
+			} else {
+				return;
+			}
+		}
+
+		auto size = user->decrypt(decrypted, buf);
+		if (!size) {
+			user->delEndpoint(endpoint);
+			return;
+		}
+
+		if (Mumble::packetType(decrypted) == Mumble::TypeUDP::Ping) {
+			size = user->encrypt(buf, { decrypted.data(), size });
+			if (!size) {
+				return;
+			}
+
+			m_server.sendUDP(endpoint, buf.first(size));
+		}
+	};
+
+	auto code = m_server.startUDP(feedbackUDP);
+	if (code != Code::Success) {
+		printf("Peer::startUDP() failed with error \"%s\"!\n", text(code).data());
 		return false;
 	}
 

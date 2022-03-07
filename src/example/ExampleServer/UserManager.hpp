@@ -13,16 +13,8 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <shared_mutex>
 #include <unordered_map>
-
-#include <boost/thread/condition_variable.hpp>
-#include <boost/thread/shared_mutex.hpp>
-
-#include <rigtorp/MPMCQueue.h>
-
-namespace boost {
-class thread;
-}
 
 class User;
 
@@ -31,7 +23,6 @@ public:
 	UserManager(const uint32_t max);
 	~UserManager();
 
-	using Buf         = mumble::Buf;
 	using BufRef      = mumble::BufRef;
 	using BufRefConst = mumble::BufRefConst;
 	using UserPtr     = std::shared_ptr< User >;
@@ -55,13 +46,9 @@ private:
 	void thread();
 
 	uint32_t m_minID, m_maxID;
+	std::shared_mutex m_mutex;
 	std::unordered_map< uint32_t, UserPtr > m_users;
 	std::unordered_map< Endpoint, UserPtr > m_endpoints;
-	rigtorp::MPMCQueue< uint32_t > m_usersToDel;
-
-	boost::shared_mutex m_mutex;
-	boost::condition_variable_any m_cond;
-	std::unique_ptr< boost::thread > m_thread;
 };
 
 #endif

@@ -5,8 +5,6 @@
 
 #include "TLS.hpp"
 
-#include "Socket.hpp"
-
 #include "mumble/Cert.hpp"
 #include "mumble/Key.hpp"
 
@@ -17,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+#include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 
@@ -25,12 +24,12 @@ using namespace mumble;
 using Code = SocketTLS::Code;
 
 SocketTLS::SocketTLS(SocketTLS &&socket)
-	: SocketTCP(std::move(socket)), m_server(socket.m_server), m_ssl(std::exchange(socket.m_ssl, nullptr)),
-	  m_sslCtx(std::exchange(socket.m_sslCtx, nullptr)) {
+	: SocketTCP(std::move(socket)), m_ssl(std::exchange(socket.m_ssl, nullptr)),
+	  m_sslCtx(std::exchange(socket.m_sslCtx, nullptr)), m_closed(socket.m_closed.load()) {
 }
 
-SocketTLS::SocketTLS(SocketTCP &&socket, const bool server)
-	: SocketTCP(std::move(socket)), m_server(server), m_ssl(nullptr), m_sslCtx(nullptr) {
+SocketTLS::SocketTLS(const int32_t fd, const bool server)
+	: SocketTCP(fd), m_ssl(nullptr), m_sslCtx(nullptr), m_closed(true) {
 	if (!*static_cast< SocketTCP * >(this)) {
 		return;
 	}
@@ -45,7 +44,7 @@ SocketTLS::SocketTLS(SocketTCP &&socket, const bool server)
 		return;
 	}
 
-	SSL_set_fd(m_ssl, m_handle.fd());
+	SSL_set_fd(m_ssl, m_fd);
 	SSL_set_read_ahead(m_ssl, 1);
 	SSL_set_options(m_ssl, SSL_MODE_ENABLE_PARTIAL_WRITE);
 	SSL_set_verify(m_ssl, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE, verifyCallback);
@@ -63,6 +62,10 @@ SocketTLS::~SocketTLS() {
 
 SocketTLS::operator bool() const {
 	return m_ssl;
+}
+
+bool SocketTLS::isServer() const {
+	return SSL_is_server(m_ssl);
 }
 
 bool SocketTLS::setCert(const Cert::Chain &cert, const Key &key) {
@@ -109,23 +112,44 @@ uint32_t SocketTLS::pending() const {
 }
 
 ::Code SocketTLS::accept() {
-	const int code = SSL_get_error(m_ssl, SSL_accept(m_ssl));
-	return interpretLibCode(code);
+	ERR_clear_error();
+
+	const auto code = interpretLibCode(SSL_accept(m_ssl));
+	if (code == Code::Success) {
+		m_closed = false;
+	}
+
+	return code;
 }
 
 ::Code SocketTLS::connect() {
-	const int code = SSL_get_error(m_ssl, SSL_connect(m_ssl));
-	return interpretLibCode(code);
+	ERR_clear_error();
+
+	const auto code = interpretLibCode(SSL_connect(m_ssl));
+	if (code == Code::Success) {
+		m_closed = false;
+	}
+
+	return code;
 }
 
 ::Code SocketTLS::disconnect() {
-	const int code = SSL_get_error(m_ssl, SSL_shutdown(m_ssl));
-	return interpretLibCode(code);
+	if (m_closed) {
+		return Code::Success;
+	}
+
+	m_closed = true;
+
+	ERR_clear_error();
+
+	return interpretLibCode(SSL_shutdown(m_ssl));
 }
 
 ::Code SocketTLS::read(BufRef &buf) {
+	ERR_clear_error();
+
 	size_t read   = 0;
-	const int ret = SSL_get_error(m_ssl, SSL_read_ex(m_ssl, buf.data(), buf.size(), &read));
+	const int ret = SSL_read_ex(m_ssl, buf.data(), buf.size(), &read);
 
 	buf = buf.subspan(read);
 
@@ -133,20 +157,18 @@ uint32_t SocketTLS::pending() const {
 }
 
 ::Code SocketTLS::write(BufRefConst &buf) {
+	ERR_clear_error();
+
 	size_t written = 0;
-	const int ret  = SSL_get_error(m_ssl, SSL_write_ex(m_ssl, buf.data(), buf.size(), &written));
+	const int ret  = SSL_write_ex(m_ssl, buf.data(), buf.size(), &written);
 
 	buf = buf.subspan(written);
 
 	return interpretLibCode(ret, written, buf.size());
 }
 
-int SocketTLS::verifyCallback(int, X509_STORE_CTX *) {
-	return 1;
-}
-
 constexpr ::Code SocketTLS::interpretLibCode(const int code, const bool processed, const bool remaining) {
-	switch (code) {
+	switch (SSL_get_error(m_ssl, code)) {
 		case SSL_ERROR_NONE:
 			if (processed) {
 				return remaining ? Retry : Success;
@@ -160,6 +182,8 @@ constexpr ::Code SocketTLS::interpretLibCode(const int code, const bool processe
 		case SSL_ERROR_WANT_WRITE:
 			return WaitOut;
 		case SSL_ERROR_SYSCALL:
+			m_closed = true;
+
 			if (!processed) {
 				return Shutdown;
 			}
@@ -169,3 +193,7 @@ constexpr ::Code SocketTLS::interpretLibCode(const int code, const bool processe
 
 	return Unknown;
 };
+
+int SocketTLS::verifyCallback(int, X509_STORE_CTX *) {
+	return 1;
+}

@@ -24,6 +24,7 @@ set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 if(WIN32)
 	add_definitions(
 		"-DOS_WINDOWS"
+		"-DNOMINMAX"
 		"-DWIN32_LEAN_AND_MEAN"
 		"-D_CRT_SECURE_NO_WARNINGS"
 		"-DEXPORT=__declspec(dllexport)"
@@ -50,7 +51,9 @@ if(MSVC)
 	)
 endif()
 
-add_subdirectory("${3RDPARTY_DIR}/MPMCQueue")
+set(QUICKPOOL_TEST OFF)
+
+add_subdirectory("${3RDPARTY_DIR}/quickpool")
 add_subdirectory("${3RDPARTY_DIR}/toml11")
 
 add_subdirectory(src)

@@ -7,193 +7,251 @@
 
 #include "Pack.hpp"
 
+#include "mumble/Key.hpp"
 #include "mumble/Message.hpp"
 
 #include <cstddef>
+#include <memory>
 #include <utility>
-
-#include <boost/thread/interruption.hpp>
-#include <boost/thread/thread_only.hpp>
 
 using namespace mumble;
 
-Connection::Connection(SocketTLS &&socket) : SocketTLS(std::move(socket)) {
-	setBlocking(false);
+using Feedback = Connection::Feedback;
+using P        = Connection::P;
+using UniqueP  = Connection::UniqueP;
+
+EXPORT Connection::Connection(Connection &&connection) : m_p(std::exchange(connection.m_p, nullptr)) {
 }
 
-Connection::~Connection() {
-	stop();
+EXPORT Connection::Connection(const int32_t fd, const bool server) : m_p(std::make_unique< P >(SocketTLS(fd, server))) {
 }
 
-void Connection::start(const Feedback &feedback) {
-	m_feedback = feedback;
+EXPORT Connection::~Connection() = default;
 
-	m_timeouts = 0;
-
-	m_thread = std::make_unique< boost::thread >(&Connection::thread, this);
+EXPORT Connection::operator bool() const {
+	return m_p && *m_p;
 }
 
-void Connection::stop() {
-	m_thread->interrupt();
-
-	trigger();
-
-	if (m_thread->joinable()) {
-		m_thread->join();
-	}
-}
-
-mumble::Code Connection::handleCode(const Code code) {
-	using Code = mumble::Code;
-	using TLS  = SocketTLS::Code;
-
-	switch (code) {
-		case TLS::Memory:
-			m_feedback.failed(Code::Memory);
-			return Code::Memory;
-		case TLS::Failure:
-			m_feedback.failed(Code::Failure);
-			return Code::Failure;
-		case TLS::Unknown:
-			break;
-		case TLS::Success:
-			m_timeouts = 0;
-			return Code::Success;
-		case TLS::Retry:
-			return Code::Retry;
-		case TLS::Shutdown:
-			m_feedback.closed();
-			return Code::Disconnect;
-		case TLS::WaitIn:
-		case TLS::WaitOut: {
-			const auto state = wait(code == TLS::WaitIn, code == TLS::WaitOut, m_feedback.timeout());
-			return handleState(state);
-		}
-	}
-
-	return Code::Unknown;
-}
-
-mumble::Code Connection::handleState(const State state) {
-	using Code = mumble::Code;
-
-	if (state & Socket::InReady || state & Socket::OutReady) {
-		return Code::Retry;
-	}
-
-	if (state & Socket::Triggered) {
-		return Code::Retry;
-	}
-
-	if (state & Socket::Timeout) {
-		if (++m_timeouts < m_feedback.timeouts()) {
-			return Code::Retry;
-		}
-
-		m_feedback.failed(Code::Timeout);
-		return Code::Timeout;
-	}
-
-	if (state & Socket::Disconnected) {
-		m_feedback.closed();
-		return Code::Disconnect;
-	}
-
-	if (state & Socket::Error) {
-		m_feedback.failed(Code::Failure);
+EXPORT Code Connection::operator()(const Feedback &feedback, const std::function< bool() > halt) {
+	if (!m_p->m_monitorIn.add(m_p->m_fd, true, false) || !m_p->m_monitorOut.add(m_p->m_fd, false, true)) {
 		return Code::Failure;
 	}
 
+	m_p->m_feedback = feedback;
+
+	while (!halt()) {
+		const auto code = m_p->handleCode(m_p->isServer() ? m_p->accept() : m_p->connect(), true);
+		switch (code) {
+			case Code::Success:
+				m_p->m_closed.clear();
+				m_p->m_feedback.opened();
+			default:
+				return code;
+			case Code::Retry:
+				continue;
+		}
+	}
+
+	return Code::Cancel;
+}
+
+EXPORT const UniqueP &Connection::p() const {
+	return m_p;
+}
+
+EXPORT int32_t Connection::fd() const {
+	return m_p->fd();
+}
+
+EXPORT Endpoint Connection::endpoint() const {
+	Endpoint endpoint;
+	m_p->getEndpoint(endpoint);
+	return endpoint;
+}
+
+EXPORT Endpoint Connection::peerEndpoint() const {
+	Endpoint endpoint;
+	m_p->getPeerEndpoint(endpoint);
+	return endpoint;
+}
+
+EXPORT const Cert::Chain &Connection::cert() const {
+	return m_p->m_cert;
+}
+
+EXPORT Cert::Chain Connection::peerCert() const {
+	return m_p->peerCert();
+}
+
+EXPORT bool Connection::setCert(const Cert::Chain &cert, const Key &key) {
+	return m_p->setCert(cert, key);
+}
+
+EXPORT Code Connection::process(const bool wait, const std::function< bool() > halt) {
+	do {
+		Pack::NetHeader header;
+		auto code = m_p->read({ reinterpret_cast< std::byte * >(&header), sizeof(header) }, wait, halt);
+		if (code != Code::Success) {
+			return code;
+		}
+
+		Pack pack(header);
+		if (pack.type() == Message::Type::Unknown) {
+			if (!m_p->m_closed.test_and_set()) {
+				m_p->m_feedback.failed(Code::Invalid);
+			}
+
+			return Code::Invalid;
+		}
+
+		code = m_p->read(pack.data(), wait, halt);
+		if (code != Code::Success) {
+			return code;
+		}
+
+		m_p->m_feedback.message(pack.process());
+	} while (m_p->pending() >= sizeof(Pack::NetHeader));
+
+	return Code::Success;
+}
+
+EXPORT Code Connection::write(const Message &message, const bool wait, const std::function< bool() > halt) {
+	const Pack pack(message);
+	return m_p->write(pack.buf(), wait, halt);
+}
+
+P::P(SocketTLS &&socket) : SocketTLS(std::move(socket)) {
+	m_closed.test_and_set();
+
+	setBlocking(false);
+}
+
+P::~P() {
+	disconnect();
+}
+
+P::operator bool() const {
+	return SocketTLS::operator bool() && m_monitorIn && m_monitorOut;
+}
+
+Code P::read(BufRef buf, const bool wait, const std::function< bool() > halt) {
+	using Code = mumble::Code;
+
+	while (!halt()) {
+		const auto code = handleCode(SocketTLS::read(buf), wait);
+		if (code == Code::Retry) {
+			continue;
+		} else {
+			return code;
+		}
+	}
+
+	return Code::Cancel;
+}
+
+Code P::write(BufRefConst buf, const bool wait, const std::function< bool() > halt) {
+	using Code = mumble::Code;
+
+	while (!halt()) {
+		const auto code = handleCode(SocketTLS::write(buf), wait);
+		if (code == Code::Retry) {
+			continue;
+		} else {
+			return code;
+		}
+	}
+
+	return Code::Cancel;
+}
+
+Code P::handleCode(const Code code, const bool wait) {
+	using Code = mumble::Code;
+
+	auto ret = P::interpretTLSCode(code);
+	if (ret == Code::Busy && wait) {
+		ret = handleWait(code == WaitIn ? m_monitorIn : m_monitorOut);
+
+		if (ret == Code::Timeout && ++m_timeouts < m_feedback.timeouts()) {
+			ret = Code::Retry;
+		}
+	}
+
+	switch (ret) {
+		case Code::Disconnect:
+			if (!m_closed.test_and_set()) {
+				m_feedback.closed();
+			}
+		case Code::Success:
+			m_timeouts = 0;
+		case Code::Retry:
+		case Code::Busy:
+			break;
+		default:
+			if (!m_closed.test_and_set()) {
+				m_feedback.failed(ret);
+			}
+	}
+
+	return ret;
+}
+
+Code P::handleWait(Monitor &monitor) {
+	using Code = mumble::Code;
+
+	Monitor::Event event;
+	if (!monitor.wait({ &event, 1 }, m_feedback.timeout ? m_feedback.timeout() : infinite32)) {
+		return Code::Timeout;
+	}
+
+	return handleState(event.state);
+}
+
+mumble::Code P::handleState(const State state) {
+	using Code = mumble::Code;
+
+	if (state & State::Disconnected) {
+		if (!m_closed.test_and_set()) {
+			m_feedback.closed();
+		}
+
+		return Code::Disconnect;
+	}
+
+	if (state & State::Error) {
+		if (!m_closed.test_and_set()) {
+			m_feedback.failed(Code::Failure);
+		}
+
+		return Code::Failure;
+	}
+
+	if (state & State::Triggered || state & State::InReady || state & State::OutReady) {
+		return Code::Retry;
+	}
+
 	return Code::Unknown;
 }
 
-mumble::Code Connection::read(BufRef buf) {
+constexpr mumble::Code P::interpretTLSCode(const Code code) {
 	using Code = mumble::Code;
 
-	while (!m_thread->interruption_requested()) {
-		const auto code = handleCode(SocketTLS::read(buf));
-		if (code == Code::Retry) {
-			continue;
-		} else {
-			return code;
-		}
-	}
-
-	return Code::Cancel;
-}
-
-mumble::Code Connection::write(BufRefConst buf, const std::atomic_bool &halt) {
-	using Code = mumble::Code;
-
-	while (!halt && !m_thread->interruption_requested()) {
-		const auto code = handleCode(SocketTLS::write(buf));
-		if (code == Code::Retry) {
-			continue;
-		} else {
-			return code;
-		}
-	}
-
-	return Code::Cancel;
-}
-
-void Connection::thread() {
-	using Code       = mumble::Code;
-	namespace Thread = boost::this_thread;
-
-	while (!Thread::interruption_requested()) {
-		const auto code = handleCode(m_server ? accept() : connect());
-		if (code == Code::Success) {
+	switch (code) {
+		case Memory:
+			return Code::Memory;
+		case Failure:
+			return Code::Failure;
+		case Unknown:
 			break;
-		}
-
-		if (code == Code::Retry) {
-			continue;
-		}
-
-		return;
+		case Success:
+			return Code::Success;
+		case Retry:
+			return Code::Retry;
+		case Shutdown:
+			return Code::Disconnect;
+		case WaitIn:
+		case WaitOut:
+			return Code::Busy;
 	}
 
-	if (Thread::interruption_requested()) {
-		return;
-	}
-
-	m_feedback.opened();
-
-	auto state = Socket::InReady;
-
-	while (!Thread::interruption_requested()) {
-		switch (handleState(state)) {
-			case Code::Success:
-			case Code::Retry:
-				do {
-					Pack::NetHeader header;
-					if (read({ reinterpret_cast< std::byte * >(&header), sizeof(header) }) != Code::Success) {
-						return;
-					}
-
-					Pack pack(header);
-					if (pack.type() == Message::Type::Unknown) {
-						m_feedback.failed(Code::Invalid);
-						return;
-					}
-
-					if (read(pack.data()) != Code::Success) {
-						return;
-					}
-
-					m_feedback.message(pack);
-				} while (pending() >= sizeof(Pack::NetHeader));
-
-				break;
-			default:
-				return;
-		}
-
-		state = wait(true, false, m_feedback.timeout());
-	}
-
-	disconnect();
-
-	m_feedback.closed();
+	return Code::Unknown;
 }

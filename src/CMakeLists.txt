@@ -3,6 +3,8 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
+include(CheckSymbolExists)
+
 find_package(Boost REQUIRED
 	COMPONENTS
 		thread
@@ -29,10 +31,21 @@ set_target_properties(mumble
 		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
 )
 
+if(WIN32)
+	target_compile_definitions(mumble PRIVATE "HAVE_WEPOLL")
+else()
+	check_symbol_exists("epoll_create" "sys/epoll.h" HAVE_EPOLL)
+	if(HAVE_EPOLL)
+		target_compile_definitions(mumble PRIVATE "HAVE_EPOLL")
+	endif()
+endif()
+
 target_include_directories(mumble
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}
 		${Opus_INCLUDE_DIRS}
+
+		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll>
 	PUBLIC
 		${INCLUDE_DIR}
 )
@@ -55,6 +68,8 @@ target_sources(mumble
 		"IP.cpp"
 		"Key.cpp"
 		"Key.hpp"
+		"Monitor.cpp"
+		"Monitor.hpp"
 		"Mumble.cpp"
 		"Opus.cpp"
 		"Opus.hpp"
@@ -62,8 +77,6 @@ target_sources(mumble
 		"Pack.hpp"
 		"Peer.cpp"
 		"Peer.hpp"
-		"Session.cpp"
-		"Session.hpp"
 		"Socket.cpp"
 		"Socket.hpp"
 		"TCP.cpp"
@@ -75,9 +88,13 @@ target_sources(mumble
 
 		${PROTO_CPP}
 		${PROTO_HPP}
+
+		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll/wepoll.c>
+		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll/wepoll.h>
 	PUBLIC
 		"${INCLUDE_DIR}/mumble/Base64.hpp"
 		"${INCLUDE_DIR}/mumble/Cert.hpp"
+		"${INCLUDE_DIR}/mumble/Connection.hpp"
 		"${INCLUDE_DIR}/mumble/Crypt.hpp"
 		"${INCLUDE_DIR}/mumble/CryptOCB2.hpp"
 		"${INCLUDE_DIR}/mumble/Endian.hpp"
@@ -89,17 +106,16 @@ target_sources(mumble
 		"${INCLUDE_DIR}/mumble/Mumble.hpp"
 		"${INCLUDE_DIR}/mumble/Opus.hpp"
 		"${INCLUDE_DIR}/mumble/Peer.hpp"
-		"${INCLUDE_DIR}/mumble/Session.hpp"
 		"${INCLUDE_DIR}/mumble/Types.hpp"
 )
 
 target_link_libraries(mumble
 	PRIVATE
 		Boost::thread
-		MPMCQueue
 		OpenSSL::Crypto
 		OpenSSL::SSL
 		protobuf::libprotobuf
+		quickpool
 
 		${Opus_LINK_LIBRARIES}
 		$<TARGET_NAME_IF_EXISTS:Opus::opus>

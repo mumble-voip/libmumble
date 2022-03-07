@@ -5,20 +5,25 @@
 
 #include "Peer.hpp"
 
+#include "Connection.hpp"
 #include "Pack.hpp"
-#include "Session.hpp"
 #include "Socket.hpp"
 #include "TCP.hpp"
 #include "UDP.hpp"
 
+#include "mumble/Connection.hpp"
 #include "mumble/Mumble.hpp"
-#include "mumble/Session.hpp"
 #include "mumble/Types.hpp"
 
 #include <functional>
+#include <mutex>
 #include <utility>
+#include <vector>
 
+#include <boost/core/span.hpp>
 #include <boost/thread/thread_only.hpp>
+
+#include <quickpool.hpp>
 
 using namespace mumble;
 
@@ -44,7 +49,7 @@ EXPORT Peer::operator bool() const {
 	return static_cast< bool >(m_p);
 }
 
-EXPORT std::pair< Code, Session::P * > Peer::connect(const Endpoint &peerEndpoint, const Endpoint &endpoint) {
+EXPORT std::pair< Code, int32_t > Peer::connect(const Endpoint &peerEndpoint, const Endpoint &endpoint) {
 	SocketTCP socket;
 
 	auto code = Socket::osErrorToCode(socket.setEndpoint(endpoint));
@@ -57,252 +62,296 @@ EXPORT std::pair< Code, Session::P * > Peer::connect(const Endpoint &peerEndpoin
 		return { code, {} };
 	}
 
-	return { Code::Success, new Session::P(std::move(socket), m_p->m_socketUDP, false) };
+	return { Code::Success, socket.stealFD() };
 }
 
-EXPORT Code Peer::startTCP(const FeedbackTCP &feedback) {
-	if (!*this) {
-		return Code::Invalid;
-	}
-
-	if (!m_p->m_socketTCP) {
-		return Code::Init;
-	}
-
-	m_p->m_feedbackTCP = feedback;
-
-	m_p->m_threadTCP = std::make_unique< boost::thread >(&P::tcpThread, m_p.get());
-
-	return Code::Success;
+EXPORT Code Peer::startTCP(const FeedbackTCP &feedback, const uint32_t threads) {
+	return m_p->m_tcp.start(feedback, threads);
 }
 
 EXPORT Code Peer::stopTCP() {
-	if (!*this) {
-		return Code::Invalid;
-	}
-
-	if (!m_p->m_threadTCP) {
-		return Code::Success;
-	}
-
-	m_p->m_threadTCP->interrupt();
-	m_p->m_socketTCP->trigger();
-
-	if (m_p->m_threadTCP->joinable()) {
-		m_p->m_threadTCP->join();
-	}
-
-	m_p->m_threadTCP.reset();
-
-	return Code::Success;
+	return m_p->m_tcp.stop();
 }
 
 EXPORT Code Peer::startUDP(const FeedbackUDP &feedback) {
-	if (!*this) {
-		return Code::Invalid;
-	}
-
-	if (!m_p->m_socketUDP) {
-		return Code::Init;
-	}
-
-	m_p->m_feedbackUDP = feedback;
-
-	m_p->m_threadUDP = std::make_unique< boost::thread >(&P::udpThread, m_p.get());
-
-	return Code::Success;
+	return m_p->m_udp.start(feedback);
 }
 
 EXPORT Code Peer::stopUDP() {
-	if (!*this) {
-		return Code::Invalid;
-	}
-
-	if (!m_p->m_threadUDP) {
-		return Code::Success;
-	}
-
-	m_p->m_threadUDP->interrupt();
-	m_p->m_socketUDP->trigger();
-
-	if (m_p->m_threadUDP->joinable()) {
-		m_p->m_threadUDP->join();
-	}
-
-	m_p->m_threadUDP.reset();
-
-	return Code::Success;
+	return m_p->m_udp.stop();
 }
 
 EXPORT Code Peer::bindTCP(Endpoint &endpoint, const bool ipv6Only) {
-	if (!*this) {
-		return Code::Invalid;
-	}
-
-	m_p->m_socketTCP = std::make_unique< SocketTCP >();
-	if (!*m_p->m_socketTCP) {
-		return Code::Open;
-	}
-
-	m_p->m_socketTCP->setBlocking(false);
-
-	auto ret = m_p->m_socketTCP->setEndpoint(endpoint, ipv6Only);
-	if (ret != 0) {
-		return Socket::osErrorToCode(ret);
-	}
-
-	ret = m_p->m_socketTCP->listen();
-	if (ret != 0) {
-		return Socket::osErrorToCode(ret);
-	}
-
-	return Code::Success;
+	return m_p->m_tcp.bind(endpoint, ipv6Only);
 }
 
 EXPORT Code Peer::unbindTCP() {
-	if (!*this) {
-		return Code::Invalid;
-	}
-
-	if (m_p->m_threadTCP) {
-		return Code::Busy;
-	}
-
-	m_p->m_socketTCP.reset();
-
-	return Code::Success;
+	return m_p->m_tcp.unbind();
 }
 
 EXPORT Code Peer::bindUDP(Endpoint &endpoint, const bool ipv6Only) {
-	if (!*this) {
-		return Code::Invalid;
-	}
+	return m_p->m_udp.bind(endpoint, ipv6Only);
+}
 
-	m_p->m_socketUDP = std::make_unique< SocketUDP >();
-	if (!*m_p->m_socketUDP) {
-		return Code::Open;
-	}
+EXPORT Code Peer::unbindUDP() {
+	return m_p->m_udp.unbind();
+}
 
-	m_p->m_socketUDP->setBlocking(false);
+EXPORT Code Peer::addTCP(const SharedConnection &connection) {
+	auto &tcp = m_p->m_tcp;
 
-	const auto ret = m_p->m_socketUDP->setEndpoint(endpoint, ipv6Only);
-	if (ret != 0) {
-		return Socket::osErrorToCode(ret);
-	}
+	std::unique_lock< std::shared_mutex > lock(tcp.m_mutex);
+
+	tcp.m_connections[connection->fd()] = connection;
+	tcp.m_monitor.add(connection->fd(), true, false);
 
 	return Code::Success;
 }
 
-EXPORT Code Peer::unbindUDP() {
-	if (!*this) {
-		return Code::Invalid;
-	}
+EXPORT Code Peer::delTCP(const SharedConnection &connection) {
+	auto &tcp = m_p->m_tcp;
 
-	if (m_p->m_threadUDP) {
-		return Code::Busy;
-	}
+	std::unique_lock< std::shared_mutex > lock(tcp.m_mutex);
 
-	m_p->m_socketUDP.reset();
+	tcp.m_monitor.del(connection->fd());
+	tcp.m_connections.extract(connection->fd());
 
 	return Code::Success;
 }
 
 EXPORT Code Peer::sendUDP(const Endpoint &endpoint, const BufRefConst data) {
-	return m_p->m_socketUDP->write(endpoint, data);
-}
-
-void P::tcpThread() {
-	if (m_feedbackTCP.started) {
-		m_feedbackTCP.started();
+	if (!m_p->m_udp.m_socket) {
+		return Code::Init;
 	}
 
-	auto state = Socket::InReady;
+	return m_p->m_udp.m_socket->write(endpoint, data);
+}
 
-	while (!m_threadTCP->interruption_requested()) {
-		while (state & Socket::InReady) {
-			Endpoint endpoint;
-			const auto ret = m_socketTCP->accept(endpoint);
+template< typename Feedback, typename Socket > Code P::Proto< Feedback, Socket >::stop() {
+	if (!m_thread) {
+		return Code::Success;
+	}
 
-			const auto code = Socket::osErrorToCode(ret.first);
-			switch (code) {
-				case Code::Success: {
-					if (!m_feedbackTCP.connection) {
-						continue;
-					}
+	m_halt = true;
+	m_monitor.trigger();
+	m_thread->join();
 
-					if (!m_feedbackTCP.connection(endpoint) || !m_feedbackTCP.session) {
-						continue;
-					}
+	return Code::Success;
+}
 
-					const auto p = new Session::P(std::move(*ret.second), m_socketUDP, true);
-					if (!m_feedbackTCP.session(p)) {
-						delete p;
-					}
+template< typename Feedback, typename Socket >
+Code P::Proto< Feedback, Socket >::bind(Endpoint &endpoint, const bool ipv6Only) {
+	if (m_thread) {
+		return Code::Busy;
+	}
 
-					break;
-				}
-				case Code::Timeout:
-				case Code::Cancel:
-				case Code::Retry:
-				case Code::Busy:
-				case Code::Disconnect:
-					state = Socket::Timeout;
-					break;
-				default:
-					m_feedbackTCP.failed(code);
+	m_socket = std::make_unique< Socket >();
+	if (!*m_socket) {
+		return Code::Open;
+	}
+
+	if (!m_monitor.add(m_socket->fd(), true, false)) {
+		return Code::Failure;
+	}
+
+	m_socket->setBlocking(false);
+
+	auto ret = m_socket->setEndpoint(endpoint, ipv6Only);
+	if (ret != 0) {
+		return Socket::osErrorToCode(ret);
+	}
+
+	return Code::Success;
+}
+
+template< typename Feedback, typename Socket > Code P::Proto< Feedback, Socket >::unbind() {
+	if (m_thread) {
+		return Code::Busy;
+	}
+
+	m_socket.reset();
+
+	return Code::Success;
+}
+
+Code P::TCP::start(const FeedbackTCP &feedback, const uint32_t threads) {
+	if (m_thread) {
+		return Code::Busy;
+	}
+
+	m_feedback = feedback;
+	m_thread   = std::make_unique< boost::thread >(&TCP::threadFunc, this, threads);
+
+	return Code::Success;
+}
+
+Code P::UDP::start(const FeedbackUDP &feedback) {
+	if (m_thread) {
+		return Code::Busy;
+	}
+
+	if (!m_socket) {
+		return Code::Init;
+	}
+
+	m_feedback = feedback;
+	m_thread   = std::make_unique< boost::thread >(&UDP::threadFunc, this);
+
+	return Code::Success;
+}
+
+Code P::TCP::bind(Endpoint &endpoint, const bool ipv6Only) {
+	const Code code = Proto::bind(endpoint, ipv6Only);
+	if (code != Code::Success) {
+		return code;
+	}
+
+	const auto ret = m_socket->listen();
+	if (ret != 0) {
+		return Socket::osErrorToCode(ret);
+	}
+
+	return Code::Success;
+}
+
+void P::TCP::threadFunc(const uint32_t threads) {
+	using Event = Monitor::Event;
+	using Pool  = quickpool::ThreadPool;
+
+	if (m_feedback.started) {
+		m_feedback.started();
+	}
+
+	std::unique_ptr< Pool > pool;
+	pool = threads ? std::make_unique< Pool >(threads) : std::make_unique< Pool >();
+
+	std::vector< Event > events(m_monitor.num());
+
+	uint32_t num = 0;
+
+	while (!m_halt) {
+		boost::span< Event > ref(events.data(), num);
+		pool->parallel_for_each(ref, [this](Event &event) {
+			if (m_socket && event.fd == m_socket->fd()) {
+				if (event.state & Event::Error) {
+					m_feedback.failed(Code::Failure);
 					return;
+				}
+
+				while (event.state & Event::InReady) {
+					Endpoint endpoint;
+					const auto ret = m_socket->accept(endpoint);
+
+					const auto code = Socket::osErrorToCode(ret.first);
+					switch (code) {
+						case Code::Success: {
+							if (!m_feedback.connection || !m_feedback.connection(endpoint, ret.second)) {
+								Socket::close(ret.second);
+							}
+
+							break;
+						}
+						default:
+							m_feedback.failed(code);
+						case Code::Timeout:
+						case Code::Cancel:
+						case Code::Retry:
+						case Code::Busy:
+						case Code::Disconnect:
+							event.state = Event::None;
+					}
+				}
+			} else {
+				SharedConnection connection;
+
+				{
+					std::shared_lock< std::shared_mutex > lock(m_mutex);
+
+					const auto iter = m_connections.find(event.fd);
+					if (iter != m_connections.cend()) {
+						connection = iter->second;
+					} else {
+						return;
+					}
+				}
+
+				if (event.state & Event::Disconnected || event.state & Event::Error) {
+					connection->p()->handleState(event.state);
+					return;
+				}
+
+				while (event.state & Event::InReady) {
+					const auto code = connection->process(false, [this]() { return m_halt.load(); });
+					switch (code) {
+						case Code::Success:
+							break;
+						default:
+							event.state = Event::None;
+					}
+				}
 			}
+		});
+
+		if (events.size() != m_monitor.num()) {
+			events.resize(m_monitor.num());
 		}
 
-		state = m_socketTCP->wait(true, false, m_feedbackTCP.timeout ? m_feedbackTCP.timeout() : infinite32);
+		num = m_monitor.wait(events, m_feedback.timeout ? m_feedback.timeout() : infinite32);
 	}
 
-	if (m_feedbackTCP.stopped) {
-		m_feedbackTCP.stopped();
+	if (m_feedback.stopped) {
+		m_feedback.stopped();
 	}
 }
 
-void P::udpThread() {
-	if (m_feedbackUDP.started) {
-		m_feedbackUDP.started();
+void P::UDP::threadFunc() {
+	using Event = Monitor::Event;
+
+	if (m_feedback.started) {
+		m_feedback.started();
 	}
 
 	FixedBuf< 1024 > buf;
 
-	auto state = Socket::InReady;
+	Event event(m_socket->fd());
 
-	while (!m_threadUDP->interruption_requested()) {
-		while (state & Socket::InReady) {
+	while (!m_halt) {
+		if (event.state & Event::Error) {
+			m_feedback.failed(Code::Failure);
+			return;
+		}
+
+		while (event.state & Event::InReady) {
 			Endpoint endpoint;
 			BufRef bufRef(buf);
 
-			const auto code = m_socketUDP->read(endpoint, bufRef);
+			const auto code = m_socket->read(endpoint, bufRef);
 			switch (code) {
 				case Code::Success:
 					if (Pack::isPingUDP(bufRef)) {
-						if (m_feedbackUDP.ping) {
-							m_feedbackUDP.ping(endpoint, *reinterpret_cast< Mumble::PingUDP * >(bufRef.data()));
+						if (m_feedback.ping) {
+							m_feedback.ping(endpoint, *reinterpret_cast< Mumble::PingUDP * >(bufRef.data()));
 						}
-					} else if (m_feedbackUDP.encrypted) {
-						m_feedbackUDP.encrypted(endpoint, bufRef);
+					} else if (m_feedback.encrypted) {
+						m_feedback.encrypted(endpoint, bufRef);
 					}
 
 					continue;
 				case Code::Timeout:
 				case Code::Retry:
 				case Code::Busy:
-					state = Socket::Timeout;
+					event.state = Event::None;
 					continue;
 				default:
-					m_feedbackUDP.failed(code);
+					m_feedback.failed(code);
 					return;
 			}
 		}
 
-		state = m_socketUDP->wait(true, false, m_feedbackUDP.timeout ? m_feedbackUDP.timeout() : infinite32);
+		m_monitor.wait({ &event, 1 }, m_feedback.timeout ? m_feedback.timeout() : infinite32);
 	}
 
-	if (m_feedbackUDP.stopped) {
-		m_feedbackUDP.stopped();
+	if (m_feedback.stopped) {
+		m_feedback.stopped();
 	}
 }

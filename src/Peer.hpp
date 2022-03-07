@@ -8,7 +8,15 @@
 
 #include "mumble/Peer.hpp"
 
+#include "mumble/Types.hpp"
+
+#include "Monitor.hpp"
+
+#include <atomic>
+#include <cstdint>
 #include <memory>
+#include <shared_mutex>
+#include <unordered_map>
 
 namespace boost {
 class thread;
@@ -26,19 +34,44 @@ public:
 	~P() = default;
 
 private:
+	template< typename Feedback, typename Socket > struct Proto {
+		Proto() : m_halt(false) {}
+
+		Code stop();
+
+		Code bind(Endpoint &endpoint, const bool ipv6Only);
+		Code unbind();
+
+		Feedback m_feedback;
+
+		std::atomic_bool m_halt;
+		Monitor m_monitor;
+		std::unique_ptr< Socket > m_socket;
+		std::unique_ptr< boost::thread > m_thread;
+	};
+
+	struct TCP : Proto< FeedbackTCP, SocketTCP > {
+		Code start(const FeedbackTCP &feedback, const uint32_t threads);
+
+		Code bind(Endpoint &endpoint, const bool ipv6Only);
+
+		void threadFunc(const uint32_t threads);
+
+		std::shared_mutex m_mutex;
+		std::unordered_map< int32_t, SharedConnection > m_connections;
+	};
+
+	struct UDP : Proto< FeedbackUDP, SocketUDP > {
+		Code start(const FeedbackUDP &feedback);
+
+		void threadFunc();
+	};
+
 	P(const P &) = delete;
 	P &operator=(const P &) = delete;
 
-	void tcpThread();
-	void udpThread();
-
-	FeedbackTCP m_feedbackTCP;
-	FeedbackUDP m_feedbackUDP;
-
-	std::unique_ptr< SocketTCP > m_socketTCP;
-	std::shared_ptr< SocketUDP > m_socketUDP;
-	std::unique_ptr< boost::thread > m_threadTCP;
-	std::unique_ptr< boost::thread > m_threadUDP;
+	TCP m_tcp;
+	UDP m_udp;
 };
 } // namespace mumble
 

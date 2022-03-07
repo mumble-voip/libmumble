@@ -8,29 +8,32 @@
 
 #include "Endpoints.hpp"
 
+#include "mumble/Cert.hpp"
+#include "mumble/Connection.hpp"
 #include "mumble/CryptOCB2.hpp"
-#include "mumble/Session.hpp"
 #include "mumble/Types.hpp"
 
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <utility>
 #include <vector>
 
-#include <boost/thread/thread_only.hpp>
-
-#include <rigtorp/MPMCQueue.h>
-
 namespace mumble {
+class Key;
 class Message;
-}
+} // namespace mumble
 
-class User : public mumble::Session {
+class User {
 public:
-	using Buf         = mumble::Buf;
 	using BufRef      = mumble::BufRef;
 	using BufRefConst = mumble::BufRefConst;
+	using Cert        = mumble::Cert;
+	using Code        = mumble::Code;
+	using Connection  = mumble::Connection;
+	using CryptOCB2   = mumble::CryptOCB2;
+	using Key         = mumble::Key;
 
 	struct Packet {
 		mumble::Endpoint endpoint;
@@ -51,10 +54,12 @@ public:
 		}
 	};
 
-	User(P *p, const uint32_t id);
+	User(const int32_t fd, const uint32_t id);
 	virtual ~User();
 
 	uint32_t id() const;
+
+	const std::shared_ptr< Connection > &connection() const;
 
 	bool cryptOK() const;
 
@@ -74,26 +79,23 @@ public:
 	void addEndpoint(const Endpoint &endpoint);
 	void delEndpoint(const Endpoint &endpoint);
 
+	Code connect(const Connection::Feedback &feedback, const Cert::Chain &cert, const Key &key);
+
 	void send(const mumble::Message &message);
-	void send(const Packet &packet);
 
 private:
-	void thread();
-
 	uint32_t m_id;
 	bool m_cryptOK;
 	uint32_t m_good;
 	uint32_t m_late;
 	uint32_t m_lost;
 	Endpoints m_endpoints;
-	rigtorp::MPMCQueue< Packet > m_packets;
-	boost::condition_variable m_cond;
-	boost::thread m_thread;
-	mumble::CryptOCB2 m_decrypt;
-	mumble::CryptOCB2 m_encrypt;
+	CryptOCB2 m_decrypt;
+	CryptOCB2 m_encrypt;
 	std::vector< std::byte > m_decryptNonce;
 	std::vector< std::byte > m_encryptNonce;
 	std::array< uint8_t, UINT8_MAX + 1 > m_decryptHistory;
+	std::shared_ptr< Connection > m_connection;
 };
 
 #endif

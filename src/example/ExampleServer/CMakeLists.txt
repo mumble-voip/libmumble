@@ -18,6 +18,5 @@ add_executable(ExampleServer
 target_link_libraries(ExampleServer
 	PRIVATE
 		Boost::thread
-		MPMCQueue
 		toml11
 )

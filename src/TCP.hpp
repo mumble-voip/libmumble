@@ -10,25 +10,21 @@
 
 #include "mumble/Types.hpp"
 
-#include <memory>
+#include <cstdint>
 #include <utility>
 
 namespace mumble {
 class SocketTCP : public Socket {
 public:
-	using AcceptPtr = std::unique_ptr< SocketTCP >;
-
 	SocketTCP();
+	SocketTCP(const int32_t fd);
 
 	int listen();
 
-	std::pair< int, AcceptPtr > accept(Endpoint &endpoint);
+	std::pair< int, int32_t > accept(Endpoint &endpoint);
 	int connect(const Endpoint &endpoint);
 
-	int getPeerEndpoint(Endpoint &endpoint);
-
-private:
-	SocketTCP(const int fd);
+	int getPeerEndpoint(Endpoint &endpoint) const;
 };
 } // namespace mumble
 

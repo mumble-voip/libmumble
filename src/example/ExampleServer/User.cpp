@@ -7,20 +7,18 @@
 
 #include "Endpoints.hpp"
 
+#include "mumble/Connection.hpp"
+
 #include <algorithm>
 #include <cstdint>
 
 #include <boost/core/span.hpp>
 
-#include <boost/thread/lock_types.hpp>
-
-#include <rigtorp/MPMCQueue.h>
-
 using namespace mumble;
 
-User::User(P *p, const uint32_t id)
-	: Session(p), m_id(id), m_cryptOK(false), m_good(0), m_late(0), m_lost(0), m_packets(32),
-	  m_thread(&User::thread, this), m_decryptHistory({}) {
+User::User(const int32_t fd, const uint32_t id)
+	: m_id(id), m_cryptOK(false), m_good(0), m_late(0), m_lost(0), m_decryptHistory({}),
+	  m_connection(std::make_shared< Connection >(fd, true)) {
 	const auto key = m_decrypt.genKey();
 	if (!m_decrypt.setKey(key) || !m_encrypt.setKey(key)) {
 		return;
@@ -35,12 +33,14 @@ User::User(P *p, const uint32_t id)
 	m_cryptOK = true;
 }
 
-User::~User() {
-	m_thread.interrupt();
-}
+User::~User() = default;
 
 uint32_t User::id() const {
 	return m_id;
+}
+
+const std::shared_ptr< Connection > &User::connection() const {
+	return m_connection;
 }
 
 bool User::cryptOK() const {
@@ -95,7 +95,7 @@ size_t User::decrypt(const BufRef out, const BufRefConst in) {
 			nonce[0] = nonceByte;
 		} else if (nonceByte < nonce[0]) {
 			nonce[0] = nonceByte;
-			for (int i = 1; i < nonce.size(); i++)
+			for (int32_t i = 1; i < nonce.size(); ++i)
 				if (++nonce[i])
 					break;
 		} else {
@@ -104,7 +104,7 @@ size_t User::decrypt(const BufRef out, const BufRefConst in) {
 	} else {
 		// This is either out of order or a repeat.
 
-		int diff = nonceByte - nonce[0];
+		int32_t diff = nonceByte - nonce[0];
 		if (diff > 128)
 			diff = diff - 256;
 		else if (diff < -128)
@@ -121,7 +121,7 @@ size_t User::decrypt(const BufRef out, const BufRefConst in) {
 			late     = 1;
 			lost     = -1;
 			nonce[0] = nonceByte;
-			for (int i = 1; i < nonce.size(); i++) {
+			for (int32_t i = 1; i < nonce.size(); ++i) {
 				if (nonce[i]--)
 					break;
 			}
@@ -135,7 +135,7 @@ size_t User::decrypt(const BufRef out, const BufRefConst in) {
 			// Lost a few packets, and wrapped around
 			lost     = 256 - nonce[0] + nonceByte - 1;
 			nonce[0] = nonceByte;
-			for (int i = 1; i < nonce.size(); i++)
+			for (int32_t i = 1; i < nonce.size(); ++i)
 				if (++nonce[i])
 					break;
 		} else {
@@ -218,28 +218,14 @@ void User::delEndpoint(const Endpoint &endpoint) {
 	m_endpoints.extract(endpoint);
 }
 
-void User::send(const mumble::Message &message) {
-	sendTCP(message);
-}
-
-void User::send(const Packet &packet) {
-	m_packets.push(packet);
-	m_cond.notify_all();
-}
-
-void User::thread() {
-	boost::mutex mutex;
-
-	while (!m_thread.interruption_requested()) {
-		boost::unique_lock< boost::mutex > lock(mutex);
-
-		m_cond.wait(lock);
-
-		Packet packet;
-		if (!m_packets.try_pop(packet)) {
-			continue;
-		}
-
-		sendUDP(packet.endpoint, packet.buf);
+Code User::connect(const Connection::Feedback &feedback, const Cert::Chain &cert, const Key &key) {
+	if (!m_connection->setCert(cert, key)) {
+		return Code::Failure;
 	}
+
+	return (*m_connection)(feedback);
+}
+
+void User::send(const mumble::Message &message) {
+	m_connection->write(message);
 }

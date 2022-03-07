@@ -5,16 +5,18 @@
 
 #include "MumbleInit.hpp"
 
+#include "mumble/Connection.hpp"
 #include "mumble/Message.hpp"
 #include "mumble/Mumble.hpp"
 #include "mumble/Peer.hpp"
-#include "mumble/Session.hpp"
 #include "mumble/Types.hpp"
 
+#include <condition_variable>
 #include <cstdint>
 #include <cstdio>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -26,21 +28,29 @@
 
 using namespace mumble;
 
-static Session::Feedback sessionFeedback(Session &session) {
-	Session::Feedback feedback;
+static Connection::Feedback connectionFeedback(Connection &connection, std::condition_variable &cv) {
+	Connection::Feedback feedback;
 
-	feedback.opened = [&session]() {
-		printf("Session opened!\n");
+	feedback.opened = [&connection]() {
+		printf("Connection opened!\n");
 
 		Message::Version ver;
 		ver.version = Mumble::version().blob();
 		ver.release = "Custom client";
-		session.sendTCP(ver);
+		connection.write(ver);
 	};
 
-	feedback.closed = []() { printf("Session closed!\n"); };
+	feedback.closed = [&cv]() {
+		printf("Connection closed!\n");
 
-	feedback.failed = [](const Code code) { printf("Session failed with error \"%s\"!\n", text(code).data()); };
+		cv.notify_all();
+	};
+
+	feedback.failed = [&cv](const Code code) {
+		printf("Connection failed with error \"%s\"!\n", text(code).data());
+
+		cv.notify_all();
+	};
 
 	feedback.message = [](Message *message) {
 		const auto ptr = std::unique_ptr< Message >(message);
@@ -49,6 +59,19 @@ static Session::Feedback sessionFeedback(Session &session) {
 			printf("%s received!\n", Message::text(message->type()).data());
 		}
 	};
+
+	return feedback;
+}
+
+static Peer::FeedbackTCP peerFeedback() {
+	Peer::FeedbackTCP feedback;
+
+	feedback.started = []() { printf("TCP started!\n"); };
+	feedback.stopped = []() { printf("TCP stopped!\n"); };
+
+	feedback.failed = [](const Code code) { printf("TCP failed with error \"%s\"!\n", text(code).data()); };
+
+	feedback.timeout = []() { return 10000; };
 
 	return feedback;
 }
@@ -80,25 +103,32 @@ int32_t main(const int argc, const char **argv) {
 	const auto peerTcpIP   = toml::find< std::string_view >(peer, "tcpIP");
 	const auto peerTcpPort = toml::find< uint16_t >(peer, "tcpPort");
 
-	Peer client;
-
-	const auto ret = client.connect({ peerTcpIP, peerTcpPort }, { localTcpIP, localTcpPort });
+	const auto ret = Peer::connect({ peerTcpIP, peerTcpPort }, { localTcpIP, localTcpPort });
 	if (ret.first != Code::Success) {
-		printf("Client::connect() failed with error \"%s\"!\n", text(ret.first).data());
+		printf("Peer::connect() failed with error \"%s\"!\n", text(ret.first).data());
 		return 3;
 	}
 
-	Session session(ret.second);
+	std::condition_variable cv;
 
-	const auto code = session.start(sessionFeedback(session));
+	auto connection = std::make_shared< Connection >(ret.second, false);
+	auto code       = (*connection)(connectionFeedback(*connection, cv));
 	if (code != Code::Success) {
-		printf("Session::start() failed with error \"%s\"!\n", text(code).data());
+		printf("Connection() failed with error \"%s\"!\n", text(code).data());
 		return 4;
 	}
 
-	getchar();
+	Peer client;
+	client.addTCP(connection);
+	code = client.startTCP(peerFeedback());
+	if (code != Code::Success) {
+		printf("Peer::startTCP() failed with error \"%s\"!\n", text(code).data());
+		return 5;
+	}
 
-	printf("Shutting down...\n");
+	std::mutex mutex;
+	std::unique_lock< std::mutex > lock(mutex);
+	cv.wait(lock);
 
 	return 0;
 }

@@ -12,6 +12,7 @@
 #include "mumble/Key.hpp"
 #include "mumble/Types.hpp"
 
+#include <atomic>
 #include <cstdint>
 
 #include <openssl/ossl_typ.h>
@@ -22,10 +23,12 @@ public:
 	enum Code : int8_t { Memory = -3, Failure, Unknown, Success, Retry, Shutdown, WaitIn, WaitOut };
 
 	SocketTLS(SocketTLS &&socket);
-	SocketTLS(SocketTCP &&socket, const bool server);
+	SocketTLS(const int32_t fd, const bool server);
 	~SocketTLS();
 
 	explicit operator bool() const;
+
+	bool isServer() const;
 
 	bool setCert(const Cert::Chain &cert, const Key &key);
 
@@ -40,15 +43,13 @@ public:
 	Code read(BufRef &buf);
 	Code write(BufRefConst &buf);
 
-protected:
-	bool m_server;
-
 private:
+	constexpr Code interpretLibCode(const int code, const bool processed = true, const bool remaining = false);
 	static int verifyCallback(int, X509_STORE_CTX *);
-	static constexpr Code interpretLibCode(const int code, const bool processed = true, const bool remaining = false);
 
 	SSL *m_ssl;
 	SSL_CTX *m_sslCtx;
+	std::atomic_bool m_closed;
 };
 } // namespace mumble
 

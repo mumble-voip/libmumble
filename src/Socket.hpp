@@ -6,11 +6,10 @@
 #ifndef MUMBLE_SRC_SOCKET_HPP
 #define MUMBLE_SRC_SOCKET_HPP
 
-#include "mumble/Macros.hpp"
 #include "mumble/Types.hpp"
 
-#include <array>
 #include <cstdint>
+#include <utility>
 
 #ifdef OS_WINDOWS
 #	include <WinSock2.h>
@@ -21,56 +20,31 @@
 namespace mumble {
 class Socket {
 public:
-	enum class Type : uint8_t { Unknown, TCP, UDP };
+	using Pair = std::pair< Socket, Socket >;
 
-	enum State : uint8_t {
-		Timeout      = 0b00000000,
-		Triggered    = 0b00000001,
-		InReady      = 0b00000010,
-		OutReady     = 0b00000100,
-		Disconnected = 0b00001000,
-		Error        = 0b00010000
-	};
+	enum class Type : uint8_t { Unknown, Local, TCP, UDP };
 
-	class Handle {
-	public:
-		static constexpr int8_t invalid = -1;
+	static constexpr int8_t invalidFD = -1;
 
-		using Pair = std::array< Handle, 2 >;
-
-		Handle(Handle &&handle);
-		Handle(const int32_t fd);
-		Handle(const Type type = Type::Unknown);
-		~Handle();
-
-		Handle &operator=(const int32_t fd);
-
-		explicit operator bool() const;
-
-		int32_t fd() const;
-
-		static Pair pair();
-
-	private:
-		Handle(const Handle &) = delete;
-		Handle &operator=(const Handle &) = delete;
-
-		int32_t m_fd;
-	};
-
+	Socket();
 	Socket(Socket &&socket);
+	Socket(const int32_t fd);
 	Socket(const Type type);
 	~Socket();
 
 	explicit operator bool() const;
 
-	int getEndpoint(Endpoint &endpoint);
+	const int32_t fd() const;
+	int32_t stealFD();
+
+	int getEndpoint(Endpoint &endpoint) const;
 	int setEndpoint(const Endpoint &endpoint, const bool ipv6Only = false);
 
 	int setBlocking(const bool enable);
 
-	bool trigger();
-	State wait(const bool in, const bool out, const uint32_t timeout);
+	static Pair localPair();
+
+	static void close(const int32_t fd);
 
 	static int osError();
 	static constexpr Code osErrorToCode(const int error) {
@@ -161,15 +135,8 @@ public:
 	}
 
 protected:
-	Socket(const int fd);
-
-	Handle m_handle;
-
-private:
-	Handle::Pair m_manualEvent;
+	int32_t m_fd;
 };
 } // namespace mumble
-
-MUMBLE_ENUM_OPERATORS(mumble::Socket::State)
 
 #endif

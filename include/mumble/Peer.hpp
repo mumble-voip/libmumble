@@ -6,30 +6,37 @@
 #ifndef MUMBLE_PEER_HPP
 #define MUMBLE_PEER_HPP
 
-#include "Session.hpp"
+#include "Mumble.hpp"
+#include "Types.hpp"
+
+#include <functional>
+#include <memory>
 
 namespace mumble {
+class Connection;
+
 class EXPORT Peer {
 public:
 	class P;
+
+	using SharedConnection = std::shared_ptr< Connection >;
 
 	struct FeedbackTCP {
 		std::function< void() > started;
 		std::function< void() > stopped;
 
-		std::function< void(const mumble::Code) > failed;
+		std::function< void(Code code) > failed;
 
 		std::function< uint32_t() > timeout;
 
-		std::function< bool(Endpoint &endpoint) > connection;
-		std::function< bool(Session::P *p) > session;
+		std::function< bool(Endpoint &endpoint, int32_t fd) > connection;
 	};
 
 	struct FeedbackUDP {
 		std::function< void() > started;
 		std::function< void() > stopped;
 
-		std::function< void(const mumble::Code) > failed;
+		std::function< void(Code code) > failed;
 
 		std::function< uint32_t() > timeout;
 
@@ -45,9 +52,9 @@ public:
 
 	virtual explicit operator bool() const;
 
-	virtual std::pair< Code, Session::P * > connect(const Endpoint &peerEndpoint, const Endpoint &endpoint = {});
+	static std::pair< Code, int32_t > connect(const Endpoint &peerEndpoint, const Endpoint &endpoint = {});
 
-	virtual Code startTCP(const FeedbackTCP &feedback);
+	virtual Code startTCP(const FeedbackTCP &feedback, const uint32_t threads = 0);
 	virtual Code stopTCP();
 
 	virtual Code startUDP(const FeedbackUDP &feedback);
@@ -58,6 +65,9 @@ public:
 
 	virtual Code bindUDP(Endpoint &endpoint, const bool ipv6Only = false);
 	virtual Code unbindUDP();
+
+	virtual Code addTCP(const SharedConnection &connection);
+	virtual Code delTCP(const SharedConnection &connection);
 
 	virtual Code sendUDP(const Endpoint &endpoint, const BufRefConst data);
 

@@ -36,6 +36,9 @@ public:
 private:
 	using SessionPtr = std::unique_ptr< mumble::Session >;
 
+	bool startTCP();
+	bool startUDP();
+
 	bool m_ok;
 	uint32_t m_bandwidth;
 

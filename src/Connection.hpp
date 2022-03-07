@@ -6,61 +6,49 @@
 #ifndef MUMBLE_SRC_CONNECTION_HPP
 #define MUMBLE_SRC_CONNECTION_HPP
 
-#include "TLS.hpp"
+#include "mumble/Connection.hpp"
 
-#include "Socket.hpp"
-
+#include "mumble/Cert.hpp"
 #include "mumble/Types.hpp"
+
+#include "Monitor.hpp"
+#include "TLS.hpp"
 
 #include <atomic>
 #include <cstdint>
 #include <functional>
-#include <memory>
-
-namespace boost {
-class thread;
-}
 
 namespace mumble {
-class Pack;
+class Connection::P : public SocketTLS {
+	friend Connection;
 
-class Connection : public SocketTLS {
 public:
-	struct Feedback {
-		std::function< void() > opened;
-		std::function< void() > closed;
+	using State = Monitor::Event::State;
 
-		std::function< void(const mumble::Code) > failed;
+	P(SocketTLS &&socket);
+	~P();
 
-		std::function< uint32_t() > timeout;
-		std::function< uint32_t() > timeouts;
+	explicit operator bool() const;
 
-		std::function< void(const Pack &) > message;
-	};
-
-	Connection(SocketTLS &&socket);
-	~Connection();
-
-	void start(const Feedback &feedback);
-	void stop();
-
-	mumble::Code write(BufRefConst buf, const std::atomic_bool &halt = {});
-
-private:
-	Connection(const Connection &) = delete;
-	Connection &operator=(const Connection &) = delete;
-
-	mumble::Code handleCode(const Code code);
 	mumble::Code handleState(const State state);
 
-	mumble::Code read(BufRef buf);
+private:
+	mumble::Code read(BufRef buf, const bool wait, const std::function< bool() > halt);
+	mumble::Code write(BufRefConst buf, const bool wait, const std::function< bool() > halt);
 
-	void thread();
+	mumble::Code handleCode(const Code code, const bool wait);
+	mumble::Code handleWait(Monitor &monitor);
+
+	static constexpr mumble::Code interpretTLSCode(const Code code);
 
 	Feedback m_feedback;
 
+	Monitor m_monitorIn;
+	Monitor m_monitorOut;
+
+	Cert::Chain m_cert;
 	uint32_t m_timeouts;
-	std::unique_ptr< boost::thread > m_thread;
+	std::atomic_flag m_closed;
 };
 } // namespace mumble
 

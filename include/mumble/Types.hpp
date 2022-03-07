@@ -18,11 +18,10 @@ namespace mumble {};
 
 namespace mumble {
 enum class Code : int8_t {
-	Ssl = -13,
+	Ssl = -12,
 	Refuse,
 	Reach,
 	Listen,
-	Bind,
 	Open,
 	Unsupport,
 	Invalid,
@@ -76,8 +75,6 @@ static constexpr std::string_view text(const Code code) {
 			return "Reach";
 		case Code::Listen:
 			return "Listen";
-		case Code::Bind:
-			return "Bind";
 		case Code::Open:
 			return "Open";
 		case Code::Unsupport:
