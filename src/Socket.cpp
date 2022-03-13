@@ -64,7 +64,7 @@ Socket::operator bool() const {
 	return m_fd != invalidFD;
 }
 
-const int32_t Socket::fd() const {
+int32_t Socket::fd() const {
 	return m_fd;
 }
 

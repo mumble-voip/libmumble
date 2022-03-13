@@ -95,7 +95,7 @@ size_t User::decrypt(const BufRef out, const BufRefConst in) {
 			nonce[0] = nonceByte;
 		} else if (nonceByte < nonce[0]) {
 			nonce[0] = nonceByte;
-			for (int32_t i = 1; i < nonce.size(); ++i)
+			for (uint32_t i = 1; i < nonce.size(); ++i)
 				if (++nonce[i])
 					break;
 		} else {
@@ -121,7 +121,7 @@ size_t User::decrypt(const BufRef out, const BufRefConst in) {
 			late     = 1;
 			lost     = -1;
 			nonce[0] = nonceByte;
-			for (int32_t i = 1; i < nonce.size(); ++i) {
+			for (uint32_t i = 1; i < nonce.size(); ++i) {
 				if (nonce[i]--)
 					break;
 			}
@@ -135,7 +135,7 @@ size_t User::decrypt(const BufRef out, const BufRefConst in) {
 			// Lost a few packets, and wrapped around
 			lost     = 256 - nonce[0] + nonceByte - 1;
 			nonce[0] = nonceByte;
-			for (int32_t i = 1; i < nonce.size(); ++i)
+			for (uint32_t i = 1; i < nonce.size(); ++i)
 				if (++nonce[i])
 					break;
 		} else {

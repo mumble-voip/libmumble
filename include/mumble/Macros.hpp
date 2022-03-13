@@ -6,31 +6,33 @@
 #ifndef MUMBLE_MACROS_HPP
 #define MUMBLE_MACROS_HPP
 
-#define MUMBLE_ENUM_OPERATORS(T)                                                                                       \
-	static T operator~(const T lhs) { return static_cast< T >(~static_cast< std::underlying_type< T >::type >(lhs)); } \
-	static T operator|(const T lhs, const T rhs) {                                                                     \
-		return static_cast< T >(static_cast< std::underlying_type< T >::type >(lhs)                                    \
-								| static_cast< std::underlying_type< T >::type >(rhs));                                \
-	}                                                                                                                  \
-	static T operator&(const T lhs, const T rhs) {                                                                     \
-		return static_cast< T >(static_cast< std::underlying_type< T >::type >(lhs)                                    \
-								& static_cast< std::underlying_type< T >::type >(rhs));                                \
-	}                                                                                                                  \
-	static T operator^(const T lhs, const T rhs) {                                                                     \
-		return static_cast< T >(static_cast< std::underlying_type< T >::type >(lhs)                                    \
-								^ static_cast< std::underlying_type< T >::type >(rhs));                                \
-	}                                                                                                                  \
-	static T &operator|=(T &lhs, const T rhs) {                                                                        \
-		return reinterpret_cast< T & >(reinterpret_cast< std::underlying_type< T >::type & >(lhs) |=                   \
-									   static_cast< std::underlying_type< T >::type >(rhs));                           \
-	}                                                                                                                  \
-	static T &operator&=(T &lhs, const T rhs) {                                                                        \
-		return reinterpret_cast< T & >(reinterpret_cast< std::underlying_type< T >::type & >(lhs) &=                   \
-									   static_cast< std::underlying_type< T >::type >(rhs));                           \
-	}                                                                                                                  \
-	static T &operator^=(T &lhs, const T rhs) {                                                                        \
-		return reinterpret_cast< T & >(reinterpret_cast< std::underlying_type< T >::type & >(lhs) ^=                   \
-									   static_cast< std::underlying_type< T >::type >(rhs));                           \
+#define MUMBLE_ENUM_OPERATORS(T)                                                                     \
+	static inline T operator~(const T lhs) {                                                         \
+		return static_cast< T >(~static_cast< std::underlying_type< T >::type >(lhs));               \
+	}                                                                                                \
+	static inline T operator|(const T lhs, const T rhs) {                                            \
+		return static_cast< T >(static_cast< std::underlying_type< T >::type >(lhs)                  \
+								| static_cast< std::underlying_type< T >::type >(rhs));              \
+	}                                                                                                \
+	static inline T operator&(const T lhs, const T rhs) {                                            \
+		return static_cast< T >(static_cast< std::underlying_type< T >::type >(lhs)                  \
+								& static_cast< std::underlying_type< T >::type >(rhs));              \
+	}                                                                                                \
+	static inline T operator^(const T lhs, const T rhs) {                                            \
+		return static_cast< T >(static_cast< std::underlying_type< T >::type >(lhs)                  \
+								^ static_cast< std::underlying_type< T >::type >(rhs));              \
+	}                                                                                                \
+	static inline T &operator|=(T &lhs, const T rhs) {                                               \
+		return reinterpret_cast< T & >(reinterpret_cast< std::underlying_type< T >::type & >(lhs) |= \
+									   static_cast< std::underlying_type< T >::type >(rhs));         \
+	}                                                                                                \
+	static inline T &operator&=(T &lhs, const T rhs) {                                               \
+		return reinterpret_cast< T & >(reinterpret_cast< std::underlying_type< T >::type & >(lhs) &= \
+									   static_cast< std::underlying_type< T >::type >(rhs));         \
+	}                                                                                                \
+	static inline T &operator^=(T &lhs, const T rhs) {                                               \
+		return reinterpret_cast< T & >(reinterpret_cast< std::underlying_type< T >::type & >(lhs) ^= \
+									   static_cast< std::underlying_type< T >::type >(rhs));         \
 	}
 
 #ifdef COMPILER_MSVC

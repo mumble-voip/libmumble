@@ -262,15 +262,15 @@ Attributes P::parseX509Name(const X509_NAME *name) {
 	return attributes;
 }
 
-int P::passwordCallback(char *buf, int size, int, void *userdata) {
-	const auto password = *static_cast< std::string_view * >(userdata);
+int P::passwordCallback(char *buf, const int32_t size, int, void *userdata) {
+	auto password = static_cast< const std::string_view * >(userdata);
 
-	auto length = password.size();
-	if (length > size) {
+	auto length = password->size();
+	if (length > static_cast< uint32_t >(size)) {
 		length = size;
 	}
 
-	memcpy(buf, password.data(), length);
+	memcpy(buf, password->data(), length);
 
 	return length;
 }

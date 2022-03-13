@@ -126,7 +126,9 @@ bool Monitor::trigger() {
 #else
 	constexpr uint8_t byte = 0;
 #endif
-	return send(m_trigger.second.fd(), &byte, sizeof(byte), 0) >= sizeof(byte);
+	static_assert(sizeof(byte) == 1);
+
+	return send(m_trigger.second.fd(), &byte, sizeof(byte), 0) >= 1;
 }
 
 bool Monitor::untrigger() {
@@ -138,7 +140,9 @@ bool Monitor::untrigger() {
 #else
 	uint8_t byte;
 #endif
-	return recv(m_trigger.first.fd(), &byte, sizeof(byte), 0) >= sizeof(byte);
+	static_assert(sizeof(byte) == 1);
+
+	return recv(m_trigger.first.fd(), &byte, sizeof(byte), 0) >= 1;
 }
 
 uint32_t Monitor::wait(const EventsRef events, const uint32_t timeout) {

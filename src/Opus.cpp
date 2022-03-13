@@ -185,11 +185,13 @@ EXPORT uint32_t Encoder::bitrate() const {
 }
 
 EXPORT bool Encoder::setBitrate(const uint32_t bitrate) {
-	opus_int32 value = bitrate;
-	if (value == infinite32) {
+	opus_int32 value;
+	if (bitrate == infinite32) {
 		value = OPUS_BITRATE_MAX;
-	} else if (!value) {
+	} else if (!bitrate) {
 		value = OPUS_AUTO;
+	} else {
+		value = bitrate;
 	}
 
 	return m_p->set(OPUS_SET_BITRATE(value));

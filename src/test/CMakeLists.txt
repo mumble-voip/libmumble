@@ -3,6 +3,8 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
+include(compiler)
+
 list(APPEND TESTS
 	"TestBase64"
 	"TestCrypt"
@@ -37,6 +39,8 @@ foreach(TARGET IN LISTS TESTS)
 		NAME ${TARGET}
 		COMMAND ${TARGET}
 	)
+
+	target_pedantic_warnings(${TARGET})
 
 	set_target_properties(${TARGET}
 		PROPERTIES

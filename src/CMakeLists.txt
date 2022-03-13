@@ -3,7 +3,7 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-include(CheckSymbolExists)
+include(compiler)
 
 find_package(Boost REQUIRED
 	COMPONENTS
@@ -22,6 +22,8 @@ endif()
 
 add_library(mumble SHARED)
 
+target_pedantic_warnings(mumble)
+
 protobuf_generate_cpp(PROTO_CPP PROTO_HPP "Mumble.proto")
 
 set_target_properties(mumble
@@ -34,6 +36,8 @@ set_target_properties(mumble
 if(WIN32)
 	target_compile_definitions(mumble PRIVATE "HAVE_WEPOLL")
 else()
+	include(CheckSymbolExists)
+
 	check_symbol_exists("epoll_create" "sys/epoll.h" HAVE_EPOLL)
 	if(HAVE_EPOLL)
 		target_compile_definitions(mumble PRIVATE "HAVE_EPOLL")

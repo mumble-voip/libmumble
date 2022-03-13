@@ -3,6 +3,8 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
+include(compiler)
+
 list(APPEND EXAMPLES
 	"ExampleClient"
 	"ExampleServer"
@@ -31,6 +33,8 @@ target_link_libraries(Example
 # Therefore we can use the TARGET variable to reference the directory as well as the target.
 foreach(TARGET IN LISTS EXAMPLES)
 	add_subdirectory(${TARGET})
+
+	target_pedantic_warnings(${TARGET})
 
 	set_target_properties(${TARGET}
 		PROPERTIES

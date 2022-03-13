@@ -34,7 +34,7 @@ public:
 
 	explicit operator bool() const;
 
-	const int32_t fd() const;
+	int32_t fd() const;
 	int32_t stealFD();
 
 	int getEndpoint(Endpoint &endpoint) const;

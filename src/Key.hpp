@@ -22,7 +22,7 @@ public:
 	~P();
 
 private:
-	static int passwordCallback(char *buf, int size, int, void *userdata);
+	static int passwordCallback(char *buf, const int32_t size, int, void *userdata);
 
 	EVP_PKEY *m_pkey;
 };
