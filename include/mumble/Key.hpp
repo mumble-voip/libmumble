@@ -6,11 +6,13 @@
 #ifndef MUMBLE_KEY_HPP
 #define MUMBLE_KEY_HPP
 
+#include "Macros.hpp"
+
 #include <memory>
 #include <string_view>
 
 namespace mumble {
-class EXPORT Key {
+class MUMBLE_EXPORT Key {
 public:
 	class P;
 

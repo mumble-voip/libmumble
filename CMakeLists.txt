@@ -21,6 +21,7 @@ endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 set(3RDPARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
 set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -31,24 +32,14 @@ if(WIN32)
 		"-DNOMINMAX"
 		"-DWIN32_LEAN_AND_MEAN"
 		"-D_CRT_SECURE_NO_WARNINGS"
-		"-DEXPORT=__declspec(dllexport)"
 	)
 else()
 	add_definitions(
 		"-DOS_UNIX"
-		"-DEXPORT=__attribute__ ((visibility (\"default\")))"
-	)
-
-	add_compile_options(
-		"-fvisibility=hidden"
 	)
 endif()
 
 if(MSVC)
-	add_definitions(
-		"-DCOMPILER_MSVC"
-	)
-
 	add_compile_options(
 		# https://devblogs.microsoft.com/cppblog/msvc-now-correctly-reports-__cplusplus
 		"/Zc:__cplusplus"

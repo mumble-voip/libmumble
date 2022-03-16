@@ -6,12 +6,13 @@
 #ifndef MUMBLE_HASH_HPP
 #define MUMBLE_HASH_HPP
 
+#include "Macros.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class EXPORT Hash {
+class MUMBLE_EXPORT Hash {
 public:
 	class P;
 

@@ -8,7 +8,6 @@
 
 #include "Cert.hpp"
 #include "IP.hpp"
-#include "Macros.hpp"
 #include "Mumble.hpp"
 #include "Types.hpp"
 
@@ -20,7 +19,7 @@
 	virtual ~name() = default;
 
 namespace mumble {
-class EXPORT Message {
+class Message {
 public:
 	using Clock     = std::chrono::high_resolution_clock;
 	using Timestamp = std::chrono::time_point< Clock >;

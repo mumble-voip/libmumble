@@ -20,19 +20,19 @@ using Feedback = Connection::Feedback;
 using P        = Connection::P;
 using UniqueP  = Connection::UniqueP;
 
-EXPORT Connection::Connection(Connection &&connection) : m_p(std::exchange(connection.m_p, nullptr)) {
+Connection::Connection(Connection &&connection) : m_p(std::exchange(connection.m_p, nullptr)) {
 }
 
-EXPORT Connection::Connection(const int32_t fd, const bool server) : m_p(std::make_unique< P >(SocketTLS(fd, server))) {
+Connection::Connection(const int32_t fd, const bool server) : m_p(std::make_unique< P >(SocketTLS(fd, server))) {
 }
 
-EXPORT Connection::~Connection() = default;
+Connection::~Connection() = default;
 
-EXPORT Connection::operator bool() const {
+Connection::operator bool() const {
 	return m_p && *m_p;
 }
 
-EXPORT Code Connection::operator()(const Feedback &feedback, const std::function< bool() > halt) {
+Code Connection::operator()(const Feedback &feedback, const std::function< bool() > halt) {
 	if (!m_p->m_monitorIn.add(m_p->m_fd, true, false) || !m_p->m_monitorOut.add(m_p->m_fd, false, true)) {
 		return Code::Failure;
 	}
@@ -55,39 +55,39 @@ EXPORT Code Connection::operator()(const Feedback &feedback, const std::function
 	return Code::Cancel;
 }
 
-EXPORT const UniqueP &Connection::p() const {
+const UniqueP &Connection::p() const {
 	return m_p;
 }
 
-EXPORT int32_t Connection::fd() const {
+int32_t Connection::fd() const {
 	return m_p->fd();
 }
 
-EXPORT Endpoint Connection::endpoint() const {
+Endpoint Connection::endpoint() const {
 	Endpoint endpoint;
 	m_p->getEndpoint(endpoint);
 	return endpoint;
 }
 
-EXPORT Endpoint Connection::peerEndpoint() const {
+Endpoint Connection::peerEndpoint() const {
 	Endpoint endpoint;
 	m_p->getPeerEndpoint(endpoint);
 	return endpoint;
 }
 
-EXPORT const Cert::Chain &Connection::cert() const {
+const Cert::Chain &Connection::cert() const {
 	return m_p->m_cert;
 }
 
-EXPORT Cert::Chain Connection::peerCert() const {
+Cert::Chain Connection::peerCert() const {
 	return m_p->peerCert();
 }
 
-EXPORT bool Connection::setCert(const Cert::Chain &cert, const Key &key) {
+bool Connection::setCert(const Cert::Chain &cert, const Key &key) {
 	return m_p->setCert(cert, key);
 }
 
-EXPORT Code Connection::process(const bool wait, const std::function< bool() > halt) {
+Code Connection::process(const bool wait, const std::function< bool() > halt) {
 	do {
 		Pack::NetHeader header;
 		auto code = m_p->read({ reinterpret_cast< std::byte * >(&header), sizeof(header) }, wait, halt);
@@ -115,7 +115,7 @@ EXPORT Code Connection::process(const bool wait, const std::function< bool() > h
 	return Code::Success;
 }
 
-EXPORT Code Connection::write(const Message &message, const bool wait, const std::function< bool() > halt) {
+Code Connection::write(const Message &message, const bool wait, const std::function< bool() > halt) {
 	const Pack pack(message);
 	return m_p->write(pack.buf(), wait, halt);
 }

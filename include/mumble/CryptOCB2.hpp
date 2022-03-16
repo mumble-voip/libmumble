@@ -6,12 +6,13 @@
 #ifndef MUMBLE_CRYPTOCB2_HPP
 #define MUMBLE_CRYPTOCB2_HPP
 
+#include "Macros.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class EXPORT CryptOCB2 {
+class MUMBLE_EXPORT CryptOCB2 {
 public:
 	class P;
 

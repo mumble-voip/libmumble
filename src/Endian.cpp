@@ -11,9 +11,9 @@
 
 using namespace mumble;
 
-EXPORT Endian::Endian() = default;
+Endian::Endian() = default;
 
-EXPORT uint16_t Endian::swap(const uint16_t value) {
+uint16_t Endian::swap(const uint16_t value) {
 #ifdef COMPILER_MSVC
 	return _byteswap_ushort(value);
 #else
@@ -21,7 +21,7 @@ EXPORT uint16_t Endian::swap(const uint16_t value) {
 #endif
 }
 
-EXPORT uint32_t Endian::swap(const uint32_t value) {
+uint32_t Endian::swap(const uint32_t value) {
 #ifdef COMPILER_MSVC
 	return _byteswap_ulong(value);
 #else
@@ -29,7 +29,7 @@ EXPORT uint32_t Endian::swap(const uint32_t value) {
 #endif
 }
 
-EXPORT uint64_t Endian::swap(const uint64_t value) {
+uint64_t Endian::swap(const uint64_t value) {
 #ifdef COMPILER_MSVC
 	return _byteswap_uint64(value);
 #else

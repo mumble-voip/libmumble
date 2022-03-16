@@ -6,12 +6,13 @@
 #ifndef MUMBLE_OPUS_HPP
 #define MUMBLE_OPUS_HPP
 
+#include "Macros.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class EXPORT OpusDecoder {
+class MUMBLE_EXPORT OpusDecoder {
 public:
 	class P;
 
@@ -40,7 +41,7 @@ private:
 	std::unique_ptr< P > m_p;
 };
 
-class EXPORT OpusEncoder {
+class MUMBLE_EXPORT OpusEncoder {
 public:
 	enum class Preset : uint8_t { Unknown, VoIP, Audio, LowDelay };
 

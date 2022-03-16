@@ -15,13 +15,13 @@ using namespace mumble;
 
 using Version = Mumble::Version;
 
-EXPORT Mumble::Mumble() = default;
+Mumble::Mumble() = default;
 
-EXPORT Version Mumble::version() {
+Version Mumble::version() {
 	return { 1, 5, 0 };
 }
 
-EXPORT Code Mumble::init() {
+Code Mumble::init() {
 #ifdef OS_WINDOWS
 	WSADATA data;
 	switch (WSAStartup(MAKEWORD(2, 2), &data)) {
@@ -45,7 +45,7 @@ EXPORT Code Mumble::init() {
 	return Code::Success;
 }
 
-EXPORT Code Mumble::deinit() {
+Code Mumble::deinit() {
 #ifdef OS_WINDOWS
 	WSACleanup();
 #endif

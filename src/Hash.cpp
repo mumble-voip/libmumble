@@ -25,24 +25,24 @@ using namespace mumble;
 
 using P = Hash::P;
 
-EXPORT Hash::Hash(Hash &&crypt) : m_p(std::exchange(crypt.m_p, nullptr)) {
+Hash::Hash(Hash &&crypt) : m_p(std::exchange(crypt.m_p, nullptr)) {
 }
 
-EXPORT Hash::Hash() : m_p(new P) {
+Hash::Hash() : m_p(new P) {
 }
 
-EXPORT Hash::~Hash() = default;
+Hash::~Hash() = default;
 
-EXPORT Hash::operator bool() const {
+Hash::operator bool() const {
 	return m_p && *m_p;
 }
 
-EXPORT Hash &Hash::operator=(Hash &&crypt) {
+Hash &Hash::operator=(Hash &&crypt) {
 	m_p = std::exchange(crypt.m_p, nullptr);
 	return *this;
 }
 
-EXPORT size_t Hash::operator()(const BufRef out, const BufRefConst in) {
+size_t Hash::operator()(const BufRef out, const BufRefConst in) {
 	CHECK
 
 	if (!out.size()) {
@@ -65,31 +65,31 @@ EXPORT size_t Hash::operator()(const BufRef out, const BufRefConst in) {
 	return written;
 }
 
-EXPORT void *Hash::handle() const {
+void *Hash::handle() const {
 	CHECK
 
 	return m_p->m_ctx;
 }
 
-EXPORT std::string_view Hash::type() const {
+std::string_view Hash::type() const {
 	CHECK
 
 	return m_p->type();
 }
 
-EXPORT bool Hash::setType(const std::string_view name) {
+bool Hash::setType(const std::string_view name) {
 	CHECK
 
 	return m_p->setType(name);
 }
 
-EXPORT uint32_t Hash::blockSize() const {
+uint32_t Hash::blockSize() const {
 	CHECK
 
 	return EVP_MD_CTX_block_size(m_p->m_ctx);
 }
 
-EXPORT bool Hash::reset() {
+bool Hash::reset() {
 	CHECK
 
 	return EVP_MD_CTX_reset(m_p->m_ctx) > 0;

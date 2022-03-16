@@ -24,40 +24,40 @@ using namespace mumble;
 
 using P = Key::P;
 
-EXPORT Key::Key() : m_p(new P(EVP_PKEY_new())) {
+Key::Key() : m_p(new P(EVP_PKEY_new())) {
 }
 
-EXPORT Key::Key(const Key &key) : m_p(new P(key.pem(), key.isPrivate())) {
+Key::Key(const Key &key) : m_p(new P(key.pem(), key.isPrivate())) {
 }
 
-EXPORT Key::Key(Key &&key) : m_p(std::exchange(key.m_p, nullptr)) {
+Key::Key(Key &&key) : m_p(std::exchange(key.m_p, nullptr)) {
 }
 
-EXPORT Key::Key(void *handle) : m_p(new P(static_cast< EVP_PKEY * >(handle))) {
+Key::Key(void *handle) : m_p(new P(static_cast< EVP_PKEY * >(handle))) {
 }
 
-EXPORT Key::Key(const std::string_view pem, const bool isPrivate, std::string_view password)
+Key::Key(const std::string_view pem, const bool isPrivate, std::string_view password)
 	: m_p(new P(pem, isPrivate, password)) {
 }
 
-EXPORT Key::~Key() = default;
+Key::~Key() = default;
 
-EXPORT Key::operator bool() const {
+Key::operator bool() const {
 	return m_p && m_p->m_pkey;
 }
 
-EXPORT Key &Key::operator=(const Key &key) {
+Key &Key::operator=(const Key &key) {
 	// TODO: Switch to EVP_PKEY_dup() once available (OpenSSL 3.0.0).
 	m_p = std::make_unique< P >(key.pem(), key.isPrivate());
 	return *this;
 }
 
-EXPORT Key &Key::operator=(Key &&key) {
+Key &Key::operator=(Key &&key) {
 	m_p = std::exchange(key.m_p, nullptr);
 	return *this;
 }
 
-EXPORT bool Key::operator==(const Key &key) const {
+bool Key::operator==(const Key &key) const {
 	if (!*this || !key) {
 		return !*this && !key;
 	}
@@ -65,17 +65,17 @@ EXPORT bool Key::operator==(const Key &key) const {
 	return EVP_PKEY_cmp(m_p->m_pkey, key.m_p->m_pkey) == 0;
 }
 
-EXPORT void *Key::handle() const {
+void *Key::handle() const {
 	return m_p->m_pkey;
 }
 
-EXPORT bool Key::isPrivate() const {
+bool Key::isPrivate() const {
 	CHECK
 
 	return i2d_PrivateKey(m_p->m_pkey, nullptr) > 0;
 }
 
-EXPORT std::string Key::pem() const {
+std::string Key::pem() const {
 	CHECK
 
 	auto bio = BIO_new(BIO_s_secmem());

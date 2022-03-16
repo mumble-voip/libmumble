@@ -32,40 +32,40 @@ using KeyBlockRef      = P::KeyBlockRef;
 using KeyBlockRefConst = P::KeyBlockRefConst;
 using SubBlock         = P::SubBlock;
 
-EXPORT CryptOCB2::CryptOCB2() : m_p(new P) {
+CryptOCB2::CryptOCB2() : m_p(new P) {
 }
 
-EXPORT CryptOCB2::~CryptOCB2() = default;
+CryptOCB2::~CryptOCB2() = default;
 
-EXPORT CryptOCB2::operator bool() const {
+CryptOCB2::operator bool() const {
 	return m_p && m_p->m_ok;
 }
 
-EXPORT uint32_t CryptOCB2::blockSize() const {
+uint32_t CryptOCB2::blockSize() const {
 	CHECK
 
 	return P::blockSize;
 }
 
-EXPORT uint32_t CryptOCB2::keySize() const {
+uint32_t CryptOCB2::keySize() const {
 	CHECK
 
 	return P::keySize;
 }
 
-EXPORT uint32_t CryptOCB2::nonceSize() const {
+uint32_t CryptOCB2::nonceSize() const {
 	CHECK
 
 	return P::nonceSize;
 }
 
-EXPORT BufRefConst CryptOCB2::key() const {
+BufRefConst CryptOCB2::key() const {
 	CHECK
 
 	return m_p->m_key;
 }
 
-EXPORT Buf CryptOCB2::genKey() const {
+Buf CryptOCB2::genKey() const {
 	CHECK
 
 	Buf key(P::keySize);
@@ -76,7 +76,7 @@ EXPORT Buf CryptOCB2::genKey() const {
 	return key;
 }
 
-EXPORT bool CryptOCB2::setKey(const BufRefConst key) {
+bool CryptOCB2::setKey(const BufRefConst key) {
 	CHECK
 
 	if (key.size() != P::keySize) {
@@ -88,13 +88,13 @@ EXPORT bool CryptOCB2::setKey(const BufRefConst key) {
 	return EVP_CipherInit_ex(m_p->m_ctx, nullptr, nullptr, CAST_BUF_CONST(key.data()), nullptr, -1) > 0;
 }
 
-EXPORT BufRefConst CryptOCB2::nonce() const {
+BufRefConst CryptOCB2::nonce() const {
 	CHECK
 
 	return m_p->m_nonce;
 }
 
-EXPORT Buf CryptOCB2::genNonce() const {
+Buf CryptOCB2::genNonce() const {
 	CHECK
 
 	Buf nonce(P::nonceSize);
@@ -105,7 +105,7 @@ EXPORT Buf CryptOCB2::genNonce() const {
 	return nonce;
 }
 
-EXPORT bool CryptOCB2::setNonce(const BufRefConst nonce) {
+bool CryptOCB2::setNonce(const BufRefConst nonce) {
 	CHECK
 
 	if (nonce.size() != P::nonceSize) {
@@ -117,7 +117,7 @@ EXPORT bool CryptOCB2::setNonce(const BufRefConst nonce) {
 	return true;
 }
 
-EXPORT size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst tag) {
+size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst tag) {
 	CHECK
 
 	if (!out.size()) {
@@ -202,7 +202,7 @@ EXPORT size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst t
 	return written;
 }
 
-EXPORT size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
+size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
 	CHECK
 
 	if (!out.size()) {

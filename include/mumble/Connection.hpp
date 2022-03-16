@@ -8,6 +8,7 @@
 
 #include "Cert.hpp"
 #include "Key.hpp"
+#include "Macros.hpp"
 #include "Mumble.hpp"
 
 #include <functional>
@@ -15,7 +16,7 @@
 namespace mumble {
 class Message;
 
-class EXPORT Connection {
+class MUMBLE_EXPORT Connection {
 public:
 	class P;
 	using UniqueP = std::unique_ptr< P >;

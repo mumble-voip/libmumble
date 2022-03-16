@@ -25,16 +25,16 @@ using namespace mumble;
 
 using P = Base64::P;
 
-EXPORT Base64::Base64() : m_p(new P) {
+Base64::Base64() : m_p(new P) {
 }
 
-EXPORT Base64::~Base64() = default;
+Base64::~Base64() = default;
 
-EXPORT Base64::operator bool() {
+Base64::operator bool() {
 	return m_p && m_p->m_ctx;
 }
 
-EXPORT size_t Base64::decode(const BufRef out, const BufRefConst in) {
+size_t Base64::decode(const BufRef out, const BufRefConst in) {
 	CHECK
 
 	if (!out.size()) {
@@ -64,7 +64,7 @@ EXPORT size_t Base64::decode(const BufRef out, const BufRefConst in) {
 	return written_1 + written_2;
 }
 
-EXPORT size_t Base64::encode(const BufRef out, const BufRefConst in) {
+size_t Base64::encode(const BufRef out, const BufRefConst in) {
 	if (!out.size()) {
 		// 3 input bytes = 4 output bytes.
 		// +1 for the NUL terminator.

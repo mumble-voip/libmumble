@@ -6,10 +6,12 @@
 #ifndef MUMBLE_ENDIAN_HPP
 #define MUMBLE_ENDIAN_HPP
 
+#include "Macros.hpp"
+
 #include <cstdint>
 
 namespace mumble {
-class EXPORT Endian {
+class MUMBLE_EXPORT Endian {
 public:
 	Endian();
 	virtual ~Endian() = delete;

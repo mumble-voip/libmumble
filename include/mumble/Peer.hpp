@@ -6,6 +6,7 @@
 #ifndef MUMBLE_PEER_HPP
 #define MUMBLE_PEER_HPP
 
+#include "Macros.hpp"
 #include "Mumble.hpp"
 #include "Types.hpp"
 
@@ -15,7 +16,7 @@
 namespace mumble {
 class Connection;
 
-class EXPORT Peer {
+class MUMBLE_EXPORT Peer {
 public:
 	class P;
 

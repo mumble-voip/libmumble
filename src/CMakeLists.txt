@@ -34,15 +34,19 @@ set_target_properties(mumble
 )
 
 if(WIN32)
-	target_compile_definitions(mumble PRIVATE "HAVE_WEPOLL")
+	set(HAVE_EPOLL TRUE)
 else()
 	include(CheckSymbolExists)
 
 	check_symbol_exists("epoll_create" "sys/epoll.h" HAVE_EPOLL)
-	if(HAVE_EPOLL)
-		target_compile_definitions(mumble PRIVATE "HAVE_EPOLL")
-	endif()
 endif()
+
+target_compile_definitions(mumble
+	PRIVATE
+		"MUMBLE_SRC"
+
+		$<$<BOOL:${HAVE_EPOLL}>:$<IF:$<PLATFORM_ID:Windows>,HAVE_WEPOLL,HAVE_EPOLL>>
+)
 
 target_include_directories(mumble
 	PRIVATE

@@ -45,19 +45,19 @@ static constexpr Code interpretLibCode(const int code) {
 	return Code::Unknown;
 }
 
-EXPORT Decoder::OpusDecoder(OpusDecoder &&decoder) : m_p(std::exchange(decoder.m_p, nullptr)) {
+Decoder::OpusDecoder(OpusDecoder &&decoder) : m_p(std::exchange(decoder.m_p, nullptr)) {
 }
 
-EXPORT Decoder::OpusDecoder(const uint8_t channels) : m_p(new P(channels)) {
+Decoder::OpusDecoder(const uint8_t channels) : m_p(new P(channels)) {
 }
 
-EXPORT Decoder::~OpusDecoder() = default;
+Decoder::~OpusDecoder() = default;
 
-EXPORT Decoder::operator bool() const {
+Decoder::operator bool() const {
 	return m_p && *m_p;
 }
 
-EXPORT size_t Decoder::operator()(const BufRef out, const BufRefConst in, const bool decodeFEC) {
+size_t Decoder::operator()(const BufRef out, const BufRefConst in, const bool decodeFEC) {
 	const auto samples = out.size() / sizeof(float) / m_p->m_channels;
 
 	const auto written = opus_decode_float(m_p->m_ctx.get(), reinterpret_cast< const unsigned char * >(in.data()),
@@ -66,7 +66,7 @@ EXPORT size_t Decoder::operator()(const BufRef out, const BufRefConst in, const 
 	return written >= 0 ? written : 0;
 }
 
-EXPORT Code Decoder::init(const uint32_t sampleRate) {
+Code Decoder::init(const uint32_t sampleRate) {
 	const auto ret = interpretLibCode(opus_decoder_init(m_p->m_ctx.get(), sampleRate, m_p->m_channels));
 
 	if (ret == Code::Success) {
@@ -76,34 +76,34 @@ EXPORT Code Decoder::init(const uint32_t sampleRate) {
 	return ret;
 }
 
-EXPORT Code Decoder::reset() {
+Code Decoder::reset() {
 	return interpretLibCode(opus_decoder_ctl(m_p->m_ctx.get(), OPUS_RESET_STATE));
 }
 
-EXPORT uint8_t Decoder::channels() const {
+uint8_t Decoder::channels() const {
 	return m_p->m_channels;
 }
 
-EXPORT uint32_t Decoder::sampleRate() const {
+uint32_t Decoder::sampleRate() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_SAMPLE_RATE(&ret)) ? ret : 0;
 }
 
-EXPORT bool Decoder::inDTX() const {
+bool Decoder::inDTX() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_IN_DTX(&ret)) ? ret : 0;
 }
 
-EXPORT bool Decoder::phaseInversion() const {
+bool Decoder::phaseInversion() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_PHASE_INVERSION_DISABLED(&ret)) ? !ret : 0;
 }
 
-EXPORT bool Decoder::togglePhaseInversion(const bool enable) {
+bool Decoder::togglePhaseInversion(const bool enable) {
 	return m_p->set(OPUS_SET_PHASE_INVERSION_DISABLED(!enable));
 }
 
-EXPORT uint32_t Decoder::packetSamples(const BufRefConst packet) {
+uint32_t Decoder::packetSamples(const BufRefConst packet) {
 	const auto ret = opus_decoder_get_nb_samples(
 		m_p->m_ctx.get(), reinterpret_cast< const unsigned char * >(packet.data()), packet.size());
 	return ret >= 0 ? ret : 0;
@@ -112,15 +112,15 @@ EXPORT uint32_t Decoder::packetSamples(const BufRefConst packet) {
 Decoder::P::P(const uint8_t channels) : OpusBase(channels) {
 }
 
-EXPORT Encoder::OpusEncoder(OpusEncoder &&encoder) : m_p(std::exchange(encoder.m_p, nullptr)) {
+Encoder::OpusEncoder(OpusEncoder &&encoder) : m_p(std::exchange(encoder.m_p, nullptr)) {
 }
 
-EXPORT Encoder::OpusEncoder(const uint8_t channels) : m_p(new P(channels)) {
+Encoder::OpusEncoder(const uint8_t channels) : m_p(new P(channels)) {
 }
 
-EXPORT Encoder::~OpusEncoder() = default;
+Encoder::~OpusEncoder() = default;
 
-EXPORT Encoder::operator bool() const {
+Encoder::operator bool() const {
 	return m_p && *m_p;
 }
 
@@ -133,7 +133,7 @@ size_t Encoder::operator()(const BufRef out, const BufRefConst in) {
 	return written >= 0 ? written : 0;
 }
 
-EXPORT Code Encoder::init(const uint32_t sampleRate, const Preset preset) {
+Code Encoder::init(const uint32_t sampleRate, const Preset preset) {
 	const auto application = P::toApplication(preset);
 	if (application < 0) {
 		return Code::Invalid;
@@ -148,20 +148,20 @@ EXPORT Code Encoder::init(const uint32_t sampleRate, const Preset preset) {
 	return ret;
 }
 
-EXPORT Code Encoder::reset() {
+Code Encoder::reset() {
 	return interpretLibCode(opus_encoder_ctl(m_p->m_ctx.get(), OPUS_RESET_STATE));
 }
 
-EXPORT uint8_t Encoder::channels() const {
+uint8_t Encoder::channels() const {
 	return m_p->m_channels;
 }
 
-EXPORT uint32_t Encoder::sampleRate() const {
+uint32_t Encoder::sampleRate() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_SAMPLE_RATE(&ret)) ? ret : 0;
 }
 
-EXPORT Preset Encoder::preset() const {
+Preset Encoder::preset() const {
 	opus_int32 ret;
 	if (!m_p->get(OPUS_GET_APPLICATION(&ret))) {
 		return Preset::Unknown;
@@ -170,7 +170,7 @@ EXPORT Preset Encoder::preset() const {
 	return P::toPreset(ret);
 }
 
-EXPORT bool Encoder::setPreset(const Preset preset) {
+bool Encoder::setPreset(const Preset preset) {
 	const auto application = P::toApplication(preset);
 	if (application < 0) {
 		return false;
@@ -179,12 +179,12 @@ EXPORT bool Encoder::setPreset(const Preset preset) {
 	return m_p->set(OPUS_SET_APPLICATION(application));
 }
 
-EXPORT uint32_t Encoder::bitrate() const {
+uint32_t Encoder::bitrate() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_BITRATE(&ret)) ? ret : 0;
 }
 
-EXPORT bool Encoder::setBitrate(const uint32_t bitrate) {
+bool Encoder::setBitrate(const uint32_t bitrate) {
 	opus_int32 value;
 	if (bitrate == infinite32) {
 		value = OPUS_BITRATE_MAX;
@@ -197,26 +197,26 @@ EXPORT bool Encoder::setBitrate(const uint32_t bitrate) {
 	return m_p->set(OPUS_SET_BITRATE(value));
 }
 
-EXPORT bool Encoder::inDTX() const {
+bool Encoder::inDTX() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_IN_DTX(&ret)) ? ret : 0;
 }
 
-EXPORT bool Encoder::phaseInversion() const {
+bool Encoder::phaseInversion() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_PHASE_INVERSION_DISABLED(&ret)) ? !ret : 0;
 }
 
-EXPORT bool Encoder::togglePhaseInversion(const bool enable) {
+bool Encoder::togglePhaseInversion(const bool enable) {
 	return m_p->set(OPUS_SET_PHASE_INVERSION_DISABLED(!enable));
 }
 
-EXPORT bool Encoder::vbr() const {
+bool Encoder::vbr() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_VBR(&ret)) ? ret : 0;
 }
 
-EXPORT bool Encoder::toggleVBR(const bool enable) {
+bool Encoder::toggleVBR(const bool enable) {
 	return m_p->set(OPUS_SET_VBR(enable));
 }
 

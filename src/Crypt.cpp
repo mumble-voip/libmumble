@@ -24,66 +24,66 @@ using namespace mumble;
 
 using P = Crypt::P;
 
-EXPORT Crypt::Crypt(Crypt &&crypt) : m_p(std::exchange(crypt.m_p, nullptr)) {
+Crypt::Crypt(Crypt &&crypt) : m_p(std::exchange(crypt.m_p, nullptr)) {
 }
 
-EXPORT Crypt::Crypt() : m_p(new P) {
+Crypt::Crypt() : m_p(new P) {
 }
 
-EXPORT Crypt::~Crypt() = default;
+Crypt::~Crypt() = default;
 
-EXPORT Crypt::operator bool() const {
+Crypt::operator bool() const {
 	return m_p && *m_p;
 }
 
-EXPORT Crypt &Crypt::operator=(Crypt &&crypt) {
+Crypt &Crypt::operator=(Crypt &&crypt) {
 	m_p = std::exchange(crypt.m_p, nullptr);
 	return *this;
 }
 
-EXPORT void *Crypt::handle() const {
+void *Crypt::handle() const {
 	CHECK
 
 	return m_p->m_ctx;
 }
 
-EXPORT std::string_view Crypt::cipher() const {
+std::string_view Crypt::cipher() const {
 	CHECK
 
 	return m_p->cipher();
 }
 
-EXPORT bool Crypt::setCipher(const std::string_view name) {
+bool Crypt::setCipher(const std::string_view name) {
 	CHECK
 
 	return m_p->setCipher(name);
 }
 
-EXPORT uint32_t Crypt::blockSize() const {
+uint32_t Crypt::blockSize() const {
 	CHECK
 
 	return m_p->blockSize();
 }
 
-EXPORT uint32_t Crypt::keySize() const {
+uint32_t Crypt::keySize() const {
 	CHECK
 
 	return m_p->m_key.size();
 }
 
-EXPORT uint32_t Crypt::nonceSize() const {
+uint32_t Crypt::nonceSize() const {
 	CHECK
 
 	return m_p->m_nonce.size();
 }
 
-EXPORT BufRefConst Crypt::key() const {
+BufRefConst Crypt::key() const {
 	CHECK
 
 	return m_p->m_key;
 }
 
-EXPORT Buf Crypt::genKey() const {
+Buf Crypt::genKey() const {
 	const auto size = keySize();
 	if (!size) {
 		return {};
@@ -97,7 +97,7 @@ EXPORT Buf Crypt::genKey() const {
 	return key;
 }
 
-EXPORT bool Crypt::setKey(const BufRefConst key) {
+bool Crypt::setKey(const BufRefConst key) {
 	CHECK
 
 	if (m_p->m_key.size() != key.size()) {
@@ -113,13 +113,13 @@ EXPORT bool Crypt::setKey(const BufRefConst key) {
 	return EVP_CipherInit_ex(m_p->m_ctx, nullptr, nullptr, CAST_BUF_CONST(key.data()), nullptr, -1) > 0;
 }
 
-EXPORT BufRefConst Crypt::nonce() const {
+BufRefConst Crypt::nonce() const {
 	CHECK
 
 	return m_p->m_nonce;
 }
 
-EXPORT Buf Crypt::genNonce() const {
+Buf Crypt::genNonce() const {
 	const auto size = nonceSize();
 	if (!size) {
 		return {};
@@ -133,7 +133,7 @@ EXPORT Buf Crypt::genNonce() const {
 	return nonce;
 }
 
-EXPORT bool Crypt::setNonce(const BufRefConst nonce) {
+bool Crypt::setNonce(const BufRefConst nonce) {
 	CHECK
 
 	if (m_p->m_nonce.size() != nonce.size()) {
@@ -149,11 +149,11 @@ EXPORT bool Crypt::setNonce(const BufRefConst nonce) {
 	return EVP_CipherInit_ex(m_p->m_ctx, nullptr, nullptr, nullptr, CAST_BUF_CONST(nonce.data()), -1) > 0;
 }
 
-EXPORT bool Crypt::padding() const {
+bool Crypt::padding() const {
 	return m_p->m_padding;
 }
 
-EXPORT bool Crypt::togglePadding(const bool enable) {
+bool Crypt::togglePadding(const bool enable) {
 	CHECK
 
 	m_p->m_padding = enable;
@@ -161,19 +161,19 @@ EXPORT bool Crypt::togglePadding(const bool enable) {
 	return true;
 }
 
-EXPORT bool Crypt::reset() {
+bool Crypt::reset() {
 	CHECK
 
 	return EVP_CIPHER_CTX_reset(m_p->m_ctx) > 0;
 }
 
-EXPORT size_t Crypt::decrypt(const BufRef out, const BufRefConst in, const BufRefConst tag, const BufRefConst aad) {
+size_t Crypt::decrypt(const BufRef out, const BufRefConst in, const BufRefConst tag, const BufRefConst aad) {
 	CHECK
 
 	return m_p->process(false, out, in, { const_cast< std::byte * >(tag.data()), tag.size() }, aad);
 }
 
-EXPORT size_t Crypt::encrypt(const BufRef out, const BufRefConst in, const BufRef tag, const BufRefConst aad) {
+size_t Crypt::encrypt(const BufRef out, const BufRefConst in, const BufRef tag, const BufRefConst aad) {
 	CHECK
 
 	return m_p->process(true, out, in, tag, aad);

@@ -28,13 +28,13 @@ using P        = IP::P;
 using Ref      = IP::Ref;
 using RefConst = IP::RefConst;
 
-EXPORT IP::IP() : m_bytes({}) {
+IP::IP() : m_bytes({}) {
 }
 
-EXPORT IP::IP(const IP &ip) : m_bytes(ip.m_bytes) {
+IP::IP(const IP &ip) : m_bytes(ip.m_bytes) {
 }
 
-EXPORT IP::IP(const RefConst ref) {
+IP::IP(const RefConst ref) {
 	switch (ref.size()) {
 		case v6Size:
 			std::copy(ref.begin(), ref.end(), m_bytes.begin());
@@ -46,7 +46,7 @@ EXPORT IP::IP(const RefConst ref) {
 	}
 }
 
-EXPORT IP::IP(const std::string_view string) {
+IP::IP(const std::string_view string) {
 	if (inet_pton(AF_INET6, string.data(), m_bytes.data()) == 1) {
 		return;
 	}
@@ -57,42 +57,42 @@ EXPORT IP::IP(const std::string_view string) {
 	std::sscanf(string.data(), "%hhu.%hhu.%hhu.%hhu", &m_bytes[12], &m_bytes[13], &m_bytes[14], &m_bytes[15]);
 }
 
-EXPORT IP::IP(const sockaddr_in6 &sockaddr) {
+IP::IP(const sockaddr_in6 &sockaddr) {
 	std::memcpy(m_bytes.data(), &sockaddr.sin6_addr, m_bytes.size());
 }
 
-EXPORT IP::~IP() = default;
+IP::~IP() = default;
 
-EXPORT IP &IP::operator=(const IP &ip) {
+IP &IP::operator=(const IP &ip) {
 	m_bytes = ip.m_bytes;
 	return *this;
 }
 
-EXPORT bool IP::operator==(const IP &ip) const {
+bool IP::operator==(const IP &ip) const {
 	return m_bytes == ip.m_bytes;
 }
 
-EXPORT RefConst IP::v6() const {
+RefConst IP::v6() const {
 	return m_bytes;
 }
 
-EXPORT RefConst IP::v4() const {
+RefConst IP::v4() const {
 	return { m_bytes.data() + 12, m_bytes.size() - 12 };
 }
 
-EXPORT Ref IP::v6() {
+Ref IP::v6() {
 	return m_bytes;
 }
 
-EXPORT Ref IP::v4() {
+Ref IP::v4() {
 	return { m_bytes.data() + 12, m_bytes.size() - 12 };
 }
 
-EXPORT bool IP::isV6() const {
+bool IP::isV6() const {
 	return !isV4();
 }
 
-EXPORT bool IP::isV4() const {
+bool IP::isV4() const {
 	if (!std::all_of(&m_bytes[0], &m_bytes[9], [](const uint8_t byte) { return byte == 0x00; })) {
 		return false;
 	}
@@ -104,12 +104,12 @@ EXPORT bool IP::isV4() const {
 	return true;
 }
 
-EXPORT bool IP::isWildcard() const {
+bool IP::isWildcard() const {
 	const auto ref = isV6() ? v6() : v4();
 	return std::all_of(ref.begin(), ref.end(), [](const uint8_t byte) { return byte == 0x00; });
 }
 
-EXPORT std::string IP::text() const {
+std::string IP::text() const {
 	std::string ret;
 
 	if (isV6()) {
@@ -127,7 +127,7 @@ EXPORT std::string IP::text() const {
 	return ret;
 }
 
-EXPORT void IP::toSockAddr(sockaddr_in6 &sockaddr) const {
+void IP::toSockAddr(sockaddr_in6 &sockaddr) const {
 	sockaddr.sin6_family = AF_INET6;
 	std::memcpy(&sockaddr.sin6_addr, m_bytes.data(), sizeof(sockaddr.sin6_addr));
 }

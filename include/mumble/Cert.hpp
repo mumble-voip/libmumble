@@ -6,6 +6,7 @@
 #ifndef MUMBLE_CERT_HPP
 #define MUMBLE_CERT_HPP
 
+#include "Macros.hpp"
 #include "Types.hpp"
 
 #include "mumble/Key.hpp"
@@ -14,7 +15,7 @@
 #include <memory>
 
 namespace mumble {
-class EXPORT Cert {
+class MUMBLE_EXPORT Cert {
 public:
 	class P;
 

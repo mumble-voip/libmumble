@@ -12,7 +12,7 @@
 #include <cstdint>
 
 namespace mumble {
-class EXPORT Mumble {
+class MUMBLE_EXPORT Mumble {
 public:
 	enum class TypeUDP : uint8_t { VoiceCELTAlpha, Ping, VoiceSpeex, VoiceCELTBeta, VoiceOpus };
 

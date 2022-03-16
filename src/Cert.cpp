@@ -36,41 +36,41 @@ using Attributes = Cert::Attributes;
 using Der        = Cert::Der;
 using P          = Cert::P;
 
-EXPORT Cert::Cert() : m_p(new P(X509_new())) {
+Cert::Cert() : m_p(new P(X509_new())) {
 }
 
-EXPORT Cert::Cert(const Cert &cert) : m_p(new P(X509_dup(cert.m_p->m_x509))) {
+Cert::Cert(const Cert &cert) : m_p(new P(X509_dup(cert.m_p->m_x509))) {
 }
 
-EXPORT Cert::Cert(Cert &&cert) : m_p(std::exchange(cert.m_p, nullptr)) {
+Cert::Cert(Cert &&cert) : m_p(std::exchange(cert.m_p, nullptr)) {
 }
 
-EXPORT Cert::Cert(void *handle) : m_p(new P(static_cast< X509 * >(handle))) {
+Cert::Cert(void *handle) : m_p(new P(static_cast< X509 * >(handle))) {
 }
 
-EXPORT Cert::Cert(const DerRefConst der) : m_p(new P(der)) {
+Cert::Cert(const DerRefConst der) : m_p(new P(der)) {
 }
 
-EXPORT Cert::Cert(const std::string_view pem, std::string_view password) : m_p(new P(pem, password)) {
+Cert::Cert(const std::string_view pem, std::string_view password) : m_p(new P(pem, password)) {
 }
 
-EXPORT Cert::~Cert() = default;
+Cert::~Cert() = default;
 
-EXPORT Cert::operator bool() const {
+Cert::operator bool() const {
 	return m_p && m_p->m_x509;
 }
 
-EXPORT Cert &Cert::operator=(const Cert &cert) {
+Cert &Cert::operator=(const Cert &cert) {
 	m_p = std::make_unique< P >(cert ? X509_dup(cert.m_p->m_x509) : nullptr);
 	return *this;
 }
 
-EXPORT Cert &Cert::operator=(Cert &&cert) {
+Cert &Cert::operator=(Cert &&cert) {
 	m_p = std::exchange(cert.m_p, nullptr);
 	return *this;
 }
 
-EXPORT bool Cert::operator==(const Cert &cert) const {
+bool Cert::operator==(const Cert &cert) const {
 	if (!*this || !cert) {
 		return !*this && !cert;
 	}
@@ -78,13 +78,13 @@ EXPORT bool Cert::operator==(const Cert &cert) const {
 	return X509_cmp(m_p->m_x509, cert.m_p->m_x509) == 0;
 }
 
-EXPORT void *Cert::handle() const {
+void *Cert::handle() const {
 	CHECK
 
 	return m_p->m_x509;
 }
 
-EXPORT Der Cert::der() const {
+Der Cert::der() const {
 	CHECK
 
 	auto bio = BIO_new(BIO_s_secmem());
@@ -107,7 +107,7 @@ EXPORT Der Cert::der() const {
 	return der;
 }
 
-EXPORT std::string Cert::pem() const {
+std::string Cert::pem() const {
 	CHECK
 
 	auto bio = BIO_new(BIO_s_secmem());
@@ -129,13 +129,13 @@ EXPORT std::string Cert::pem() const {
 	return pem;
 }
 
-EXPORT Key Cert::publicKey() const {
+Key Cert::publicKey() const {
 	CHECK
 
 	return X509_get_pubkey(m_p->m_x509);
 }
 
-EXPORT tm Cert::since() const {
+tm Cert::since() const {
 	CHECK
 
 	const auto asn1 = X509_get0_notBefore(m_p->m_x509);
@@ -146,7 +146,7 @@ EXPORT tm Cert::since() const {
 	return ret;
 }
 
-EXPORT tm Cert::until() const {
+tm Cert::until() const {
 	CHECK
 
 	const auto asn1 = X509_get0_notAfter(m_p->m_x509);
@@ -157,29 +157,29 @@ EXPORT tm Cert::until() const {
 	return ret;
 }
 
-EXPORT bool Cert::isAuthority() const {
+bool Cert::isAuthority() const {
 	CHECK
 
 	return X509_check_ca(m_p->m_x509);
 }
 
-EXPORT bool Cert::isIssuer(const Cert &cert) const {
+bool Cert::isIssuer(const Cert &cert) const {
 	CHECK
 
 	return cert ? X509_check_issued(m_p->m_x509, cert.m_p->m_x509) == X509_V_OK : false;
 }
 
-EXPORT bool Cert::isSelfIssued() const {
+bool Cert::isSelfIssued() const {
 	return isIssuer(*this);
 }
 
-EXPORT Attributes Cert::subjectAttributes() const {
+Attributes Cert::subjectAttributes() const {
 	CHECK
 
 	return P::parseX509Name(X509_get_subject_name(m_p->m_x509));
 }
 
-EXPORT Attributes Cert::issuerAttributes() const {
+Attributes Cert::issuerAttributes() const {
 	CHECK
 
 	return P::parseX509Name(X509_get_issuer_name(m_p->m_x509));

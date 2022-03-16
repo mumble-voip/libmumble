@@ -6,12 +6,13 @@
 #ifndef MUMBLE_BASE64_HPP
 #define MUMBLE_BASE64_HPP
 
+#include "Macros.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class EXPORT Base64 {
+class MUMBLE_EXPORT Base64 {
 public:
 	class P;
 

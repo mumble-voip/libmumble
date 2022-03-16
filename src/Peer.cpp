@@ -29,27 +29,27 @@ using namespace mumble;
 
 using P = Peer::P;
 
-EXPORT Peer::Peer() : m_p(new P) {
+Peer::Peer() : m_p(new P) {
 }
 
-EXPORT Peer::Peer(Peer &&peer) : m_p(std::exchange(peer.m_p, nullptr)) {
+Peer::Peer(Peer &&peer) : m_p(std::exchange(peer.m_p, nullptr)) {
 }
 
-EXPORT Peer::~Peer() {
+Peer::~Peer() {
 	stopTCP();
 	stopUDP();
 }
 
-EXPORT Peer &Peer::operator=(Peer &&peer) {
+Peer &Peer::operator=(Peer &&peer) {
 	m_p = std::exchange(peer.m_p, nullptr);
 	return *this;
 }
 
-EXPORT Peer::operator bool() const {
+Peer::operator bool() const {
 	return static_cast< bool >(m_p);
 }
 
-EXPORT std::pair< Code, int32_t > Peer::connect(const Endpoint &peerEndpoint, const Endpoint &endpoint) {
+std::pair< Code, int32_t > Peer::connect(const Endpoint &peerEndpoint, const Endpoint &endpoint) {
 	SocketTCP socket;
 
 	auto code = Socket::osErrorToCode(socket.setEndpoint(endpoint));
@@ -65,39 +65,39 @@ EXPORT std::pair< Code, int32_t > Peer::connect(const Endpoint &peerEndpoint, co
 	return { Code::Success, socket.stealFD() };
 }
 
-EXPORT Code Peer::startTCP(const FeedbackTCP &feedback, const uint32_t threads) {
+Code Peer::startTCP(const FeedbackTCP &feedback, const uint32_t threads) {
 	return m_p->m_tcp.start(feedback, threads);
 }
 
-EXPORT Code Peer::stopTCP() {
+Code Peer::stopTCP() {
 	return m_p->m_tcp.stop();
 }
 
-EXPORT Code Peer::startUDP(const FeedbackUDP &feedback) {
+Code Peer::startUDP(const FeedbackUDP &feedback) {
 	return m_p->m_udp.start(feedback);
 }
 
-EXPORT Code Peer::stopUDP() {
+Code Peer::stopUDP() {
 	return m_p->m_udp.stop();
 }
 
-EXPORT Code Peer::bindTCP(Endpoint &endpoint, const bool ipv6Only) {
+Code Peer::bindTCP(Endpoint &endpoint, const bool ipv6Only) {
 	return m_p->m_tcp.bind(endpoint, ipv6Only);
 }
 
-EXPORT Code Peer::unbindTCP() {
+Code Peer::unbindTCP() {
 	return m_p->m_tcp.unbind();
 }
 
-EXPORT Code Peer::bindUDP(Endpoint &endpoint, const bool ipv6Only) {
+Code Peer::bindUDP(Endpoint &endpoint, const bool ipv6Only) {
 	return m_p->m_udp.bind(endpoint, ipv6Only);
 }
 
-EXPORT Code Peer::unbindUDP() {
+Code Peer::unbindUDP() {
 	return m_p->m_udp.unbind();
 }
 
-EXPORT Code Peer::addTCP(const SharedConnection &connection) {
+Code Peer::addTCP(const SharedConnection &connection) {
 	auto &tcp = m_p->m_tcp;
 
 	std::unique_lock< std::shared_mutex > lock(tcp.m_mutex);
@@ -108,7 +108,7 @@ EXPORT Code Peer::addTCP(const SharedConnection &connection) {
 	return Code::Success;
 }
 
-EXPORT Code Peer::delTCP(const SharedConnection &connection) {
+Code Peer::delTCP(const SharedConnection &connection) {
 	auto &tcp = m_p->m_tcp;
 
 	std::unique_lock< std::shared_mutex > lock(tcp.m_mutex);
@@ -119,7 +119,7 @@ EXPORT Code Peer::delTCP(const SharedConnection &connection) {
 	return Code::Success;
 }
 
-EXPORT Code Peer::sendUDP(const Endpoint &endpoint, const BufRefConst data) {
+Code Peer::sendUDP(const Endpoint &endpoint, const BufRefConst data) {
 	if (!m_p->m_udp.m_socket) {
 		return Code::Init;
 	}

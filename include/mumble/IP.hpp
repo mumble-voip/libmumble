@@ -6,6 +6,8 @@
 #ifndef MUMBLE_IP_HPP
 #define MUMBLE_IP_HPP
 
+#include "Macros.hpp"
+
 #include <array>
 #include <cstdint>
 #include <string>
@@ -16,7 +18,7 @@
 struct sockaddr_in6;
 
 namespace mumble {
-class EXPORT IP {
+class MUMBLE_EXPORT IP {
 public:
 	class P;
 

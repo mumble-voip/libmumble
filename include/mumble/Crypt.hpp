@@ -6,12 +6,13 @@
 #ifndef MUMBLE_CRYPT_HPP
 #define MUMBLE_CRYPT_HPP
 
+#include "Macros.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class EXPORT Crypt {
+class MUMBLE_EXPORT Crypt {
 public:
 	class P;
 
