@@ -44,7 +44,7 @@ foreach(TARGET IN LISTS TESTS)
 
 	set_target_properties(${TARGET}
 		PROPERTIES
-			RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/test"
+			RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/test"
 	)
 
 	target_link_libraries(${TARGET}
