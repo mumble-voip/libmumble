@@ -3,52 +3,74 @@
 // that can be found in the LICENSE file at the root of the
 // Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-#include "Pack.hpp"
+#include "mumble/Pack.hpp"
 
 #include "mumble/Cert.hpp"
+#include "mumble/Endian.hpp"
 #include "mumble/IP.hpp"
-#include "mumble/Mumble.hpp"
+#include "mumble/Message.hpp"
+#include "mumble/Types.hpp"
 
-#include "Mumble.pb.h"
+#include "MumbleTCP.pb.h"
+#include "MumbleUDP.pb.h"
 
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
-#include <limits>
 #include <optional>
 #include <string>
 #include <vector>
 
 #include <boost/core/span.hpp>
 
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
+
+#define SET_BUF_AND_BREAK \
+	*this = Pack(proto);  \
+	break;
+
+#define PARSE_RET                                         \
+	if (!proto.ParseFromArray(data().data(), dataSize)) { \
+		return false;                                     \
+	}
 
 using namespace mumble;
 
-using Type = Pack::Type;
+using TCP = tcp::Pack;
+using UDP = udp::Pack;
 
-Pack::Pack(NetHeader &header) {
-	const auto dataSize = Endian::toHost(header.size);
-	if (dataSize <= std::numeric_limits< uint16_t >::max()) {
-		m_buf.resize(sizeof(header) + dataSize);
-	} else {
-		header = NetHeader();
-		m_buf.resize(sizeof(header));
-	}
-
+TCP::Pack(const NetHeader &header) : mumble::Pack< NetHeader >(Endian::toHost(header.size)) {
 	memcpy(m_buf.data(), &header, sizeof(header));
 }
 
-Pack::Pack(const Message &message) {
-#define SET_BUF_AND_BREAK          \
-	setBuf(message.type(), proto); \
-	break;
+UDP::Pack(const uint32_t dataSize, const NetHeader &header) : mumble::Pack< NetHeader >(dataSize) {
+	memcpy(m_buf.data(), &header, sizeof(header));
+}
+
+TCP::Pack(const google::protobuf::Message &proto) : mumble::Pack< NetHeader >(proto.ByteSizeLong()) {
+	auto buf = data();
+	if (proto.SerializeToArray(buf.data(), buf.size())) {
+		header().type = Endian::toNetwork(static_cast< uint16_t >(proto.GetDescriptor()->index()));
+		header().size = Endian::toNetwork(static_cast< uint32_t >(buf.size()));
+	}
+}
+
+UDP::Pack(const google::protobuf::Message &proto) : mumble::Pack< NetHeader >(proto.ByteSizeLong()) {
+	auto buf = data();
+	if (proto.SerializeToArray(buf.data(), buf.size())) {
+		header().type = static_cast< uint8_t >(proto.GetDescriptor()->index());
+	}
+}
+
+TCP::Pack(const Message &message) {
+	using Type = Message::Type;
 
 	switch (message.type()) {
 		case Type::Version: {
 			auto &msg = static_cast< const Message::Version & >(message);
 
-			MumbleProto::Version proto;
+			MumbleTCP::Version proto;
 			proto.set_version(msg.version);
 			proto.set_release(msg.release);
 			proto.set_os(msg.os);
@@ -59,13 +81,20 @@ Pack::Pack(const Message &message) {
 		case Type::UDPTunnel: {
 			auto &msg = static_cast< const Message::UDPTunnel & >(message);
 
-			setBuf(message.type(), msg.packet);
+			NetHeader header;
+			header.type = Endian::toNetwork(static_cast< uint16_t >(message.type()));
+			header.size = Endian::toNetwork(static_cast< uint32_t >(msg.packet.size()));
+
+			*this = Pack(header);
+
+			std::copy(msg.packet.cbegin(), msg.packet.cend(), data().begin());
+
 			break;
 		}
 		case Type::Authenticate: {
 			auto &msg = static_cast< const Message::Authenticate & >(message);
 
-			MumbleProto::Authenticate proto;
+			MumbleTCP::Authenticate proto;
 			proto.set_username(msg.username);
 			proto.set_password(msg.password);
 			for (const auto &token : msg.tokens) {
@@ -81,7 +110,7 @@ Pack::Pack(const Message &message) {
 		case Type::Ping: {
 			auto &msg = static_cast< const Message::Ping & >(message);
 
-			MumbleProto::Ping proto;
+			MumbleTCP::Ping proto;
 			proto.set_timestamp(msg.timestamp);
 			proto.set_good(msg.good);
 			proto.set_late(msg.late);
@@ -99,8 +128,8 @@ Pack::Pack(const Message &message) {
 		case Type::Reject: {
 			auto &msg = static_cast< const Message::Reject & >(message);
 
-			MumbleProto::Reject proto;
-			proto.set_type(static_cast< decltype(proto)::RejectType >(msg.type));
+			MumbleTCP::Reject proto;
+			proto.set_type(static_cast< decltype(proto)::RejectType >(msg.rejectType));
 			proto.set_reason(msg.reason);
 
 			SET_BUF_AND_BREAK
@@ -108,7 +137,7 @@ Pack::Pack(const Message &message) {
 		case Type::ServerSync: {
 			auto &msg = static_cast< const Message::ServerSync & >(message);
 
-			MumbleProto::ServerSync proto;
+			MumbleTCP::ServerSync proto;
 			proto.set_session(msg.session);
 			proto.set_max_bandwidth(msg.maxBandwidth);
 			proto.set_welcome_text(msg.welcomeText);
@@ -119,7 +148,7 @@ Pack::Pack(const Message &message) {
 		case Type::ChannelRemove: {
 			auto &msg = static_cast< const Message::ChannelRemove & >(message);
 
-			MumbleProto::ChannelRemove proto;
+			MumbleTCP::ChannelRemove proto;
 			proto.set_channel_id(msg.channelID);
 
 			SET_BUF_AND_BREAK
@@ -127,7 +156,7 @@ Pack::Pack(const Message &message) {
 		case Type::ChannelState: {
 			auto &msg = static_cast< const Message::ChannelState & >(message);
 
-			MumbleProto::ChannelState proto;
+			MumbleTCP::ChannelState proto;
 			proto.set_channel_id(msg.channelID);
 			if (msg.parent) {
 				proto.set_parent(msg.parent.value());
@@ -155,7 +184,7 @@ Pack::Pack(const Message &message) {
 		case Type::UserRemove: {
 			auto &msg = static_cast< const Message::UserRemove & >(message);
 
-			MumbleProto::UserRemove proto;
+			MumbleTCP::UserRemove proto;
 			proto.set_session(msg.session);
 			proto.set_actor(msg.actor);
 			proto.set_reason(msg.reason);
@@ -166,7 +195,7 @@ Pack::Pack(const Message &message) {
 		case Type::UserState: {
 			auto &msg = static_cast< const Message::UserState & >(message);
 
-			MumbleProto::UserState proto;
+			MumbleTCP::UserState proto;
 			proto.set_session(msg.session);
 			proto.set_actor(msg.actor);
 			proto.set_name(msg.name);
@@ -203,7 +232,7 @@ Pack::Pack(const Message &message) {
 		case Type::BanList: {
 			auto &msg = static_cast< const Message::BanList & >(message);
 
-			MumbleProto::BanList proto;
+			MumbleTCP::BanList proto;
 			for (const auto &ban : msg.bans) {
 				auto entry      = proto.add_bans();
 				const auto ipv6 = ban.address.v6();
@@ -222,7 +251,7 @@ Pack::Pack(const Message &message) {
 		case Type::TextMessage: {
 			auto &msg = static_cast< const Message::TextMessage & >(message);
 
-			MumbleProto::TextMessage proto;
+			MumbleTCP::TextMessage proto;
 			proto.set_actor(msg.actor);
 			for (const auto session : msg.session) {
 				proto.add_session(session);
@@ -240,7 +269,7 @@ Pack::Pack(const Message &message) {
 		case Type::PermissionDenied: {
 			auto &msg = static_cast< const Message::PermissionDenied & >(message);
 
-			MumbleProto::PermissionDenied proto;
+			MumbleTCP::PermissionDenied proto;
 			if (msg.permission) {
 				proto.set_permission(msg.permission.value());
 			}
@@ -249,7 +278,7 @@ Pack::Pack(const Message &message) {
 			}
 			proto.set_session(msg.session);
 			proto.set_reason(msg.reason);
-			proto.set_type(static_cast< decltype(proto)::DenyType >(msg.type));
+			proto.set_type(static_cast< decltype(proto)::DenyType >(msg.denyType));
 			if (msg.name) {
 				proto.set_name(msg.name.value());
 			}
@@ -259,7 +288,7 @@ Pack::Pack(const Message &message) {
 		case Type::ACL: {
 			auto &msg = static_cast< const Message::ACL & >(message);
 
-			MumbleProto::ACL proto;
+			MumbleTCP::ACL proto;
 			proto.set_channel_id(msg.channelID);
 			proto.set_inherit_acls(msg.inheritACLs);
 			for (const auto &group : msg.groups) {
@@ -297,7 +326,7 @@ Pack::Pack(const Message &message) {
 		case Type::QueryUsers: {
 			auto &msg = static_cast< const Message::QueryUsers & >(message);
 
-			MumbleProto::QueryUsers proto;
+			MumbleTCP::QueryUsers proto;
 			for (const auto id : msg.ids) {
 				proto.add_ids(id);
 			}
@@ -310,7 +339,7 @@ Pack::Pack(const Message &message) {
 		case Type::CryptSetup: {
 			auto &msg = static_cast< const Message::CryptSetup & >(message);
 
-			MumbleProto::CryptSetup proto;
+			MumbleTCP::CryptSetup proto;
 			proto.set_key(msg.key.data(), msg.key.size());
 			proto.set_client_nonce(msg.clientNonce.data(), msg.clientNonce.size());
 			proto.set_server_nonce(msg.serverNonce.data(), msg.serverNonce.size());
@@ -320,7 +349,7 @@ Pack::Pack(const Message &message) {
 		case Type::ContextActionModify: {
 			auto &msg = static_cast< const Message::ContextActionModify & >(message);
 
-			MumbleProto::ContextActionModify proto;
+			MumbleTCP::ContextActionModify proto;
 			proto.set_action(msg.action);
 			proto.set_text(msg.text);
 			proto.set_context(msg.context);
@@ -331,7 +360,7 @@ Pack::Pack(const Message &message) {
 		case Type::ContextAction: {
 			auto &msg = static_cast< const Message::ContextAction & >(message);
 
-			MumbleProto::ContextAction proto;
+			MumbleTCP::ContextAction proto;
 			if (msg.session) {
 				proto.set_session(msg.session.value());
 			}
@@ -345,7 +374,7 @@ Pack::Pack(const Message &message) {
 		case Type::UserList: {
 			auto &msg = static_cast< const Message::UserList & >(message);
 
-			MumbleProto::UserList proto;
+			MumbleTCP::UserList proto;
 			for (const auto &user : msg.users) {
 				auto entry = proto.add_users();
 				entry->set_user_id(user.userID);
@@ -361,7 +390,7 @@ Pack::Pack(const Message &message) {
 		case Type::VoiceTarget: {
 			auto &msg = static_cast< const Message::VoiceTarget & >(message);
 
-			MumbleProto::VoiceTarget proto;
+			MumbleTCP::VoiceTarget proto;
 			proto.set_id(msg.id);
 			for (const auto &target : msg.targets) {
 				auto entry = proto.add_targets();
@@ -381,7 +410,7 @@ Pack::Pack(const Message &message) {
 		case Type::PermissionQuery: {
 			auto &msg = static_cast< const Message::PermissionQuery & >(message);
 
-			MumbleProto::PermissionQuery proto;
+			MumbleTCP::PermissionQuery proto;
 			proto.set_channel_id(msg.channelID);
 			proto.set_permissions(msg.permissions);
 			proto.set_flush(msg.flush);
@@ -391,7 +420,7 @@ Pack::Pack(const Message &message) {
 		case Type::CodecVersion: {
 			auto &msg = static_cast< const Message::CodecVersion & >(message);
 
-			MumbleProto::CodecVersion proto;
+			MumbleTCP::CodecVersion proto;
 			proto.set_alpha(msg.alpha);
 			proto.set_beta(msg.beta);
 			proto.set_prefer_alpha(msg.preferAlpha);
@@ -402,7 +431,7 @@ Pack::Pack(const Message &message) {
 		case Type::UserStats: {
 			auto &msg = static_cast< const Message::UserStats & >(message);
 
-			MumbleProto::UserStats proto;
+			MumbleTCP::UserStats proto;
 			proto.set_session(msg.session);
 			proto.set_stats_only(msg.statsOnly);
 			for (const auto &cert : msg.certificates) {
@@ -450,7 +479,7 @@ Pack::Pack(const Message &message) {
 		case Type::RequestBlob: {
 			auto &msg = static_cast< const Message::RequestBlob & >(message);
 
-			MumbleProto::RequestBlob proto;
+			MumbleTCP::RequestBlob proto;
 			for (const auto texture : msg.sessionTexture) {
 				proto.add_session_texture(texture);
 			}
@@ -466,7 +495,7 @@ Pack::Pack(const Message &message) {
 		case Type::ServerConfig: {
 			auto &msg = static_cast< const Message::ServerConfig & >(message);
 
-			MumbleProto::ServerConfig proto;
+			MumbleTCP::ServerConfig proto;
 			proto.set_max_bandwidth(msg.maxBandwidth);
 			proto.set_welcome_text(msg.welcomeText);
 			proto.set_allow_html(msg.allowHTML);
@@ -480,7 +509,7 @@ Pack::Pack(const Message &message) {
 		case Type::SuggestConfig: {
 			auto &msg = static_cast< const Message::SuggestConfig & >(message);
 
-			MumbleProto::SuggestConfig proto;
+			MumbleTCP::SuggestConfig proto;
 			if (msg.version) {
 				proto.set_version(msg.version.value());
 			}
@@ -496,7 +525,7 @@ Pack::Pack(const Message &message) {
 		case Type::PluginDataTransmission: {
 			auto &msg = static_cast< const Message::PluginDataTransmission & >(message);
 
-			MumbleProto::PluginDataTransmission proto;
+			MumbleTCP::PluginDataTransmission proto;
 			proto.set_sendersession(msg.senderSession);
 			for (const auto session : msg.receiverSessions) {
 				proto.add_receiversessions(session);
@@ -506,216 +535,258 @@ Pack::Pack(const Message &message) {
 
 			SET_BUF_AND_BREAK
 		}
-		case Type::Unknown: {
+		case Type::Unknown:
 			break;
-		}
 	}
 }
 
-Type Pack::type() const {
-	const auto header = reinterpret_cast< const NetHeader * >(m_buf.data());
-	return static_cast< Type >(Endian::toHost(header->type));
+UDP::Pack(const Message &message) {
+	using Type = Message::Type;
+
+	switch (message.type()) {
+		case Type::Audio: {
+			auto &msg = static_cast< const Message::Audio & >(message);
+
+			MumbleUDP::Audio proto;
+			switch (msg.direction) {
+				case Message::Audio::ClientToServer:
+					proto.set_target(msg.target);
+					break;
+				case Message::Audio::ServerToClient:
+					proto.set_context(msg.context);
+					break;
+				case Message::Audio::Unknown:
+					break;
+			}
+
+			if (msg.senderSession) {
+				proto.set_sender_session(msg.senderSession.value());
+			}
+
+			proto.set_frame_number(msg.frameNumber);
+			proto.set_opus_data(msg.opusData.data(), msg.opusData.size());
+			for (const auto data : msg.positionalData) {
+				proto.add_positional_data(data);
+			}
+
+			proto.set_volume_adjustment(msg.volumeAdjustment);
+
+			proto.set_is_terminator(msg.isTerminator);
+
+			SET_BUF_AND_BREAK
+		}
+		case Type::Ping: {
+			auto &msg = static_cast< const Message::Ping & >(message);
+
+			MumbleUDP::Ping proto;
+			proto.set_timestamp(msg.timestamp);
+
+			proto.set_request_extended_information(msg.requestExtendedInformation);
+
+			if (msg.serverVersion) {
+				proto.set_server_version(msg.serverVersion.value());
+			}
+			if (msg.userCount) {
+				proto.set_user_count(msg.userCount.value());
+			}
+			if (msg.maxUserCount) {
+				proto.set_max_user_count(msg.maxUserCount.value());
+			}
+			if (msg.maxBandwidthPerUser) {
+				proto.set_max_bandwidth_per_user(msg.maxBandwidthPerUser.value());
+			}
+
+			SET_BUF_AND_BREAK
+		}
+		case Type::Unknown:
+			break;
+	}
 }
 
-BufRefConst Pack::buf() const {
-	return { m_buf };
-}
+TCP::~Pack() = default;
+UDP::~Pack() = default;
 
-BufRefConst Pack::data() const {
-	return { m_buf.data() + sizeof(NetHeader), m_buf.size() - sizeof(NetHeader) };
-}
+bool TCP::operator()(Message &message, uint32_t dataSize) const {
+	using Type = Message::Type;
 
-BufRef Pack::data() {
-	return { m_buf.data() + sizeof(NetHeader), m_buf.size() - sizeof(NetHeader) };
-}
-
-bool Pack::isPingUDP(const BufRefConst packet) {
-	if (packet.size() != 12) {
+	if (message.type() != type()) {
 		return false;
 	}
 
-	auto ping = reinterpret_cast< const Mumble::PingUDP * >(packet.data());
-
-	return !ping->versionBlob;
-}
-
-Message *Pack::process() const {
-#define PARSE_RET                                        \
-	const auto buf = data();                             \
-	if (!proto.ParseFromArray(buf.data(), buf.size())) { \
-		return nullptr;                                  \
+	if (dataSize > data().size()) {
+		dataSize = data().size();
 	}
 
-	switch (type()) {
+	switch (message.type()) {
 		case Type::Version: {
-			MumbleProto::Version proto;
+			MumbleTCP::Version proto;
 			PARSE_RET
 
-			const auto msg = new Message::Version;
-			msg->version   = proto.version();
-			msg->release   = proto.release();
-			msg->os        = proto.os();
-			msg->osVersion = proto.os_version();
+			auto &msg     = static_cast< Message::Version     &>(message);
+			msg.version   = proto.version();
+			msg.release   = proto.release();
+			msg.os        = proto.os();
+			msg.osVersion = proto.os_version();
 
-			return msg;
+			return true;
 		}
 		case Type::UDPTunnel: {
-			const auto msg = new Message::UDPTunnel;
-			msg->packet.assign(m_buf.cbegin() + sizeof(NetHeader), m_buf.cend());
+			auto &msg = static_cast< Message::UDPTunnel & >(message);
+			msg.packet.assign(m_buf.cbegin() + sizeof(NetHeader), m_buf.cend());
 
-			return msg;
+			return true;
 		}
 		case Type::Authenticate: {
-			MumbleProto::Authenticate proto;
+			MumbleTCP::Authenticate proto;
 			PARSE_RET
 
-			const auto msg = new Message::Authenticate;
-			msg->username  = proto.username();
-			msg->password  = proto.password();
+			auto &msg    = static_cast< Message::Authenticate    &>(message);
+			msg.username = proto.username();
+			msg.password = proto.password();
 			for (const auto &token : proto.tokens()) {
-				msg->tokens.push_back(token);
+				msg.tokens.push_back(token);
 			}
 			for (const auto version : proto.celt_versions()) {
-				msg->celtVersions.push_back(version);
+				msg.celtVersions.push_back(version);
 			}
-			msg->opus = proto.opus();
+			msg.opus = proto.opus();
 
-			return msg;
+			return true;
 		}
 		case Type::Ping: {
-			MumbleProto::Ping proto;
+			MumbleTCP::Ping proto;
 			PARSE_RET
 
-			const auto msg  = new Message::Ping;
-			msg->timestamp  = proto.timestamp();
-			msg->good       = proto.good();
-			msg->late       = proto.late();
-			msg->lost       = proto.lost();
-			msg->resync     = proto.resync();
-			msg->udpPackets = proto.udp_packets();
-			msg->tcpPackets = proto.tcp_packets();
-			msg->udpPingAvg = proto.udp_ping_avg();
-			msg->udpPingVar = proto.udp_ping_var();
-			msg->tcpPingAvg = proto.tcp_ping_avg();
-			msg->tcpPingVar = proto.tcp_ping_var();
+			auto &msg      = static_cast< Message::Ping      &>(message);
+			msg.timestamp  = proto.timestamp();
+			msg.good       = proto.good();
+			msg.late       = proto.late();
+			msg.lost       = proto.lost();
+			msg.resync     = proto.resync();
+			msg.udpPackets = proto.udp_packets();
+			msg.tcpPackets = proto.tcp_packets();
+			msg.udpPingAvg = proto.udp_ping_avg();
+			msg.udpPingVar = proto.udp_ping_var();
+			msg.tcpPingAvg = proto.tcp_ping_avg();
+			msg.tcpPingVar = proto.tcp_ping_var();
 
-			return msg;
+			return true;
 		}
 		case Type::Reject: {
-			MumbleProto::Reject proto;
+			MumbleTCP::Reject proto;
 			PARSE_RET
 
-			const auto msg = new Message::Reject;
-			msg->type      = static_cast< Message::Reject::RejectType >(proto.type());
-			msg->reason    = proto.reason();
+			auto &msg      = static_cast< Message::Reject      &>(message);
+			msg.rejectType = static_cast< Message::Reject::RejectType >(proto.type());
+			msg.reason     = proto.reason();
 
-			return msg;
+			return true;
 		}
 		case Type::ServerSync: {
-			MumbleProto::ServerSync proto;
+			MumbleTCP::ServerSync proto;
 			PARSE_RET
 
-			const auto msg    = new Message::ServerSync;
-			msg->session      = proto.session();
-			msg->maxBandwidth = proto.max_bandwidth();
-			msg->welcomeText  = proto.welcome_text();
-			msg->permissions  = proto.permissions();
+			auto &msg        = static_cast< Message::ServerSync        &>(message);
+			msg.session      = proto.session();
+			msg.maxBandwidth = proto.max_bandwidth();
+			msg.welcomeText  = proto.welcome_text();
+			msg.permissions  = proto.permissions();
 
-			return msg;
+			return true;
 		}
 		case Type::ChannelRemove: {
-			MumbleProto::ChannelRemove proto;
+			MumbleTCP::ChannelRemove proto;
 			PARSE_RET
 
-			const auto msg = new Message::ChannelRemove;
-			msg->channelID = proto.channel_id();
+			auto &msg     = static_cast< Message::ChannelRemove     &>(message);
+			msg.channelID = proto.channel_id();
 
-			return msg;
+			return true;
 		}
 		case Type::ChannelState: {
-			MumbleProto::ChannelState proto;
+			MumbleTCP::ChannelState proto;
 			PARSE_RET
 
-			const auto msg = new Message::ChannelState;
-			msg->channelID = proto.channel_id();
+			auto &msg     = static_cast< Message::ChannelState     &>(message);
+			msg.channelID = proto.channel_id();
 			if (proto.has_parent()) {
-				msg->parent = proto.parent();
+				msg.parent = proto.parent();
 			}
-			msg->name = proto.name();
+			msg.name = proto.name();
 			for (const auto link : proto.links()) {
-				msg->links.push_back(link);
+				msg.links.push_back(link);
 			}
-			msg->description = proto.description();
+			msg.description = proto.description();
 			for (const auto link : proto.links_add()) {
-				msg->linksAdd.push_back(link);
+				msg.linksAdd.push_back(link);
 			}
 			for (const auto link : proto.links_remove()) {
-				msg->linksRemove.push_back(link);
+				msg.linksRemove.push_back(link);
 			}
-			msg->temporary = proto.temporary();
-			msg->position  = proto.position();
-			toBuf(msg->descriptionHash, proto.description_hash());
-			msg->maxUsers          = proto.max_users();
-			msg->isEnterRestricted = proto.is_enter_restricted();
-			msg->canEnter          = proto.can_enter();
+			msg.temporary = proto.temporary();
+			msg.position  = proto.position();
+			toBuf(msg.descriptionHash, proto.description_hash());
+			msg.maxUsers          = proto.max_users();
+			msg.isEnterRestricted = proto.is_enter_restricted();
+			msg.canEnter          = proto.can_enter();
 
-			return msg;
+			return true;
 		}
 		case Type::UserRemove: {
-			MumbleProto::UserRemove proto;
+			MumbleTCP::UserRemove proto;
 			PARSE_RET
 
-			const auto msg = new Message::UserRemove;
-			msg->session   = proto.session();
-			msg->actor     = proto.actor();
-			msg->reason    = proto.reason();
-			msg->ban       = proto.ban();
+			auto &msg   = static_cast< Message::UserRemove   &>(message);
+			msg.session = proto.session();
+			msg.actor   = proto.actor();
+			msg.reason  = proto.reason();
+			msg.ban     = proto.ban();
 
-			return msg;
+			return true;
 		}
 		case Type::UserState: {
-			MumbleProto::UserState proto;
+			MumbleTCP::UserState proto;
 			PARSE_RET
 
-			const auto msg = new Message::UserState;
-			msg->session   = proto.session();
-			msg->actor     = proto.actor();
-			msg->name      = proto.name();
-			msg->userID    = proto.user_id();
-			msg->channelID = proto.channel_id();
-			msg->mute      = proto.mute();
-			msg->deaf      = proto.deaf();
-			msg->suppress  = proto.suppress();
-			msg->selfMute  = proto.self_mute();
-			msg->selfDeaf  = proto.self_deaf();
-			toBuf(msg->texture, proto.texture());
-			toBuf(msg->pluginContext, proto.plugin_context());
-			msg->pluginIdentity = proto.plugin_identity();
-			msg->comment        = proto.comment();
-			msg->hash           = proto.hash();
-			toBuf(msg->commentHash, proto.comment_hash());
-			toBuf(msg->textureHash, proto.texture_hash());
-			msg->prioritySpeaker = proto.priority_speaker();
-			msg->recording       = proto.recording();
+			auto &msg     = static_cast< Message::UserState     &>(message);
+			msg.session   = proto.session();
+			msg.actor     = proto.actor();
+			msg.name      = proto.name();
+			msg.userID    = proto.user_id();
+			msg.channelID = proto.channel_id();
+			msg.mute      = proto.mute();
+			msg.deaf      = proto.deaf();
+			msg.suppress  = proto.suppress();
+			msg.selfMute  = proto.self_mute();
+			msg.selfDeaf  = proto.self_deaf();
+			toBuf(msg.texture, proto.texture());
+			toBuf(msg.pluginContext, proto.plugin_context());
+			msg.pluginIdentity = proto.plugin_identity();
+			msg.comment        = proto.comment();
+			msg.hash           = proto.hash();
+			toBuf(msg.commentHash, proto.comment_hash());
+			toBuf(msg.textureHash, proto.texture_hash());
+			msg.prioritySpeaker = proto.priority_speaker();
+			msg.recording       = proto.recording();
 			for (const auto &token : proto.temporary_access_tokens()) {
-				msg->temporaryAccessTokens.push_back(token);
+				msg.temporaryAccessTokens.push_back(token);
 			}
 			for (const auto channel : proto.listening_channel_add()) {
-				msg->listeningChannelAdd.push_back(channel);
+				msg.listeningChannelAdd.push_back(channel);
 			}
 			for (const auto channel : proto.listening_channel_remove()) {
-				msg->listeningChannelRemove.push_back(channel);
+				msg.listeningChannelRemove.push_back(channel);
 			}
 
-			return msg;
+			return true;
 		}
 		case Type::BanList: {
-			MumbleProto::BanList proto;
+			MumbleTCP::BanList proto;
 			PARSE_RET
 
-			const auto msg = new Message::BanList;
+			auto &msg = static_cast< Message::BanList & >(message);
 			for (const auto &ban : proto.bans()) {
-				auto &entry = msg->bans.emplace_back();
+				auto &entry = msg.bans.emplace_back();
 				if (ban.address().size() == IP::v6Size) {
 					const auto ipv6 = entry.address.v6();
 					std::copy(ban.address().cbegin(), ban.address().cend(), ipv6.data());
@@ -727,58 +798,58 @@ Message *Pack::process() const {
 				entry.start    = ban.start();
 				entry.duration = ban.duration();
 			}
-			msg->query = proto.query();
+			msg.query = proto.query();
 
-			return msg;
+			return true;
 		}
 		case Type::TextMessage: {
-			MumbleProto::TextMessage proto;
+			MumbleTCP::TextMessage proto;
 			PARSE_RET
 
-			const auto msg = new Message::TextMessage;
-			msg->actor     = proto.actor();
+			auto &msg = static_cast< Message::TextMessage & >(message);
+			msg.actor = proto.actor();
 			for (const auto session : proto.session()) {
-				msg->session.push_back(session);
+				msg.session.push_back(session);
 			}
 			for (const auto channel : proto.channel_id()) {
-				msg->channelID.push_back(channel);
+				msg.channelID.push_back(channel);
 			}
 			for (const auto tree : proto.tree_id()) {
-				msg->treeID.push_back(tree);
+				msg.treeID.push_back(tree);
 			}
-			msg->message = proto.message();
+			msg.message = proto.message();
 
-			return msg;
+			return true;
 		}
 		case Type::PermissionDenied: {
-			MumbleProto::PermissionDenied proto;
+			MumbleTCP::PermissionDenied proto;
 			PARSE_RET
 
-			const auto msg = new Message::PermissionDenied;
+			auto &msg = static_cast< Message::PermissionDenied & >(message);
 			if (proto.has_permission()) {
-				msg->permission = proto.permission();
+				msg.permission = proto.permission();
 			}
 			if (proto.has_channel_id()) {
-				msg->channelID = proto.channel_id();
+				msg.channelID = proto.channel_id();
 			}
-			msg->session = proto.session();
-			msg->reason  = proto.reason();
-			msg->type    = static_cast< Message::PermissionDenied::DenyType >(proto.type());
+			msg.session  = proto.session();
+			msg.reason   = proto.reason();
+			msg.denyType = static_cast< Message::PermissionDenied::DenyType >(proto.type());
 			if (proto.has_name()) {
-				msg->name = proto.name();
+				msg.name = proto.name();
 			}
 
-			return msg;
+			return true;
 		}
 		case Type::ACL: {
-			MumbleProto::ACL proto;
+			MumbleTCP::ACL proto;
 			PARSE_RET
 
-			const auto msg   = new Message::ACL;
-			msg->channelID   = proto.channel_id();
-			msg->inheritACLs = proto.inherit_acls();
+			auto &msg       = static_cast< Message::ACL       &>(message);
+			msg.channelID   = proto.channel_id();
+			msg.inheritACLs = proto.inherit_acls();
 			for (const auto &group : proto.groups()) {
-				auto &entry       = msg->groups.emplace_back();
+				auto &entry       = msg.groups.emplace_back();
 				entry.name        = group.name();
 				entry.inherited   = group.inherited();
 				entry.inherit     = group.inherit();
@@ -794,7 +865,7 @@ Message *Pack::process() const {
 				}
 			}
 			for (const auto &acl : proto.acls()) {
-				auto &entry     = msg->acls.emplace_back();
+				auto &entry     = msg.acls.emplace_back();
 				entry.applyHere = acl.apply_here();
 				entry.applySubs = acl.apply_subs();
 				entry.inherited = acl.inherited();
@@ -805,85 +876,85 @@ Message *Pack::process() const {
 				entry.grant = acl.grant();
 				entry.deny  = acl.deny();
 			}
-			msg->query = proto.query();
+			msg.query = proto.query();
 
-			return msg;
+			return true;
 		}
 		case Type::QueryUsers: {
-			MumbleProto::QueryUsers proto;
+			MumbleTCP::QueryUsers proto;
 			PARSE_RET
 
-			const auto msg = new Message::QueryUsers;
+			auto &msg = static_cast< Message::QueryUsers & >(message);
 			for (const auto id : proto.ids()) {
-				msg->ids.push_back(id);
+				msg.ids.push_back(id);
 			}
 			for (const auto &name : proto.names()) {
-				msg->names.push_back(name);
+				msg.names.push_back(name);
 			}
 
-			return msg;
+			return true;
 		}
 		case Type::CryptSetup: {
-			MumbleProto::CryptSetup proto;
+			MumbleTCP::CryptSetup proto;
 			PARSE_RET
 
-			const auto msg = new Message::CryptSetup;
-			toBuf(msg->key, proto.key());
-			toBuf(msg->clientNonce, proto.client_nonce());
-			toBuf(msg->serverNonce, proto.server_nonce());
+			auto &msg = static_cast< Message::CryptSetup & >(message);
+			toBuf(msg.key, proto.key());
+			toBuf(msg.clientNonce, proto.client_nonce());
+			toBuf(msg.serverNonce, proto.server_nonce());
 
-			return msg;
+			return true;
 		}
 		case Type::ContextActionModify: {
-			MumbleProto::ContextActionModify proto;
+			MumbleTCP::ContextActionModify proto;
 			PARSE_RET
 
-			const auto msg = new Message::ContextActionModify;
-			msg->action    = proto.action();
-			msg->text      = proto.text();
-			msg->context   = proto.context();
-			msg->operation = static_cast< Message::ContextActionModify::Operation >(proto.operation());
+			auto &msg     = static_cast< Message::ContextActionModify     &>(message);
+			msg.action    = proto.action();
+			msg.text      = proto.text();
+			msg.context   = proto.context();
+			msg.operation = static_cast< Message::ContextActionModify::Operation >(proto.operation());
 
-			return msg;
+			return true;
 		}
 		case Type::ContextAction: {
-			MumbleProto::ContextAction proto;
+			MumbleTCP::ContextAction proto;
 			PARSE_RET
 
-			const auto msg = new Message::ContextAction;
+			auto &msg = static_cast< Message::ContextAction & >(message);
 			if (proto.has_session()) {
-				msg->session = proto.session();
+				msg.session = proto.session();
 			}
 			if (proto.has_channel_id()) {
-				msg->channelID = proto.channel_id();
+				msg.channelID = proto.channel_id();
 			}
-			msg->action = proto.action();
+			msg.action = proto.action();
 
-			return msg;
+			return true;
 		}
 		case Type::UserList: {
-			MumbleProto::UserList proto;
+			MumbleTCP::UserList proto;
 			PARSE_RET
 
-			const auto msg = new Message::UserList;
+			auto &msg = static_cast< Message::UserList & >(message);
 			for (const auto &user : proto.users()) {
-				auto entry        = msg->users.emplace_back();
+				auto entry        = msg.users.emplace_back();
 				entry.userID      = user.user_id();
 				entry.name        = user.name();
 				entry.lastSeen    = user.last_seen();
 				entry.lastChannel = user.last_channel();
 			}
 
-			return msg;
+			return true;
 		}
 		case Type::VoiceTarget: {
-			MumbleProto::VoiceTarget proto;
+			MumbleTCP::VoiceTarget proto;
 			PARSE_RET
 
-			const auto msg = new Message::VoiceTarget;
-			msg->id        = proto.id();
+			auto &msg = static_cast< Message::VoiceTarget & >(message);
+			msg.id    = proto.id();
 			for (const auto &target : proto.targets()) {
-				auto entry = msg->targets.emplace_back();
+				auto entry = msg.targets.emplace_back();
 				for (const auto session : target.session()) {
 					entry.session.push_back(session);
 				}
@@ -895,179 +966,211 @@ Message *Pack::process() const {
 				entry.children = target.children();
 			}
 
-			return msg;
+			return true;
 		}
 		case Type::PermissionQuery: {
-			MumbleProto::PermissionQuery proto;
+			MumbleTCP::PermissionQuery proto;
 			PARSE_RET
 
-			const auto msg   = new Message::PermissionQuery;
-			msg->channelID   = proto.channel_id();
-			msg->permissions = proto.permissions();
-			msg->flush       = proto.flush();
+			auto &msg       = static_cast< Message::PermissionQuery       &>(message);
+			msg.channelID   = proto.channel_id();
+			msg.permissions = proto.permissions();
+			msg.flush       = proto.flush();
 
-			return msg;
+			return true;
 		}
 		case Type::CodecVersion: {
-			MumbleProto::CodecVersion proto;
+			MumbleTCP::CodecVersion proto;
 			PARSE_RET
 
-			const auto msg   = new Message::CodecVersion;
-			msg->alpha       = proto.alpha();
-			msg->beta        = proto.beta();
-			msg->preferAlpha = proto.prefer_alpha();
-			msg->opus        = proto.opus();
+			auto &msg       = static_cast< Message::CodecVersion       &>(message);
+			msg.alpha       = proto.alpha();
+			msg.beta        = proto.beta();
+			msg.preferAlpha = proto.prefer_alpha();
+			msg.opus        = proto.opus();
 
-			return msg;
+			return true;
 		}
 		case Type::UserStats: {
-			MumbleProto::UserStats proto;
+			MumbleTCP::UserStats proto;
 			PARSE_RET
 
-			const auto msg = new Message::UserStats;
-			msg->session   = proto.session();
-			msg->statsOnly = proto.stats_only();
+			auto &msg     = static_cast< Message::UserStats     &>(message);
+			msg.session   = proto.session();
+			msg.statsOnly = proto.stats_only();
 			for (const auto &cert : proto.certificates()) {
 				Cert::Der der;
 				toBuf(der, cert);
-				msg->certificates.push_back(Cert(der));
+				msg.certificates.push_back(Cert(der));
 			}
-			msg->fromClient.good   = proto.from_client().good();
-			msg->fromClient.late   = proto.from_client().late();
-			msg->fromClient.lost   = proto.from_client().lost();
-			msg->fromClient.resync = proto.from_client().resync();
-			msg->fromServer.good   = proto.from_server().good();
-			msg->fromServer.late   = proto.from_server().late();
-			msg->fromServer.lost   = proto.from_server().lost();
-			msg->fromServer.resync = proto.from_server().resync();
+			msg.fromClient.good   = proto.from_client().good();
+			msg.fromClient.late   = proto.from_client().late();
+			msg.fromClient.lost   = proto.from_client().lost();
+			msg.fromClient.resync = proto.from_client().resync();
+			msg.fromServer.good   = proto.from_server().good();
+			msg.fromServer.late   = proto.from_server().late();
+			msg.fromServer.lost   = proto.from_server().lost();
+			msg.fromServer.resync = proto.from_server().resync();
 
-			msg->udpPackets = proto.udp_packets();
-			msg->tcpPackets = proto.tcp_packets();
-			msg->udpPingAvg = proto.udp_ping_avg();
-			msg->udpPingVar = proto.udp_ping_var();
-			msg->tcpPingAvg = proto.tcp_ping_avg();
-			msg->tcpPingVar = proto.tcp_ping_var();
+			msg.udpPackets = proto.udp_packets();
+			msg.tcpPackets = proto.tcp_packets();
+			msg.udpPingAvg = proto.udp_ping_avg();
+			msg.udpPingVar = proto.udp_ping_var();
+			msg.tcpPingAvg = proto.tcp_ping_avg();
+			msg.tcpPingVar = proto.tcp_ping_var();
 
-			msg->version.version   = proto.version().version();
-			msg->version.release   = proto.version().release();
-			msg->version.os        = proto.version().os();
-			msg->version.osVersion = proto.version().os_version();
+			msg.version.version   = proto.version().version();
+			msg.version.release   = proto.version().release();
+			msg.version.os        = proto.version().os();
+			msg.version.osVersion = proto.version().os_version();
 			for (const auto version : proto.celt_versions()) {
-				msg->celtVersions.push_back(version);
+				msg.celtVersions.push_back(version);
 			}
 			if (proto.address().size() == IP::v6Size) {
-				const auto ipv6 = msg->address.v6();
+				const auto ipv6 = msg.address.v6();
 				std::copy(proto.address().cbegin(), proto.address().cend(), ipv6.data());
 			}
-			msg->bandwidth         = proto.bandwidth();
-			msg->onlinesecs        = proto.onlinesecs();
-			msg->idlesecs          = proto.idlesecs();
-			msg->strongCertificate = proto.strong_certificate();
-			msg->opus              = proto.opus();
+			msg.bandwidth         = proto.bandwidth();
+			msg.onlinesecs        = proto.onlinesecs();
+			msg.idlesecs          = proto.idlesecs();
+			msg.strongCertificate = proto.strong_certificate();
+			msg.opus              = proto.opus();
 
-			return msg;
+			return true;
 		}
 		case Type::RequestBlob: {
-			MumbleProto::RequestBlob proto;
+			MumbleTCP::RequestBlob proto;
 			PARSE_RET
 
-			const auto msg = new Message::RequestBlob;
+			auto &msg = static_cast< Message::RequestBlob & >(message);
 			for (const auto texture : proto.session_texture()) {
-				msg->sessionTexture.push_back(texture);
+				msg.sessionTexture.push_back(texture);
 			}
 			for (const auto comment : proto.session_comment()) {
-				msg->sessionComment.push_back(comment);
+				msg.sessionComment.push_back(comment);
 			}
 			for (const auto description : proto.channel_description()) {
-				msg->channelDescription.push_back(description);
+				msg.channelDescription.push_back(description);
 			}
 
-			return msg;
+			return true;
 		}
 		case Type::ServerConfig: {
-			MumbleProto::ServerConfig proto;
+			MumbleTCP::ServerConfig proto;
 			PARSE_RET
 
-			const auto msg          = new Message::ServerConfig;
-			msg->maxBandwidth       = proto.max_bandwidth();
-			msg->welcomeText        = proto.welcome_text();
-			msg->allowHTML          = proto.allow_html();
-			msg->messageLength      = proto.message_length();
-			msg->imageMessageLength = proto.image_message_length();
-			msg->maxUsers           = proto.max_users();
-			msg->recordingAllowed   = proto.recording_allowed();
+			auto &msg              = static_cast< Message::ServerConfig              &>(message);
+			msg.maxBandwidth       = proto.max_bandwidth();
+			msg.welcomeText        = proto.welcome_text();
+			msg.allowHTML          = proto.allow_html();
+			msg.messageLength      = proto.message_length();
+			msg.imageMessageLength = proto.image_message_length();
+			msg.maxUsers           = proto.max_users();
+			msg.recordingAllowed   = proto.recording_allowed();
 
-			return msg;
+			return true;
 		}
 		case Type::SuggestConfig: {
-			MumbleProto::SuggestConfig proto;
+			MumbleTCP::SuggestConfig proto;
 			PARSE_RET
 
-			const auto msg = new Message::SuggestConfig;
+			auto &msg = static_cast< Message::SuggestConfig & >(message);
 			if (proto.has_version()) {
-				msg->version = proto.version();
+				msg.version = proto.version();
 			}
 			if (proto.has_positional()) {
-				msg->positional = proto.positional();
+				msg.positional = proto.positional();
 			}
 			if (proto.has_push_to_talk()) {
-				msg->pushToTalk = proto.push_to_talk();
+				msg.pushToTalk = proto.push_to_talk();
 			}
 
-			return msg;
+			return true;
 		}
 		case Type::PluginDataTransmission: {
-			MumbleProto::PluginDataTransmission proto;
+			MumbleTCP::PluginDataTransmission proto;
 			PARSE_RET
 
-			const auto msg     = new Message::PluginDataTransmission;
-			msg->senderSession = proto.sendersession();
+			auto &msg         = static_cast< Message::PluginDataTransmission         &>(message);
+			msg.senderSession = proto.sendersession();
 			for (const auto session : proto.receiversessions()) {
-				msg->receiverSessions.push_back(session);
+				msg.receiverSessions.push_back(session);
 			}
-			toBuf(msg->data, proto.data());
-			msg->dataID = proto.dataid();
+			toBuf(msg.data, proto.data());
+			msg.dataID = proto.dataid();
 
-			return msg;
+			return true;
 		}
 		case Type::Unknown:
 			break;
 	}
 
-	return {};
+	return false;
 }
 
-void Pack::setBuf(const Type type, const Buf &ref) {
-	m_buf.resize(sizeof(NetHeader) + ref.size());
+bool UDP::operator()(Message &message, uint32_t dataSize) const {
+	using Type = Message::Type;
 
-	auto buf = data();
-	std::copy(ref.cbegin(), ref.cend(), buf.begin());
-
-	const auto header = reinterpret_cast< NetHeader * >(m_buf.data());
-	header->type      = Endian::toNetwork(static_cast< uint16_t >(type));
-	header->size      = Endian::toNetwork(static_cast< uint32_t >(buf.size()));
-}
-
-bool Pack::setBuf(const Type type, const google::protobuf::Message &proto) {
-	m_buf.resize(sizeof(NetHeader) + proto.ByteSizeLong());
-
-	auto buf = data();
-	if (!proto.SerializeToArray(buf.data(), buf.size())) {
+	if (message.type() != type()) {
 		return false;
 	}
 
-	const auto header = reinterpret_cast< NetHeader * >(m_buf.data());
-	header->type      = Endian::toNetwork(static_cast< uint16_t >(type));
-	header->size      = Endian::toNetwork(static_cast< uint32_t >(buf.size()));
+	if (dataSize > data().size()) {
+		dataSize = data().size();
+	}
 
-	return true;
-}
+	switch (message.type()) {
+		case Type::Audio: {
+			MumbleUDP::Audio proto;
+			PARSE_RET
 
-std::byte Pack::toByte(const char byte) {
-	return static_cast< std::byte >(byte);
-}
+			auto &msg = static_cast< Message::Audio & >(message);
+			switch (proto.Header_case()) {
+				case MumbleUDP::Audio::kTarget:
+					msg.target = proto.target();
+					break;
+				case MumbleUDP::Audio::kContext:
+					msg.context = proto.context();
+					break;
+				case MumbleUDP::Audio::HEADER_NOT_SET:
+					break;
+			}
 
-void Pack::toBuf(Buf &buf, const std::string_view str) {
-	buf.resize(str.size());
-	std::transform(str.cbegin(), str.cend(), buf.begin(), toByte);
+			// FIXME: Check if field is set once "optional" is in .proto file.
+			msg.senderSession = proto.sender_session();
+
+			msg.frameNumber = proto.frame_number();
+			toBuf(msg.opusData, proto.opus_data());
+			for (const auto data : proto.positional_data()) {
+				msg.positionalData.push_back(data);
+			}
+
+			msg.volumeAdjustment = proto.volume_adjustment();
+
+			msg.isTerminator = proto.is_terminator();
+
+			return true;
+		}
+		case Type::Ping: {
+			MumbleUDP::Ping proto;
+			PARSE_RET
+
+			auto &msg     = static_cast< Message::Ping     &>(message);
+			msg.timestamp = proto.timestamp();
+
+			msg.requestExtendedInformation = proto.request_extended_information();
+
+			// FIXME: Check if fields are set once "optional" is in .proto file.
+			msg.serverVersion       = proto.server_version();
+			msg.userCount           = proto.user_count();
+			msg.maxUserCount        = proto.max_user_count();
+			msg.maxBandwidthPerUser = proto.max_bandwidth_per_user();
+
+			return true;
+		}
+		case Type::Unknown:
+			break;
+	}
+
+	return false;
 }

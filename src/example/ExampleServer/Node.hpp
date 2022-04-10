@@ -8,6 +8,7 @@
 
 #include "mumble/Cert.hpp"
 #include "mumble/Key.hpp"
+#include "mumble/Message.hpp"
 #include "mumble/Peer.hpp"
 
 #include <cstdint>
@@ -38,6 +39,8 @@ private:
 
 	bool startTCP();
 	bool startUDP();
+
+	bool fillPing(mumble::udp::Message::Ping &ping);
 
 	bool m_ok;
 	uint32_t m_bandwidth;

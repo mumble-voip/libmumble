@@ -22,7 +22,11 @@
 
 namespace mumble {
 class Key;
-class Message;
+
+namespace tcp {
+	struct Message;
+	class Pack;
+} // namespace tcp
 } // namespace mumble
 
 class User {
@@ -34,6 +38,8 @@ public:
 	using Connection  = mumble::Connection;
 	using CryptOCB2   = mumble::CryptOCB2;
 	using Key         = mumble::Key;
+	using Message     = mumble::tcp::Message;
+	using Pack        = mumble::tcp::Pack;
 
 	struct Packet {
 		mumble::Endpoint endpoint;
@@ -81,7 +87,8 @@ public:
 
 	Code connect(const Connection::Feedback &feedback, const Cert::Chain &cert, const Key &key);
 
-	void send(const mumble::Message &message);
+	void send(const Message &message);
+	void send(const Pack &pack);
 
 private:
 	uint32_t m_id;

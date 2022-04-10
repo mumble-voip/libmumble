@@ -8,6 +8,7 @@
 #include "Endpoints.hpp"
 
 #include "mumble/Connection.hpp"
+#include "mumble/Pack.hpp"
 
 #include <algorithm>
 #include <cstdint>
@@ -226,6 +227,10 @@ Code User::connect(const Connection::Feedback &feedback, const Cert::Chain &cert
 	return (*m_connection)(feedback);
 }
 
-void User::send(const mumble::Message &message) {
-	m_connection->write(message);
+void User::send(const Message &message) {
+	send(Pack(message));
+}
+
+void User::send(const Pack &pack) {
+	m_connection->write(pack.buf());
 }

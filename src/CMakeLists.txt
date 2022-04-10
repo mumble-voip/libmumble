@@ -24,7 +24,8 @@ add_library(mumble SHARED)
 
 target_pedantic_warnings(mumble)
 
-protobuf_generate_cpp(PROTO_CPP PROTO_HPP "Mumble.proto")
+protobuf_generate_cpp(PROTO_TCP_CPP PROTO_TCP_HPP "MumbleTCP.proto")
+protobuf_generate_cpp(PROTO_UDP_CPP PROTO_UDP_HPP "MumbleUDP.proto")
 
 set_target_properties(mumble
 	PROPERTIES
@@ -82,7 +83,6 @@ target_sources(mumble
 		"Opus.cpp"
 		"Opus.hpp"
 		"Pack.cpp"
-		"Pack.hpp"
 		"Peer.cpp"
 		"Peer.hpp"
 		"Socket.cpp"
@@ -94,8 +94,10 @@ target_sources(mumble
 		"UDP.cpp"
 		"UDP.hpp"
 
-		${PROTO_CPP}
-		${PROTO_HPP}
+		${PROTO_TCP_CPP}
+		${PROTO_TCP_HPP}
+		${PROTO_UDP_CPP}
+		${PROTO_UDP_HPP}
 
 		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll/wepoll.c>
 		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll/wepoll.h>
@@ -113,6 +115,7 @@ target_sources(mumble
 		"${INCLUDE_DIR}/mumble/Message.hpp"
 		"${INCLUDE_DIR}/mumble/Mumble.hpp"
 		"${INCLUDE_DIR}/mumble/Opus.hpp"
+		"${INCLUDE_DIR}/mumble/Pack.hpp"
 		"${INCLUDE_DIR}/mumble/Peer.hpp"
 		"${INCLUDE_DIR}/mumble/Types.hpp"
 )

@@ -12,6 +12,7 @@ namespace mumble {};
 
 #include "IP.hpp"
 
+#include <algorithm>
 #include <vector>
 
 #include <boost/core/span.hpp>
@@ -105,6 +106,16 @@ static constexpr std::string_view text(const Code code) {
 
 	return {};
 }
+
+static constexpr std::byte toByte(const char byte) {
+	return static_cast< std::byte >(byte);
+}
+
+static constexpr void toBuf(Buf &buf, const std::string_view str) {
+	buf.resize(str.size());
+	std::transform(str.cbegin(), str.cend(), buf.begin(), toByte);
+}
+
 } // namespace mumble
 
 #endif

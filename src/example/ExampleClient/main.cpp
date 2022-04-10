@@ -8,6 +8,7 @@
 #include "mumble/Connection.hpp"
 #include "mumble/Message.hpp"
 #include "mumble/Mumble.hpp"
+#include "mumble/Pack.hpp"
 #include "mumble/Peer.hpp"
 #include "mumble/Types.hpp"
 
@@ -29,6 +30,10 @@
 using namespace mumble;
 
 static Connection::Feedback connectionFeedback(Connection &connection, std::condition_variable &cv) {
+	using Message = tcp::Message;
+	using Pack    = tcp::Pack;
+	using Type    = Message::Type;
+
 	Connection::Feedback feedback;
 
 	feedback.opened = [&connection]() {
@@ -37,7 +42,7 @@ static Connection::Feedback connectionFeedback(Connection &connection, std::cond
 		Message::Version ver;
 		ver.version = Mumble::version().blob();
 		ver.release = "Custom client";
-		connection.write(ver);
+		connection.write(Pack(ver).buf());
 	};
 
 	feedback.closed = [&cv]() {
@@ -52,11 +57,9 @@ static Connection::Feedback connectionFeedback(Connection &connection, std::cond
 		cv.notify_all();
 	};
 
-	feedback.message = [](Message *message) {
-		const auto ptr = std::unique_ptr< Message >(message);
-
-		if (message->type() != Message::Type::UDPTunnel) {
-			printf("%s received!\n", Message::text(message->type()).data());
+	feedback.pack = [](Pack &pack) {
+		if (pack.type() != Type::UDPTunnel) {
+			printf("%s received!\n", Message::text(pack.type()).data());
 		}
 	};
 

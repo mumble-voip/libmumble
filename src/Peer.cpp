@@ -6,15 +6,16 @@
 #include "Peer.hpp"
 
 #include "Connection.hpp"
-#include "Pack.hpp"
 #include "Socket.hpp"
 #include "TCP.hpp"
 #include "UDP.hpp"
 
 #include "mumble/Connection.hpp"
-#include "mumble/Mumble.hpp"
+#include "mumble/Message.hpp"
+#include "mumble/Pack.hpp"
 #include "mumble/Types.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <mutex>
 #include <utility>
@@ -305,14 +306,19 @@ void P::TCP::threadFunc(const uint32_t threads) {
 }
 
 void P::UDP::threadFunc() {
-	using Event = Monitor::Event;
+	using namespace udp;
+	using namespace legacy::udp;
+
+	using Event   = Monitor::Event;
+	using Message = udp::Message;
+	using Pack    = udp::Pack;
+	using Type    = Message::Type;
 
 	if (m_feedback.started) {
 		m_feedback.started();
 	}
 
-	FixedBuf< 1024 > buf;
-
+	Pack pack(1024);
 	Event event(m_socket->fd());
 
 	while (!m_halt) {
@@ -323,20 +329,36 @@ void P::UDP::threadFunc() {
 
 		while (event.state & Event::InReady) {
 			Endpoint endpoint;
-			BufRef bufRef(buf);
+			BufRef packet(pack.buf());
 
-			const auto code = m_socket->read(endpoint, bufRef);
+			const auto code = m_socket->read(endpoint, packet);
 			switch (code) {
-				case Code::Success:
-					if (Pack::isPingUDP(bufRef)) {
-						if (m_feedback.ping) {
-							m_feedback.ping(endpoint, *reinterpret_cast< Mumble::PingUDP * >(bufRef.data()));
+				case Code::Success: {
+					if (pack.type() == Type::Ping) {
+						Message::Ping ping;
+						if (pack(ping, packet.size() - sizeof(NetHeader))) {
+							if (m_feedback.ping) {
+								m_feedback.ping(endpoint, ping);
+							}
+
+							continue;
 						}
-					} else if (m_feedback.encrypted) {
-						m_feedback.encrypted(endpoint, bufRef);
+					}
+
+					if (isPlainPing(packet)) {
+						if (m_feedback.legacyPing) {
+							m_feedback.legacyPing(endpoint, *reinterpret_cast< Ping * >(packet.data()));
+						}
+
+						continue;
+					}
+
+					if (m_feedback.encrypted) {
+						m_feedback.encrypted(endpoint, packet);
 					}
 
 					continue;
+				}
 				case Code::Timeout:
 				case Code::Retry:
 				case Code::Busy:

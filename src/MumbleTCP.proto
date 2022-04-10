@@ -5,7 +5,7 @@
 
 syntax = "proto2";
 
-package MumbleProto;
+package MumbleTCP;
 
 option optimize_for = SPEED;
 

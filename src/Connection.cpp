@@ -5,12 +5,13 @@
 
 #include "Connection.hpp"
 
-#include "Pack.hpp"
-
+#include "mumble/Endian.hpp"
 #include "mumble/Key.hpp"
 #include "mumble/Message.hpp"
+#include "mumble/Pack.hpp"
 
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <utility>
 
@@ -88,15 +89,28 @@ bool Connection::setCert(const Cert::Chain &cert, const Key &key) {
 }
 
 Code Connection::process(const bool wait, const std::function< bool() > halt) {
+	using Message   = tcp::Message;
+	using NetHeader = tcp::NetHeader;
+	using Pack      = tcp::Pack;
+	using Type      = Message::Type;
+
 	do {
-		Pack::NetHeader header;
+		NetHeader header;
 		auto code = m_p->read({ reinterpret_cast< std::byte * >(&header), sizeof(header) }, wait, halt);
 		if (code != Code::Success) {
 			return code;
 		}
 
+		if (Endian::toHost(header.size) > std::numeric_limits< uint16_t >::max()) {
+			if (!m_p->m_closed.test_and_set()) {
+				m_p->m_feedback.failed(Code::Invalid);
+			}
+
+			return Code::Invalid;
+		}
+
 		Pack pack(header);
-		if (pack.type() == Message::Type::Unknown) {
+		if (pack.type() == Type::Unknown) {
 			if (!m_p->m_closed.test_and_set()) {
 				m_p->m_feedback.failed(Code::Invalid);
 			}
@@ -109,15 +123,14 @@ Code Connection::process(const bool wait, const std::function< bool() > halt) {
 			return code;
 		}
 
-		m_p->m_feedback.message(pack.process());
-	} while (m_p->pending() >= sizeof(Pack::NetHeader));
+		m_p->m_feedback.pack(pack);
+	} while (m_p->pending() >= sizeof(NetHeader));
 
 	return Code::Success;
 }
 
-Code Connection::write(const Message &message, const bool wait, const std::function< bool() > halt) {
-	const Pack pack(message);
-	return m_p->write(pack.buf(), wait, halt);
+Code Connection::write(const BufRefConst data, const bool wait, const std::function< bool() > halt) {
+	return m_p->write(data, wait, halt);
 }
 
 P::P(SocketTLS &&socket) : SocketTLS(std::move(socket)) {

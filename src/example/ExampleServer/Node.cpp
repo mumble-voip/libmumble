@@ -14,8 +14,10 @@
 #include "mumble/IP.hpp"
 #include "mumble/Message.hpp"
 #include "mumble/Mumble.hpp"
+#include "mumble/Pack.hpp"
 #include "mumble/Types.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdio>
 #include <fstream>
@@ -67,6 +69,10 @@ bool Node::start() {
 }
 
 bool Node::startTCP() {
+	using Message = tcp::Message;
+	using Pack    = tcp::Pack;
+	using Type    = Message::Type;
+
 	Peer::FeedbackTCP feedbackTCP;
 
 	feedbackTCP.started = []() { printf("TCP started!\n"); };
@@ -143,38 +149,36 @@ bool Node::startTCP() {
 			}
 		};
 
-		feedback.message = [this, userPtr](Message *message) {
-			const auto ptr = std::unique_ptr< Message >(message);
-
+		feedback.pack = [this, userPtr](Pack &pack) {
 			const auto user = userPtr.lock();
 			if (!user) {
 				return;
 			}
 
-			using Type = Message::Type;
-
-			if (message->type() != Type::UDPTunnel) {
-				printf("[#%u] %s received!\n", user->id(), Message::text(message->type()).data());
+			if (pack.type() != Type::UDPTunnel) {
+				printf("[#%u] (TCP) %s received!\n", user->id(), Message::text(pack.type()).data());
 			}
 
 			using Perm = Message::Perm;
 
-			switch (message->type()) {
+			switch (pack.type()) {
 				case Type::Version: {
-					const auto ver = static_cast< Message::Version * >(message);
-					ver->version   = Mumble::version().blob();
-					ver->release   = "Custom server";
-					ver->os.clear();
-					ver->osVersion.clear();
-					user->send(*ver);
+					Message::Version ver;
+					ver.version = Mumble::version().blob();
+					ver.release = "Custom server";
+					user->send(ver);
 
 					break;
 				}
 				case Type::UDPTunnel:
 					break;
 				case Type::Authenticate: {
-					const auto auth = static_cast< const Message::Authenticate * >(message);
-					printf("username: %s | password: %s\n", auth->username.c_str(), auth->password.c_str());
+					Message::Authenticate auth;
+					if (!pack(auth)) {
+						break;
+					}
+
+					printf("username: %s | password: %s\n", auth.username.c_str(), auth.password.c_str());
 
 					Message::CryptSetup crypt;
 					crypt.key.assign(user->key().begin(), user->key().end());
@@ -196,7 +200,7 @@ bool Node::startTCP() {
 
 					Message::UserState state;
 					state.session   = user->id();
-					state.name      = auth->username;
+					state.name      = auth.username;
 					state.channelID = channel.channelID;
 					user->send(state);
 
@@ -217,11 +221,9 @@ bool Node::startTCP() {
 
 					break;
 				}
-				case Type::Ping: {
-					const auto ping = static_cast< Message::Ping * >(message);
-					user->send(*ping);
+				case Type::Ping:
+					user->send(pack);
 					break;
-				}
 				case Type::Reject:
 					break;
 				case Type::ServerSync:
@@ -255,31 +257,38 @@ bool Node::startTCP() {
 				case Type::VoiceTarget:
 					break;
 				case Type::PermissionQuery: {
-					const auto query = static_cast< Message::PermissionQuery * >(message);
+					Message::PermissionQuery query;
+					if (!pack(query)) {
+						break;
+					}
 
-					query->permissions = static_cast< uint32_t >(Perm::Enter | Perm::Speak | Perm::TextMessage);
+					query.permissions = static_cast< uint32_t >(Perm::Enter | Perm::Speak | Perm::TextMessage);
 
-					user->send(*query);
+					user->send(query);
 					break;
 				}
 				case Type::CodecVersion:
 					break;
 				case Type::UserStats: {
-					const auto stats  = static_cast< Message::UserStats  *>(message);
-					const auto target = (*m_userManager)[stats->session];
+					Message::UserStats stats;
+					if (!pack(stats)) {
+						break;
+					}
+
+					const auto target = (*m_userManager)[stats.session];
 					if (!target) {
 						break;
 					}
 
-					stats->fromClient.good = target->good();
-					stats->fromClient.late = target->late();
-					stats->fromClient.lost = target->lost();
+					stats.fromClient.good = target->good();
+					stats.fromClient.late = target->late();
+					stats.fromClient.lost = target->lost();
 
-					stats->address      = target->connection()->peerEndpoint().ip;
-					stats->certificates = target->connection()->peerCert();
-					stats->opus         = true;
+					stats.address      = target->connection()->peerEndpoint().ip;
+					stats.certificates = target->connection()->peerCert();
+					stats.opus         = true;
 
-					user->send(*stats);
+					user->send(stats);
 					break;
 				}
 				case Type::RequestBlob:
@@ -313,6 +322,11 @@ bool Node::startTCP() {
 }
 
 bool Node::startUDP() {
+	using Message   = udp::Message;
+	using NetHeader = udp::NetHeader;
+	using Pack      = udp::Pack;
+	using Type      = Message::Type;
+
 	Peer::FeedbackUDP feedbackUDP;
 
 	feedbackUDP.started = []() { printf("UDP started!\n"); };
@@ -322,13 +336,19 @@ bool Node::startUDP() {
 
 	feedbackUDP.timeout = []() { return 10000; };
 
-	feedbackUDP.ping = [this](Endpoint &endpoint, Mumble::PingUDP &ping) {
+	feedbackUDP.legacyPing = [this](Endpoint &endpoint, legacy::udp::Ping &ping) {
 		ping.versionBlob  = Endian::toNetwork(Mumble::version().blob());
 		ping.sessions     = Endian::toNetwork(m_userManager->num());
 		ping.maxSessions  = Endian::toNetwork(m_userManager->max());
 		ping.maxBandwidth = Endian::toNetwork(m_bandwidth);
 
 		m_server.sendUDP(endpoint, { reinterpret_cast< std::byte * >(&ping), sizeof(ping) });
+	};
+
+	feedbackUDP.ping = [this](Endpoint &endpoint, Message::Ping &ping) {
+		fillPing(ping);
+
+		m_server.sendUDP(endpoint, Pack(ping).buf());
 	};
 
 	feedbackUDP.encrypted = [this](Endpoint &endpoint, BufRef buf) {
@@ -352,13 +372,52 @@ bool Node::startUDP() {
 			return;
 		}
 
-		if (Mumble::packetType(decrypted) == Mumble::TypeUDP::Ping) {
-			size = user->encrypt(buf, { decrypted.data(), size });
-			if (!size) {
-				return;
+		BufRefConst packet = { decrypted.data(), size };
+
+		if (legacy::udp::type(packet) == legacy::udp::Type::Ping) {
+			printf("[#%u] (UDP) Legacy ping received!\n", user->id());
+
+			size = user->encrypt(buf, packet);
+			if (size) {
+				m_server.sendUDP(endpoint, buf.first(size));
 			}
 
-			m_server.sendUDP(endpoint, buf.first(size));
+			return;
+		}
+
+		auto header = reinterpret_cast< const NetHeader * >(packet.data());
+		packet      = packet.subspan(sizeof(*header));
+
+		Pack pack(packet.size(), *header);
+
+		if (pack.type() != Type::Audio) {
+			printf("[#%u] (UDP) %s received!\n", user->id(), Message::text(pack.type()).data());
+		}
+
+		switch (pack.type()) {
+			case Type::Audio:
+				break;
+			case Type::Ping: {
+				std::copy(packet.cbegin(), packet.cend(), pack.data().begin());
+
+				Message::Ping ping;
+				if (!pack(ping)) {
+					break;
+				}
+
+				if (fillPing(ping)) {
+					pack = Pack(ping);
+				}
+
+				size = user->encrypt(buf, pack.buf());
+				if (size) {
+					m_server.sendUDP(endpoint, buf.first(size));
+				}
+
+				break;
+			}
+			case Type::Unknown:
+				break;
 		}
 	};
 
@@ -367,6 +426,19 @@ bool Node::startUDP() {
 		printf("Peer::startUDP() failed with error \"%s\"!\n", text(code).data());
 		return false;
 	}
+
+	return true;
+}
+
+bool Node::fillPing(udp::Message::Ping &ping) {
+	if (!ping.requestExtendedInformation) {
+		return false;
+	}
+
+	ping.serverVersion       = Mumble::version().blob();
+	ping.userCount           = m_userManager->num();
+	ping.maxUserCount        = m_userManager->max();
+	ping.maxBandwidthPerUser = m_bandwidth;
 
 	return true;
 }

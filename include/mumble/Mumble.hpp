@@ -14,8 +14,6 @@
 namespace mumble {
 class MUMBLE_EXPORT Mumble {
 public:
-	enum class TypeUDP : uint8_t { VoiceCELTAlpha, Ping, VoiceSpeex, VoiceCELTBeta, VoiceOpus };
-
 	struct Version {
 		uint16_t major;
 		uint8_t minor;
@@ -28,14 +26,6 @@ public:
 			: major(major), minor(minor), patch(patch) {}
 	};
 
-	MUMBLE_PACK(struct PingUDP {
-		uint32_t versionBlob;
-		uint64_t timestamp;
-		uint32_t sessions;
-		uint32_t maxSessions;
-		uint32_t maxBandwidth;
-	});
-
 	Mumble();
 	virtual ~Mumble() = delete;
 
@@ -43,11 +33,6 @@ public:
 
 	static Code init();
 	static Code deinit();
-
-	static TypeUDP packetType(const BufRefConst data) {
-		const auto byte = (static_cast< uint8_t >(data[0]) >> 5) & 0x7;
-		return static_cast< TypeUDP >(byte);
-	}
 
 private:
 	Mumble(const Mumble &)  = delete;

@@ -14,7 +14,9 @@
 #include <functional>
 
 namespace mumble {
-class Message;
+namespace tcp {
+	class Pack;
+}
 
 class MUMBLE_EXPORT Connection {
 public:
@@ -30,7 +32,7 @@ public:
 		std::function< uint32_t() > timeout;
 		std::function< uint32_t() > timeouts;
 
-		std::function< void(Message *message) > message;
+		std::function< void(tcp::Pack &pack) > pack;
 	};
 
 	Connection(Connection &&connection);
@@ -56,7 +58,7 @@ public:
 	virtual Code process(
 		const bool wait = true, const std::function< bool() > halt = []() { return false; });
 	virtual Code write(
-		const Message &message, const bool wait = true, const std::function< bool() > halt = []() { return false; });
+		const BufRefConst data, const bool wait = true, const std::function< bool() > halt = []() { return false; });
 
 private:
 	Connection(const Connection &) = delete;

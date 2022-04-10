@@ -7,7 +7,7 @@
 #define MUMBLE_PEER_HPP
 
 #include "Macros.hpp"
-#include "Mumble.hpp"
+#include "Message.hpp"
 #include "Types.hpp"
 
 #include <functional>
@@ -41,8 +41,9 @@ public:
 
 		std::function< uint32_t() > timeout;
 
-		std::function< void(Endpoint &endpoint, Mumble::PingUDP &ping) > ping;
 		std::function< void(Endpoint &endpoint, BufRef buf) > encrypted;
+		std::function< void(Endpoint &endpoint, udp::Message::Ping &ping) > ping;
+		std::function< void(Endpoint &endpoint, legacy::udp::Ping &ping) > legacyPing;
 	};
 
 	Peer();
