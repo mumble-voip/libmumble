@@ -22,25 +22,20 @@ public:
 
 	using SharedConnection = std::shared_ptr< Connection >;
 
-	struct FeedbackTCP {
+	struct Feedback {
 		std::function< void() > started;
 		std::function< void() > stopped;
 
 		std::function< void(Code code) > failed;
 
 		std::function< uint32_t() > timeout;
+	};
 
+	struct FeedbackTCP : Feedback {
 		std::function< bool(Endpoint &endpoint, int32_t fd) > connection;
 	};
 
-	struct FeedbackUDP {
-		std::function< void() > started;
-		std::function< void() > stopped;
-
-		std::function< void(Code code) > failed;
-
-		std::function< uint32_t() > timeout;
-
+	struct FeedbackUDP : Feedback {
 		std::function< void(Endpoint &endpoint, BufRef buf) > encrypted;
 		std::function< void(Endpoint &endpoint, udp::Message::Ping &ping) > ping;
 		std::function< void(Endpoint &endpoint, legacy::udp::Ping &ping) > legacyPing;
