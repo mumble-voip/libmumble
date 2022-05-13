@@ -13,6 +13,7 @@
 #include <utility>
 
 #include <openssl/evp.h>
+#include <openssl/opensslv.h>
 
 #define CHECK      \
 	if (!*this) {  \
@@ -108,11 +109,19 @@ P::~P() {
 }
 
 P::operator bool() {
+#if OPENSSL_VERSION_MAJOR >= 3
+	return m_ctx && EVP_MD_CTX_get0_md(m_ctx);
+#else
 	return m_ctx && EVP_MD_CTX_md(m_ctx);
+#endif
 }
 
 std::string_view P::type() {
+#if OPENSSL_VERSION_MAJOR >= 3
+	const auto type = EVP_MD_CTX_get0_md(m_ctx);
+#else
 	const auto type = EVP_MD_CTX_md(m_ctx);
+#endif
 	if (type == EVP_md_null()) {
 		return {};
 	}

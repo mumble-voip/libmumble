@@ -14,6 +14,7 @@
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
+#include <openssl/opensslv.h>
 
 #define CHECK      \
 	if (!*this) {  \
@@ -47,8 +48,11 @@ Key::operator bool() const {
 }
 
 Key &Key::operator=(const Key &key) {
-	// TODO: Switch to EVP_PKEY_dup() once available (OpenSSL 3.0.0).
+#if OPENSSL_VERSION_MAJOR >= 3
+	m_p = std::make_unique< P >(EVP_PKEY_dup(key.m_p->m_pkey));
+#else
 	m_p = std::make_unique< P >(key.pem(), key.isPrivate());
+#endif
 	return *this;
 }
 
@@ -61,8 +65,11 @@ bool Key::operator==(const Key &key) const {
 	if (!*this || !key) {
 		return !*this && !key;
 	}
-
-	return EVP_PKEY_cmp(m_p->m_pkey, key.m_p->m_pkey) == 0;
+#if OPENSSL_VERSION_MAJOR >= 3
+	return EVP_PKEY_eq(m_p->m_pkey, key.m_p->m_pkey) == 1;
+#else
+	return EVP_PKEY_cmp(m_p->m_pkey, key.m_p->m_pkey) == 1;
+#endif
 }
 
 void *Key::handle() const {
