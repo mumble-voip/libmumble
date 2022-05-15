@@ -111,7 +111,7 @@ static constexpr std::byte toByte(const char byte) {
 	return static_cast< std::byte >(byte);
 }
 
-static constexpr void toBuf(Buf &buf, const std::string_view str) {
+static inline void toBuf(Buf &buf, const std::string_view str) {
 	buf.resize(str.size());
 	std::transform(str.cbegin(), str.cend(), buf.begin(), toByte);
 }

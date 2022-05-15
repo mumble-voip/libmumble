@@ -167,7 +167,7 @@ uint32_t SocketTLS::pending() const {
 	return interpretLibCode(ret, written, buf.size());
 }
 
-constexpr ::Code SocketTLS::interpretLibCode(const int code, const bool processed, const bool remaining) {
+::Code SocketTLS::interpretLibCode(const int code, const bool processed, const bool remaining) {
 	switch (SSL_get_error(m_ssl, code)) {
 		case SSL_ERROR_NONE:
 			if (processed) {

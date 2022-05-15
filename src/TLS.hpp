@@ -44,7 +44,7 @@ public:
 	Code write(BufRefConst &buf);
 
 private:
-	constexpr Code interpretLibCode(const int code, const bool processed = true, const bool remaining = false);
+	Code interpretLibCode(const int code, const bool processed = true, const bool remaining = false);
 	static int verifyCallback(int, X509_STORE_CTX *);
 
 	SSL *m_ssl;
