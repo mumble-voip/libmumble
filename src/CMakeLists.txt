@@ -23,6 +23,7 @@ endif()
 add_library(mumble SHARED)
 
 target_pedantic_warnings(mumble)
+target_pimpl_warning_fix(mumble)
 
 protobuf_generate_cpp(PROTO_TCP_CPP PROTO_TCP_HPP "MumbleTCP.proto")
 protobuf_generate_cpp(PROTO_UDP_CPP PROTO_UDP_HPP "MumbleUDP.proto")
