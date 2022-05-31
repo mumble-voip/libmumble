@@ -463,8 +463,8 @@ TCP::Pack(const Message &message) {
 			version->set_os(msg.version.os);
 			version->set_os_version(msg.version.osVersion);
 
-			for (auto version : msg.celtVersions) {
-				proto.add_celt_versions(version);
+			for (auto ver : msg.celtVersions) {
+				proto.add_celt_versions(ver);
 			}
 			const auto ipv6 = msg.address.v6();
 			proto.set_address(ipv6.data(), ipv6.size());
