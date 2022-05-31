@@ -603,10 +603,10 @@ namespace tcp {
 
 		uint32_t udpPackets = 0;
 		uint32_t tcpPackets = 0;
-		uint32_t udpPingAvg = 0;
-		uint32_t udpPingVar = 0;
-		uint32_t tcpPingAvg = 0;
-		uint32_t tcpPingVar = 0;
+		float udpPingAvg    = 0;
+		float udpPingVar    = 0;
+		float tcpPingAvg    = 0;
+		float tcpPingVar    = 0;
 
 		Version version                     = {};
 		std::vector< int32_t > celtVersions = {};
