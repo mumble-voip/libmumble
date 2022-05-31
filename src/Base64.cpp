@@ -20,6 +20,7 @@
 
 #define CAST_BUF(var) (reinterpret_cast< unsigned char * >(var))
 #define CAST_BUF_CONST(var) (reinterpret_cast< const unsigned char * >(var))
+#define CAST_SIZE(var) (static_cast< int >(var))
 
 using namespace mumble;
 
@@ -52,7 +53,7 @@ size_t Base64::decode(const BufRef out, const BufRefConst in) {
 	EVP_DecodeInit(m_p->m_ctx);
 
 	int written_1;
-	if (EVP_DecodeUpdate(m_p->m_ctx, CAST_BUF(out.data()), &written_1, CAST_BUF_CONST(in.data()), in.size()) < 0) {
+	if (EVP_DecodeUpdate(m_p->m_ctx, CAST_BUF(out.data()), &written_1, CAST_BUF_CONST(in.data()), CAST_SIZE(in.size())) < 0) {
 		return {};
 	}
 
@@ -70,11 +71,11 @@ size_t Base64::encode(const BufRef out, const BufRefConst in) {
 		// +1 for the NUL terminator.
 		//
 		// EVP_EncodeBlock() adds padding when the input is not divisible by 3.
-		return ceilf(in.size() / 3.f) * 4 + 1;
+		return static_cast< size_t >(ceilf(in.size() / 3.f) * 4 + 1);
 	}
 
 	// EVP_EncodeBlock() returns the length of the string without the NUL terminator.
-	const auto written = EVP_EncodeBlock(CAST_BUF(out.data()), CAST_BUF_CONST(in.data()), in.size());
+	const auto written = EVP_EncodeBlock(CAST_BUF(out.data()), CAST_BUF_CONST(in.data()), CAST_SIZE(in.size()));
 	if (written < 0) {
 		return {};
 	}

@@ -22,6 +22,7 @@
 
 #define CAST_BUF(var) (reinterpret_cast< unsigned char * >(var))
 #define CAST_BUF_CONST(var) (reinterpret_cast< const unsigned char * >(var))
+#define CAST_SIZE(var) (static_cast< int >(var))
 
 using namespace mumble;
 
@@ -98,7 +99,7 @@ Buf CryptOCB2::genNonce() const {
 	CHECK
 
 	Buf nonce(P::nonceSize);
-	if (RAND_priv_bytes(reinterpret_cast< unsigned char * >(nonce.data()), nonce.size()) <= 0) {
+	if (RAND_priv_bytes(CAST_BUF(nonce.data()), CAST_SIZE(nonce.size())) <= 0) {
 		return {};
 	}
 
@@ -345,7 +346,7 @@ size_t P::process(const bool encrypt, const BufRef out, const BufRefConst in) {
 
 	int written1;
 
-	if (EVP_CipherUpdate(m_ctx, CAST_BUF(out.data()), &written1, CAST_BUF_CONST(in.data()), in.size()) <= 0) {
+	if (EVP_CipherUpdate(m_ctx, CAST_BUF(out.data()), &written1, CAST_BUF_CONST(in.data()), CAST_SIZE(in.size())) <= 0) {
 		return {};
 	}
 

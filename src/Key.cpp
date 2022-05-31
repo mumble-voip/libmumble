@@ -21,6 +21,8 @@
 		return {}; \
 	}
 
+#define CAST_SIZE(var) (static_cast< int >(var))
+
 using namespace mumble;
 
 using P = Key::P;
@@ -116,7 +118,7 @@ P::P(EVP_PKEY *pkey) : m_pkey(pkey) {
 }
 
 P::P(const std::string_view pem, const bool isPrivate, std::string_view password) : m_pkey(nullptr) {
-	auto bio = BIO_new_mem_buf(pem.data(), pem.size());
+	auto bio = BIO_new_mem_buf(pem.data(), CAST_SIZE(pem.size()));
 	if (!bio) {
 		return;
 	}
@@ -136,11 +138,11 @@ P::~P() {
 	}
 }
 
-int P::passwordCallback(char *buf, const int32_t size, int, void *userdata) {
+int P::passwordCallback(char *buf, const int size, int, void *userdata) {
 	auto password = static_cast< const std::string_view * >(userdata);
 
-	auto length = password->size();
-	if (length > static_cast< uint32_t >(size)) {
+	auto length = CAST_SIZE(password->size());
+	if (length > size) {
 		length = size;
 	}
 

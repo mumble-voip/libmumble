@@ -59,7 +59,7 @@ Monitor::operator bool() const {
 }
 
 uint32_t Monitor::num() const {
-	return m_fds.size();
+	return static_cast< uint32_t >(m_fds.size());
 }
 
 bool Monitor::add(const int32_t fd, const bool in, const bool out) {
@@ -160,7 +160,7 @@ uint32_t Monitor::wait(const EventsRef events, const uint32_t timeout) {
 #	include <boost/core/span.hpp>
 
 uint32_t Monitor::waitEpoll(const EventsRef events, const uint32_t timeout) {
-	const int32_t ret = epoll_wait(m_handle, m_targets.data(), m_targets.size(), timeout == infinite32 ? -1 : timeout);
+	const int32_t ret = epoll_wait(m_handle, m_targets.data(), static_cast< int >(m_targets.size()), timeout == infinite32 ? -1 : timeout);
 	if (ret < 1) {
 		return {};
 	}
@@ -212,7 +212,7 @@ uint32_t Monitor::waitPoll(const EventsRef events, const uint32_t timeout) {
 	uint32_t num = 0;
 
 	for (const auto &target : m_targets) {
-		if (num >= events.size() || num >= ret) {
+		if (num >= events.size() || num >= static_cast< uint32_t >(ret)) {
 			break;
 		}
 

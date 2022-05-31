@@ -48,17 +48,19 @@ UDP::Pack(const uint32_t dataSize, const NetHeader &header) : mumble::Pack< NetH
 	memcpy(m_buf.data(), &header, sizeof(header));
 }
 
-TCP::Pack(const google::protobuf::Message &proto) : mumble::Pack< NetHeader >(proto.ByteSizeLong()) {
+TCP::Pack(const google::protobuf::Message &proto)
+	: mumble::Pack< NetHeader >(static_cast< uint32_t >(proto.ByteSizeLong())) {
 	auto buf = data();
-	if (proto.SerializeToArray(buf.data(), buf.size())) {
+	if (proto.SerializeToArray(buf.data(), static_cast< int >(buf.size()))) {
 		header().type = Endian::toNetwork(static_cast< uint16_t >(proto.GetDescriptor()->index()));
 		header().size = Endian::toNetwork(static_cast< uint32_t >(buf.size()));
 	}
 }
 
-UDP::Pack(const google::protobuf::Message &proto) : mumble::Pack< NetHeader >(proto.ByteSizeLong()) {
+UDP::Pack(const google::protobuf::Message &proto)
+	: mumble::Pack< NetHeader >(static_cast< uint32_t >(proto.ByteSizeLong())) {
 	auto buf = data();
-	if (proto.SerializeToArray(buf.data(), buf.size())) {
+	if (proto.SerializeToArray(buf.data(), static_cast< int >(buf.size()))) {
 		header().type = static_cast< uint8_t >(proto.GetDescriptor()->index());
 	}
 }
@@ -614,7 +616,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 	}
 
 	if (dataSize > data().size()) {
-		dataSize = data().size();
+		dataSize = static_cast< decltype(dataSize) >(data().size());
 	}
 
 	switch (message.type()) {
@@ -1116,7 +1118,7 @@ bool UDP::operator()(Message &message, uint32_t dataSize) const {
 	}
 
 	if (dataSize > data().size()) {
-		dataSize = data().size();
+		dataSize = static_cast< decltype(dataSize) >(data().size());
 	}
 
 	switch (message.type()) {

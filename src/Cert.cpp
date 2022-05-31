@@ -30,6 +30,8 @@
 		return {}; \
 	}
 
+#define CAST_SIZE(var) (static_cast< int >(var))
+
 using namespace mumble;
 
 using Attributes = Cert::Attributes;
@@ -190,11 +192,11 @@ P::P(X509 *x509) : m_x509(x509) {
 
 P::P(const DerRefConst der) {
 	auto bytes = boost::as_bytes(der);
-	d2i_X509(&m_x509, reinterpret_cast< const unsigned char ** >(&bytes), bytes.size());
+	d2i_X509(&m_x509, reinterpret_cast< const unsigned char ** >(&bytes), static_cast< long >(bytes.size()));
 }
 
 P::P(const std::string_view pem, std::string_view password) : m_x509(nullptr) {
-	auto bio = BIO_new_mem_buf(pem.data(), pem.size());
+	auto bio = BIO_new_mem_buf(pem.data(), CAST_SIZE(pem.size()));
 	if (!bio) {
 		return;
 	}
@@ -262,11 +264,11 @@ Attributes P::parseX509Name(const X509_NAME *name) {
 	return attributes;
 }
 
-int P::passwordCallback(char *buf, const int32_t size, int, void *userdata) {
+int P::passwordCallback(char *buf, const int size, int, void *userdata) {
 	auto password = static_cast< const std::string_view * >(userdata);
 
-	auto length = password->size();
-	if (length > static_cast< uint32_t >(size)) {
+	auto length = CAST_SIZE(password->size());
+	if (length > size) {
 		length = size;
 	}
 

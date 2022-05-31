@@ -19,6 +19,7 @@
 
 #define CAST_BUF(var) (reinterpret_cast< unsigned char * >(var))
 #define CAST_BUF_CONST(var) (reinterpret_cast< const unsigned char * >(var))
+#define CAST_SIZE(var) (static_cast< int >(var))
 
 using namespace mumble;
 
@@ -68,13 +69,13 @@ uint32_t Crypt::blockSize() const {
 uint32_t Crypt::keySize() const {
 	CHECK
 
-	return m_p->m_key.size();
+	return static_cast< uint32_t >(m_p->m_key.size());
 }
 
 uint32_t Crypt::nonceSize() const {
 	CHECK
 
-	return m_p->m_nonce.size();
+	return static_cast< uint32_t >(m_p->m_nonce.size());
 }
 
 BufRefConst Crypt::key() const {
@@ -101,7 +102,7 @@ bool Crypt::setKey(const BufRefConst key) {
 	CHECK
 
 	if (m_p->m_key.size() != key.size()) {
-		if (EVP_CIPHER_CTX_set_key_length(m_p->m_ctx, key.size()) <= 0) {
+		if (EVP_CIPHER_CTX_set_key_length(m_p->m_ctx, CAST_SIZE(key.size())) <= 0) {
 			return false;
 		}
 
@@ -126,7 +127,7 @@ Buf Crypt::genNonce() const {
 	}
 
 	Buf nonce(size);
-	if (RAND_priv_bytes(CAST_BUF(nonce.data()), nonce.size()) <= 0) {
+	if (RAND_priv_bytes(CAST_BUF(nonce.data()), CAST_SIZE(nonce.size())) <= 0) {
 		return {};
 	}
 
@@ -137,7 +138,7 @@ bool Crypt::setNonce(const BufRefConst nonce) {
 	CHECK
 
 	if (m_p->m_nonce.size() != nonce.size()) {
-		if (EVP_CIPHER_CTX_ctrl(m_p->m_ctx, EVP_CTRL_AEAD_SET_IVLEN, nonce.size(), nullptr) <= 0) {
+		if (EVP_CIPHER_CTX_ctrl(m_p->m_ctx, EVP_CTRL_AEAD_SET_IVLEN, CAST_SIZE(nonce.size()), nullptr) <= 0) {
 			return false;
 		}
 
@@ -257,7 +258,7 @@ size_t P::process(const bool encrypt, const BufRef out, const BufRefConst in, co
 	}
 
 	if (!encrypt && !tag.empty()) {
-		if (EVP_CIPHER_CTX_ctrl(m_ctx, EVP_CTRL_AEAD_SET_TAG, tag.size(), tag.data()) <= 0) {
+		if (EVP_CIPHER_CTX_ctrl(m_ctx, EVP_CTRL_AEAD_SET_TAG, CAST_SIZE(tag.size()), tag.data()) <= 0) {
 			return {};
 		}
 	}
@@ -265,12 +266,15 @@ size_t P::process(const bool encrypt, const BufRef out, const BufRefConst in, co
 	int written1;
 
 	if (!aad.empty()) {
-		if (EVP_CipherUpdate(m_ctx, nullptr, &written1, CAST_BUF_CONST(aad.data()), aad.size()) <= 0) {
+		if (EVP_CipherUpdate(m_ctx, nullptr, &written1, CAST_BUF_CONST(aad.data()), CAST_SIZE(aad.size()))
+			<= 0) {
 			return {};
 		}
 	}
 
-	if (EVP_CipherUpdate(m_ctx, CAST_BUF(out.data()), &written1, CAST_BUF_CONST(in.data()), in.size()) <= 0) {
+	if (EVP_CipherUpdate(m_ctx, CAST_BUF(out.data()), &written1, CAST_BUF_CONST(in.data()),
+						 CAST_SIZE(in.size()))
+		<= 0) {
 		return {};
 	}
 
@@ -281,7 +285,7 @@ size_t P::process(const bool encrypt, const BufRef out, const BufRefConst in, co
 	}
 
 	if (encrypt && !tag.empty()) {
-		if (EVP_CIPHER_CTX_ctrl(m_ctx, EVP_CTRL_AEAD_GET_TAG, tag.size(), tag.data()) <= 0) {
+		if (EVP_CIPHER_CTX_ctrl(m_ctx, EVP_CTRL_AEAD_GET_TAG, CAST_SIZE(tag.size()), tag.data()) <= 0) {
 			return {};
 		}
 	}

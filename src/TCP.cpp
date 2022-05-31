@@ -41,7 +41,7 @@ std::pair< int, int32_t > SocketTCP::accept(Endpoint &endpoint) {
 	socklen_t size = sizeof(addr);
 #endif
 	// Explicit return data type because socket handles are unsigned on Windows.
-	const int8_t fd = ::accept(m_fd, reinterpret_cast< sockaddr * >(&addr), &size);
+	const auto fd = static_cast< int32_t >(::accept(m_fd, reinterpret_cast< sockaddr * >(&addr), &size));
 	if (fd == invalidFD) {
 		return { osError(), invalidFD };
 	}

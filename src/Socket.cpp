@@ -40,16 +40,16 @@ Socket::Socket(const Type type) {
 		case Type::Local:
 #ifdef OS_WINDOWS
 			// https://github.com/microsoft/WSL/issues/5272
-			m_fd = socket(PF_UNIX, SOCK_STREAM, 0);
+			m_fd = static_cast< int32_t >(socket(PF_UNIX, SOCK_STREAM, 0));
 #else
 			m_fd = socket(PF_LOCAL, SOCK_DGRAM, 0);
 #endif
 			break;
 		case Type::TCP:
-			m_fd = socket(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+			m_fd = static_cast< int32_t >(socket(PF_INET6, SOCK_STREAM, IPPROTO_TCP));
 			break;
 		case Type::UDP:
-			m_fd = socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+			m_fd = static_cast< int32_t >(socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP));
 			break;
 		default:
 			m_fd = invalidFD;
@@ -179,7 +179,7 @@ Pair Socket::localPair() {
 
 	DeleteFile(addr.sun_path);
 
-	auto second = accept(listener.fd(), nullptr, nullptr);
+	auto second = static_cast< int32_t >(accept(listener.fd(), nullptr, nullptr));
 	if (!second) {
 		return {};
 	}
