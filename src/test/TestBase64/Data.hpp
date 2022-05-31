@@ -572,13 +572,13 @@ struct Data {
 		Entry(
 			"ℙ⍴ℍⵄ⺟⁹⣟⏵ⷴ⎗⾏⨖♙⥠⢍⦰ₛ₴ ⍸␶⍁⏓⛗≄⎉⮦ⲧ⢭⢩⓭∎⃨⾗ⱡ"
 			"≂"
-			"⁧"
+			"慌"
 			"∳"
 			"Ᵽ"
 			"╚"
 			"⚮",
 			"4oSZ4o204oSN4rWE4rqf4oG54qOf4o+14re04o6X4r6P4qiW4pmZ4qWg4qKN4qaw4oKb4oK04oCK4o244pC24o2B4o+"
-			"T4puX4omE4o6J4q6m4rKn4qKt4qKp4pOt4oiO4oOo4r6X4rGh4omC4oGn4oiz4rGj4pWa4pqu"),
+			"T4puX4omE4o6J4q6m4rKn4qKt4qKp4pOt4oiO4oOo4r6X4rGh4omC5oWM4oiz4rGj4pWa4pqu"),
 		Entry(
 			"␰∷➄Ⱒ⍝⠭⩁⨋⼀⡥⨪⅕∃↽※⁔⋴◌ⰶ⥝ⶩ⿐⛖⎛ⱅ⣉⇸ⶲ〉⚟Ɑ⨸❪⯵⭃"
 			"⌘"
@@ -601,17 +601,17 @@ struct Data {
 			"╥"
 			"⯌"
 			"⺡"
-			"⁭"
+			"⛳"
 			"⊖"
 			"⁝"
-			"⁦"
+			"瀍"
 			"★"
 			"ℝ"
 			"☢"
 			"⚍",
 			"4pCw4oi34p6E4rCi4o2d4qCt4qmB4qiL4ryA4qGl4qiq4oWV4oiD4oa94oC74oGU4ou04peM4rC24qWd4rap4r+"
 			"Q4puW4o6b4rGF4qOJ4oe44ray4oyq4pqf4rGt4qi44p2q4q+14q2D4oyY4oWe4oKc4qOO4qa/"
-			"4pGL4qmp4pyx4puV4oG44oO24reB4oCk4q6x4qqB4o6M4qSA4pWl4q+M4rqh4oGt4oqW4oGd4oGm4piF4oSd4pii4pqN"),
+			"4pGL4qmp4pyx4puV4oG44oO24reB4oCk4q6x4qqB4o6M4qSA4pWl4q+M4rqh4puz4oqW4oGd54CN4piF4oSd4pii4pqN"),
 		Entry(
 			"≪␯⿆⭕☎⟞⎪⢇⊤⊾⎦℄⃙⧛ⓠⲅ❬⃸◣▞⚓⏱ⵘ✡Ⲓ⅏⊮⺋✫ⱏ♹⩺⭿⢡➎"
 			"⨲"
