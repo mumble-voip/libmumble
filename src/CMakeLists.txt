@@ -11,7 +11,6 @@ find_package(Boost REQUIRED
 )
 find_package(OpenSSL REQUIRED)
 find_package(Opus)
-find_package(Protobuf REQUIRED)
 
 if(NOT Opus_FOUND)
 	find_package(PkgConfig REQUIRED)
@@ -20,13 +19,12 @@ if(NOT Opus_FOUND)
 	endif()
 endif()
 
+add_subdirectory(proto)
+
 add_library(mumble SHARED)
 
 target_pedantic_warnings(mumble)
 target_pimpl_warning_fix(mumble)
-
-protobuf_generate_cpp(PROTO_TCP_CPP PROTO_TCP_HPP "MumbleTCP.proto")
-protobuf_generate_cpp(PROTO_UDP_CPP PROTO_UDP_HPP "MumbleUDP.proto")
 
 set_target_properties(mumble
 	PROPERTIES
@@ -52,7 +50,6 @@ target_compile_definitions(mumble
 
 target_include_directories(mumble
 	PRIVATE
-		${CMAKE_CURRENT_BINARY_DIR}
 		${Opus_INCLUDE_DIRS}
 
 		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll>
@@ -95,11 +92,6 @@ target_sources(mumble
 		"UDP.cpp"
 		"UDP.hpp"
 
-		${PROTO_TCP_CPP}
-		${PROTO_TCP_HPP}
-		${PROTO_UDP_CPP}
-		${PROTO_UDP_HPP}
-
 		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll/wepoll.c>
 		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll/wepoll.h>
 	PUBLIC
@@ -123,10 +115,11 @@ target_sources(mumble
 
 target_link_libraries(mumble
 	PRIVATE
+		Proto
+
 		Boost::thread
 		OpenSSL::Crypto
 		OpenSSL::SSL
-		protobuf::libprotobuf
 		quickpool
 
 		${Opus_LINK_LIBRARIES}

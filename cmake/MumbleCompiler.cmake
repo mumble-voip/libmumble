@@ -11,6 +11,15 @@ function(is_msvc RESULT)
 	endif()
 endfunction()
 
+function(target_disable_warnings TARGET)
+	is_msvc(COMPILER_MSVC)
+
+	target_compile_options(${TARGET}
+		PRIVATE
+			$<IF:$<BOOL:${COMPILER_MSVC}>,/w,-w>
+	)
+endfunction()
+
 function(target_pedantic_warnings TARGET)
 	is_msvc(COMPILER_MSVC)
 
