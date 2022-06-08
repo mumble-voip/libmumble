@@ -46,6 +46,7 @@ Code Connection::operator()(const Feedback &feedback, const std::function< bool(
 			case Code::Success:
 				m_p->m_closed.clear();
 				m_p->m_feedback.opened();
+				[[fallthrough]];
 			default:
 				return code;
 			case Code::Retry:
@@ -194,6 +195,7 @@ Code P::handleCode(const Code code, const bool wait) {
 			if (!m_closed.test_and_set()) {
 				m_feedback.closed();
 			}
+			[[fallthrough]];
 		case Code::Success:
 			m_timeouts = 0;
 		case Code::Retry:

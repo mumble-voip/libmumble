@@ -187,6 +187,7 @@ uint32_t SocketTLS::pending() const {
 			if (!processed) {
 				return Shutdown;
 			}
+			[[fallthrough]];
 		case SSL_ERROR_SSL:
 			return Failure;
 	}

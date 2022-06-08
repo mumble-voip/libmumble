@@ -263,6 +263,7 @@ void P::TCP::threadFunc(const uint32_t threads) {
 						}
 						default:
 							m_feedback.failed(code);
+							[[fallthrough]];
 						case Code::Timeout:
 						case Code::Cancel:
 						case Code::Retry:
