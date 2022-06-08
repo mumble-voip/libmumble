@@ -11,6 +11,7 @@
 #include "UDP.hpp"
 
 #include "mumble/Connection.hpp"
+#include "mumble/Macros.hpp"
 #include "mumble/Message.hpp"
 #include "mumble/Pack.hpp"
 #include "mumble/Types.hpp"
@@ -24,7 +25,15 @@
 #include <boost/core/span.hpp>
 #include <boost/thread/thread_only.hpp>
 
-#include <quickpool.hpp>
+#ifndef MUMBLE_COMPILER_MSVC
+#	include <quickpool.hpp>
+#else
+#	pragma warning(push)
+#	pragma warning(disable : 4244)
+#	pragma warning(disable : 4324)
+#	include <quickpool.hpp>
+#	pragma warning(pop)
+#endif
 
 using namespace mumble;
 
