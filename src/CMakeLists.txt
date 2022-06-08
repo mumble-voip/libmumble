@@ -124,6 +124,8 @@ target_link_libraries(mumble
 
 		${Opus_LINK_LIBRARIES}
 		$<TARGET_NAME_IF_EXISTS:Opus::opus>
+
+		$<$<PLATFORM_ID:Windows>:WS2_32>
 )
 
 if(build-examples)
