@@ -12,7 +12,7 @@
 
 namespace boost {
 class thread;
-};
+}
 
 class ThreadManager {
 public:

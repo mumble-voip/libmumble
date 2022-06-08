@@ -8,7 +8,7 @@
 
 // For "include-what-you-use":
 // https://github.com/include-what-you-use/include-what-you-use/issues/828
-namespace mumble {};
+namespace mumble {}
 
 #include "IP.hpp"
 

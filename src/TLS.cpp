@@ -193,7 +193,7 @@ uint32_t SocketTLS::pending() const {
 	}
 
 	return Unknown;
-};
+}
 
 int SocketTLS::verifyCallback(int, X509_STORE_CTX *) {
 	return 1;
