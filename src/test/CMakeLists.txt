@@ -38,6 +38,7 @@ foreach(TARGET IN LISTS TESTS)
 	add_test(
 		NAME ${TARGET}
 		COMMAND ${TARGET}
+		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 	)
 
 	target_pedantic_warnings(${TARGET})
