@@ -13,8 +13,6 @@
 
 using namespace mumble;
 
-using Version = Mumble::Version;
-
 Mumble::Mumble() = default;
 
 Version Mumble::version() {

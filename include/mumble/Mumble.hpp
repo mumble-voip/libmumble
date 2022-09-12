@@ -9,23 +9,9 @@
 #include "Macros.hpp"
 #include "Types.hpp"
 
-#include <cstdint>
-
 namespace mumble {
 class MUMBLE_EXPORT Mumble {
 public:
-	struct Version {
-		uint16_t major;
-		uint8_t minor;
-		uint8_t patch;
-
-		uint32_t blob() const { return major << 16 | minor << 8 | patch; }
-
-		Version(const uint32_t blob) : major(blob >> 16), minor(static_cast< uint8_t >(blob >> 8)), patch(static_cast< uint8_t >(blob)) {}
-		Version(const uint16_t major, const uint8_t minor, const uint8_t patch)
-			: major(major), minor(minor), patch(patch) {}
-	};
-
 	Mumble();
 	virtual ~Mumble() = delete;
 
