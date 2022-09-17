@@ -65,25 +65,43 @@ struct Version {
 	Version(const uint16_t major = 0, const uint16_t minor = 0, const uint16_t patch = 0, const uint16_t extra = 0)
 		: major(major), minor(minor), patch(patch), extra(extra) {}
 
-	Version(const uint64_t blob) : major(blob >> 48), minor(blob >> 32), patch(blob >> 16), extra(blob) {}
+	Version(const uint64_t blob)
+		: Version(static_cast< uint16_t >((blob & maskMajor64) >> offsetMajor64),
+				  static_cast< uint16_t >((blob & maskMinor64) >> offsetMinor64),
+				  static_cast< uint16_t >((blob & maskPatch64) >> offsetPatch64),
+				  static_cast< uint16_t >((blob & maskExtra64) >> offsetExtra64)) {}
 
-	Version(const uint32_t blob) : Version((blob & 0xFFFF0000) >> 16, (blob & 0xFF00) >> 8, blob & 0xFF) {}
+	Version(const uint32_t blob)
+		: Version(static_cast< uint16_t >((blob & maskMajor32) >> offsetMajor32),
+				  static_cast< uint16_t >((blob & maskMinor32) >> offsetMinor32),
+				  static_cast< uint16_t >((blob & maskPatch32) >> offsetPatch32)) {}
 
 	uint64_t blob64() const {
-		return (static_cast< uint64_t >(major) << 48) | (static_cast< uint64_t >(minor) << 32)
-			   | (static_cast< uint64_t >(patch) << 16) | extra;
+		return (static_cast< uint64_t >(major) << offsetMajor64) | (static_cast< uint64_t >(minor) << offsetMinor64)
+			   | (static_cast< uint64_t >(patch) << offsetPatch64) | (static_cast< uint64_t >(extra) << offsetExtra64);
 	}
 
 	uint32_t blob32() const {
-		return (std::min(static_cast< uint32_t >(major),
-						 static_cast< uint32_t >(std::numeric_limits< uint16_t >::max()))
-				<< 16)
-			   | (std::min(static_cast< uint32_t >(minor),
-						   static_cast< uint32_t >(std::numeric_limits< uint8_t >::max()))
-				  << 8)
-			   | std::min(static_cast< uint32_t >(patch),
-						  static_cast< uint32_t >(std::numeric_limits< uint8_t >::max()));
+		return (std::min< uint32_t >(major, std::numeric_limits< uint16_t >::max()) << offsetMajor32)
+			   | (std::min< uint32_t >(minor, std::numeric_limits< uint8_t >::max()) << offsetMinor32)
+			   | (std::min< uint32_t >(patch, std::numeric_limits< uint8_t >::max()) << offsetPatch32);
 	}
+
+	static constexpr auto maskMajor64 = 0xFFFF000000000000;
+	static constexpr auto maskMinor64 = 0xFFFF00000000;
+	static constexpr auto maskPatch64 = 0xFFFF0000;
+	static constexpr auto maskExtra64 = 0xFFFF;
+	static constexpr auto maskMajor32 = 0xFFFF0000;
+	static constexpr auto maskMinor32 = 0xFF00;
+	static constexpr auto maskPatch32 = 0xFF;
+
+	static constexpr auto offsetMajor64 = 48;
+	static constexpr auto offsetMinor64 = 32;
+	static constexpr auto offsetPatch64 = 16;
+	static constexpr auto offsetExtra64 = 0;
+	static constexpr auto offsetMajor32 = 16;
+	static constexpr auto offsetMinor32 = 8;
+	static constexpr auto offsetPatch32 = 0;
 };
 
 static constexpr uint8_t infinite8   = UINT8_MAX;
