@@ -67,7 +67,7 @@ private:
 		void threadFunc();
 	};
 
-	P(const P &) = delete;
+	P(const P &)            = delete;
 	P &operator=(const P &) = delete;
 
 	TCP m_tcp;

@@ -36,7 +36,7 @@ public:
 	virtual bool reset();
 
 private:
-	Hash(const Hash &)    = delete;
+	Hash(const Hash &)                    = delete;
 	virtual Hash &operator=(const Hash &) = delete;
 
 	std::unique_ptr< P > m_p;

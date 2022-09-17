@@ -37,7 +37,7 @@ public:
 	virtual size_t encrypt(BufRef out, BufRefConst in, const BufRef tag = {});
 
 private:
-	CryptOCB2(const CryptOCB2 &) = delete;
+	CryptOCB2(const CryptOCB2 &)                    = delete;
 	virtual CryptOCB2 &operator=(const CryptOCB2 &) = delete;
 
 	std::unique_ptr< P > m_p;

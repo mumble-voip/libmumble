@@ -51,7 +51,7 @@ public:
 	virtual size_t encrypt(const BufRef out, const BufRefConst in, const BufRef tag = {}, const BufRefConst aad = {});
 
 private:
-	Crypt(const Crypt &)   = delete;
+	Crypt(const Crypt &)                    = delete;
 	virtual Crypt &operator=(const Crypt &) = delete;
 
 	std::unique_ptr< P > m_p;

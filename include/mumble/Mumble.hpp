@@ -21,7 +21,7 @@ public:
 	static Code deinit();
 
 private:
-	Mumble(const Mumble &)  = delete;
+	Mumble(const Mumble &)                    = delete;
 	virtual Mumble &operator=(const Mumble &) = delete;
 };
 } // namespace mumble

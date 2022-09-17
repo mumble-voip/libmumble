@@ -25,7 +25,7 @@ public:
 	static size_t encode(const BufRef out, const BufRefConst in);
 
 private:
-	Base64(const Base64 &)  = delete;
+	Base64(const Base64 &)                    = delete;
 	virtual Base64 &operator=(const Base64 &) = delete;
 
 	std::unique_ptr< P > m_p;

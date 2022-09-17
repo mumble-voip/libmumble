@@ -69,7 +69,7 @@ public:
 	virtual Code sendUDP(const Endpoint &endpoint, const BufRefConst data);
 
 private:
-	Peer(const Peer &)    = delete;
+	Peer(const Peer &)                    = delete;
 	virtual Peer &operator=(const Peer &) = delete;
 
 	std::unique_ptr< P > m_p;

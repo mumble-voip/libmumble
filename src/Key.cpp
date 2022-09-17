@@ -13,8 +13,8 @@
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
-#include <openssl/pem.h>
 #include <openssl/opensslv.h>
+#include <openssl/pem.h>
 
 #define CHECK      \
 	if (!*this) {  \

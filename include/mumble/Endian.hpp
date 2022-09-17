@@ -39,7 +39,7 @@ private:
 		constexpr SingleSplit64(const uint64_t value) : single(value) {}
 	};
 
-	Endian(const Endian &)  = delete;
+	Endian(const Endian &)                    = delete;
 	virtual Endian &operator=(const Endian &) = delete;
 };
 } // namespace mumble

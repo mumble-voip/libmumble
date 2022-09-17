@@ -32,7 +32,7 @@ public:
 	virtual ~Pack() = default;
 
 	virtual Pack &operator=(const Pack &pack) = default;
-	virtual Pack &operator=(Pack &&pack) = default;
+	virtual Pack &operator=(Pack &&pack)      = default;
 
 	virtual bool operator==(const Pack &pack) const { return pack.m_buf == m_buf; }
 

@@ -53,7 +53,8 @@ size_t Base64::decode(const BufRef out, const BufRefConst in) {
 	EVP_DecodeInit(m_p->m_ctx);
 
 	int written_1;
-	if (EVP_DecodeUpdate(m_p->m_ctx, CAST_BUF(out.data()), &written_1, CAST_BUF_CONST(in.data()), CAST_SIZE(in.size())) < 0) {
+	if (EVP_DecodeUpdate(m_p->m_ctx, CAST_BUF(out.data()), &written_1, CAST_BUF_CONST(in.data()), CAST_SIZE(in.size()))
+		< 0) {
 		return {};
 	}
 

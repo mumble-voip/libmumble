@@ -60,7 +60,7 @@ public:
 	uint32_t wait(const EventsRef events, const uint32_t timeout);
 
 private:
-	Monitor(const Monitor &) = delete;
+	Monitor(const Monitor &)            = delete;
 	Monitor &operator=(const Monitor &) = delete;
 #if defined(HAVE_EPOLL) || defined(HAVE_WEPOLL)
 	using Target = epoll_event;

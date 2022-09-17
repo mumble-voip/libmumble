@@ -266,14 +266,12 @@ size_t P::process(const bool encrypt, const BufRef out, const BufRefConst in, co
 	int written1;
 
 	if (!aad.empty()) {
-		if (EVP_CipherUpdate(m_ctx, nullptr, &written1, CAST_BUF_CONST(aad.data()), CAST_SIZE(aad.size()))
-			<= 0) {
+		if (EVP_CipherUpdate(m_ctx, nullptr, &written1, CAST_BUF_CONST(aad.data()), CAST_SIZE(aad.size())) <= 0) {
 			return {};
 		}
 	}
 
-	if (EVP_CipherUpdate(m_ctx, CAST_BUF(out.data()), &written1, CAST_BUF_CONST(in.data()),
-						 CAST_SIZE(in.size()))
+	if (EVP_CipherUpdate(m_ctx, CAST_BUF(out.data()), &written1, CAST_BUF_CONST(in.data()), CAST_SIZE(in.size()))
 		<= 0) {
 		return {};
 	}

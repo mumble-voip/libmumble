@@ -50,7 +50,7 @@ struct Endpoint {
 	virtual ~Endpoint() = default;
 
 	virtual Endpoint &operator=(const Endpoint &endpoint) = default;
-	virtual Endpoint &operator=(Endpoint &&endpoint) = default;
+	virtual Endpoint &operator=(Endpoint &&endpoint)      = default;
 
 	virtual bool operator==(const Endpoint &endpoint) const { return endpoint.ip == ip && endpoint.port == port; }
 };

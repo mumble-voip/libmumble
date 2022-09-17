@@ -61,7 +61,7 @@ public:
 		const BufRefConst data, const bool wait = true, const std::function< bool() > halt = []() { return false; });
 
 private:
-	Connection(const Connection &) = delete;
+	Connection(const Connection &)                    = delete;
 	virtual Connection &operator=(const Connection &) = delete;
 
 	UniqueP m_p;
