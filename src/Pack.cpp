@@ -73,7 +73,8 @@ TCP::Pack(const Message &message) {
 			auto &msg = static_cast< const Message::Version & >(message);
 
 			MumbleTCP::Version proto;
-			proto.set_version(msg.version);
+			proto.set_version_v1(msg.v1);
+			proto.set_version_v2(msg.v2);
 			proto.set_release(msg.release);
 			proto.set_os(msg.os);
 			proto.set_os_version(msg.osVersion);
@@ -460,7 +461,8 @@ TCP::Pack(const Message &message) {
 			proto.set_tcp_ping_var(msg.tcpPingVar);
 
 			auto version = proto.mutable_version();
-			version->set_version(msg.version.version);
+			version->set_version_v1(msg.version.v1);
+			version->set_version_v2(msg.version.v2);
 			version->set_release(msg.version.release);
 			version->set_os(msg.version.os);
 			version->set_os_version(msg.version.osVersion);
@@ -512,8 +514,11 @@ TCP::Pack(const Message &message) {
 			auto &msg = static_cast< const Message::SuggestConfig & >(message);
 
 			MumbleTCP::SuggestConfig proto;
-			if (msg.version) {
-				proto.set_version(msg.version.value());
+			if (msg.versionV1) {
+				proto.set_version_v1(msg.versionV1.value());
+			}
+			if (msg.versionV2) {
+				proto.set_version_v2(msg.versionV2.value());
 			}
 			if (msg.positional) {
 				proto.set_positional(msg.positional.value());
@@ -625,7 +630,8 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			PARSE_RET
 
 			auto &msg     = static_cast< Message::Version     &>(message);
-			msg.version   = proto.version();
+			msg.v1        = proto.version_v1();
+			msg.v2        = proto.version_v2();
 			msg.release   = proto.release();
 			msg.os        = proto.os();
 			msg.osVersion = proto.os_version();
@@ -1021,7 +1027,8 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			msg.tcpPingAvg = proto.tcp_ping_avg();
 			msg.tcpPingVar = proto.tcp_ping_var();
 
-			msg.version.version   = proto.version().version();
+			msg.version.v1        = proto.version().version_v1();
+			msg.version.v2        = proto.version().version_v2();
 			msg.version.release   = proto.version().release();
 			msg.version.os        = proto.version().os();
 			msg.version.osVersion = proto.version().os_version();
@@ -1077,8 +1084,11 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			PARSE_RET
 
 			auto &msg = static_cast< Message::SuggestConfig & >(message);
-			if (proto.has_version()) {
-				msg.version = proto.version();
+			if (proto.has_version_v1()) {
+				msg.versionV1 = proto.version_v1();
+			}
+			if (proto.has_version_v2()) {
+				msg.versionV2 = proto.version_v2();
 			}
 			if (proto.has_positional()) {
 				msg.positional = proto.positional();

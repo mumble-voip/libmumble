@@ -13,6 +13,7 @@ namespace mumble {}
 #include "IP.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 #include <boost/core/span.hpp>
@@ -57,15 +58,32 @@ struct Endpoint {
 
 struct Version {
 	uint16_t major;
-	uint8_t minor;
-	uint8_t patch;
+	uint16_t minor;
+	uint16_t patch;
+	uint16_t extra;
 
-	uint32_t blob() const { return major << 16 | minor << 8 | patch; }
+	Version(const uint16_t major = 0, const uint16_t minor = 0, const uint16_t patch = 0, const uint16_t extra = 0)
+		: major(major), minor(minor), patch(patch), extra(extra) {}
 
-	Version(const uint32_t blob)
-		: major(blob >> 16), minor(static_cast< uint8_t >(blob >> 8)), patch(static_cast< uint8_t >(blob)) {}
-	Version(const uint16_t major, const uint8_t minor, const uint8_t patch)
-		: major(major), minor(minor), patch(patch) {}
+	Version(const uint64_t blob) : major(blob >> 48), minor(blob >> 32), patch(blob >> 16), extra(blob) {}
+
+	Version(const uint32_t blob) : Version((blob & 0xFFFF0000) >> 16, (blob & 0xFF00) >> 8, blob & 0xFF) {}
+
+	uint64_t blob64() const {
+		return (static_cast< uint64_t >(major) << 48) | (static_cast< uint64_t >(minor) << 32)
+			   | (static_cast< uint64_t >(patch) << 16) | extra;
+	}
+
+	uint32_t blob32() const {
+		return (std::min(static_cast< uint32_t >(major),
+						 static_cast< uint32_t >(std::numeric_limits< uint16_t >::max()))
+				<< 16)
+			   | (std::min(static_cast< uint32_t >(minor),
+						   static_cast< uint32_t >(std::numeric_limits< uint8_t >::max()))
+				  << 8)
+			   | std::min(static_cast< uint32_t >(patch),
+						  static_cast< uint32_t >(std::numeric_limits< uint8_t >::max()));
+	}
 };
 
 static constexpr uint8_t infinite8   = UINT8_MAX;

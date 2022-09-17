@@ -291,7 +291,8 @@ namespace udp {
 
 namespace tcp {
 	MUMBLE_MESSAGE_DECL(Version) {
-		uint32_t version      = 0;
+		uint32_t v1           = 0;
+		uint64_t v2           = 0;
 		std::string release   = {};
 		std::string os        = {};
 		std::string osVersion = {};
@@ -643,9 +644,10 @@ namespace tcp {
 	};
 
 	MUMBLE_MESSAGE_DECL(SuggestConfig) {
-		std::optional< uint32_t > version = {};
-		std::optional< bool > positional  = {};
-		std::optional< bool > pushToTalk  = {};
+		std::optional< uint32_t > versionV1 = {};
+		std::optional< uint64_t > versionV2 = {};
+		std::optional< bool > positional    = {};
+		std::optional< bool > pushToTalk    = {};
 
 		MUMBLE_MESSAGE_COMMON(SuggestConfig)
 	};
@@ -689,7 +691,7 @@ namespace udp {
 
 		bool requestExtendedInformation = false;
 
-		std::optional< uint32_t > serverVersion       = {};
+		std::optional< uint64_t > serverVersion       = {};
 		std::optional< uint32_t > userCount           = {};
 		std::optional< uint32_t > maxUserCount        = {};
 		std::optional< uint32_t > maxBandwidthPerUser = {};
