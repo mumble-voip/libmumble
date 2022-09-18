@@ -7,11 +7,15 @@
 
 #include "mumble/Types.hpp"
 
+#include <atomic>
+
 #ifdef OS_WINDOWS
 #	include <WinSock2.h>
 #endif
 
 using namespace mumble;
+
+static std::atomic_size_t g_initCount;
 
 Mumble::Mumble() = default;
 
@@ -21,31 +25,46 @@ Version Mumble::version() {
 
 Code Mumble::init() {
 #ifdef OS_WINDOWS
-	WSADATA data;
-	switch (WSAStartup(MAKEWORD(2, 2), &data)) {
-		case 0:
-			break;
-		case WSAVERNOTSUPPORTED:
-			return Code::Unsupport;
-		case WSAEINPROGRESS:
-		case WSAEPROCLIM:
-		case WSASYSNOTREADY:
-			return Code::Busy;
-		default:
-			return Code::Failure;
-	}
+	if (g_initCount == 0) {
+		WSADATA data;
+		switch (WSAStartup(MAKEWORD(2, 2), &data)) {
+			case 0:
+				break;
+			case WSAVERNOTSUPPORTED:
+				return Code::Unsupport;
+			case WSAEINPROGRESS:
+			case WSAEPROCLIM:
+			case WSASYSNOTREADY:
+				return Code::Busy;
+			default:
+				return Code::Failure;
+		}
 
-	if (LOBYTE(data.wVersion) != 2 || HIBYTE(data.wVersion) != 2) {
-		WSACleanup();
-		return Code::Unsupport;
+		if (LOBYTE(data.wVersion) != 2 || HIBYTE(data.wVersion) != 2) {
+			WSACleanup();
+			return Code::Unsupport;
+		}
 	}
 #endif
+	++g_initCount;
+
 	return Code::Success;
 }
 
 Code Mumble::deinit() {
+	if (g_initCount == 0) {
+		return Code::Init;
+	}
 #ifdef OS_WINDOWS
-	WSACleanup();
+	if (--g_initCount == 0) {
+		WSACleanup();
+	}
+#else
+	--g_initCount;
 #endif
 	return Code::Success;
+}
+
+size_t Mumble::initCount() {
+	return g_initCount;
 }

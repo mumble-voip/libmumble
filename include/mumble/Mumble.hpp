@@ -19,6 +19,7 @@ public:
 
 	static Code init();
 	static Code deinit();
+	static size_t initCount();
 
 private:
 	Mumble(const Mumble &)                    = delete;
