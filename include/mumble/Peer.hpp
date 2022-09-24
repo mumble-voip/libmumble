@@ -22,6 +22,7 @@ public:
 
 	using SharedConnection = std::shared_ptr< Connection >;
 
+	// CR krzmbrzl: Again, "Callbacks" is probably a better name
 	struct Feedback {
 		std::function< void() > started;
 		std::function< void() > stopped;
@@ -51,12 +52,14 @@ public:
 
 	static std::pair< Code, int32_t > connect(const Endpoint &peerEndpoint, const Endpoint &endpoint = {});
 
+	// CR krzmbrzl: Presumably we are taking ownership of feedback, so passing by value would also allow move-construction
 	virtual Code startTCP(const FeedbackTCP &feedback, const uint32_t threads = 0);
 	virtual Code stopTCP();
 
 	virtual Code startUDP(const FeedbackUDP &feedback);
 	virtual Code stopUDP();
 
+	// CR krzmbrzl: Why is endpoint passed as a non-const reference?
 	virtual Code bindTCP(Endpoint &endpoint, const bool ipv6Only = false);
 	virtual Code unbindTCP();
 

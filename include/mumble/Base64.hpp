@@ -6,6 +6,8 @@
 #ifndef MUMBLE_BASE64_HPP
 #define MUMBLE_BASE64_HPP
 
+// CR krzmbrzl: I believe that using non-prefixed include paths will cause issues when this file is included
+// by an external project that only has the include path set to the "mumble" parent directory.
 #include "Macros.hpp"
 #include "Types.hpp"
 
@@ -21,10 +23,13 @@ public:
 
 	virtual explicit operator bool();
 
+	// CR krzmbrzl: Adding const to value parameters in a function's declaration is useless
 	virtual size_t decode(const BufRef out, const BufRefConst in);
 	static size_t encode(const BufRef out, const BufRefConst in);
 
 private:
+	// CR krzmbrzl: For better readability, we should probably define and use a macro for disabling copy-construction.
+	// Alternatively, we can define a NonCopyable base class which can be inherited from for the same effect.
 	Base64(const Base64 &)                    = delete;
 	virtual Base64 &operator=(const Base64 &) = delete;
 

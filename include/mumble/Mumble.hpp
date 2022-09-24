@@ -10,6 +10,7 @@
 #include "Types.hpp"
 
 namespace mumble {
+	// CR krzmbrzl: It seems this class is merely used as a namespace. How about turning this into an actual namespace?
 class MUMBLE_EXPORT Mumble {
 public:
 	Mumble();

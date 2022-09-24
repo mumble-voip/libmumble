@@ -12,6 +12,7 @@
 #include <memory>
 
 namespace mumble {
+	// CR krzmbrzl: Why is this a completely separate class and not a child-class of the regular Cryp class?
 class MUMBLE_EXPORT CryptOCB2 {
 public:
 	class P;

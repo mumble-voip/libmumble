@@ -11,6 +11,10 @@
 #include <cstdint>
 
 namespace mumble {
+// CR krzmbrzl: We should figure the endianness out during compile-time. Then we can use if constexpr in e.g. toNetwork to eliminate
+// any overhead on big-endian systems.
+// The compile-time detection could either be done by some constexpr magic (if possible - not sure...) or simply by some cmake
+// magic and then passed via a macro definition.
 class MUMBLE_EXPORT Endian {
 public:
 	Endian();
@@ -32,6 +36,7 @@ public:
 	static uint64_t toHost(const uint64_t value) { return isBig() ? value : swap(value); }
 
 private:
+	// CR krzmbrzl: Using a union for this purpose is undefined behavior (you can't set the union via one field and read it via a different one)
 	union SingleSplit64 {
 		uint64_t single;
 		uint8_t split[sizeof(single)];

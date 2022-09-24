@@ -1,3 +1,5 @@
+# CR krzmbrzl: I think it might be beneficial to not use git submodules for dependency management.
+# Instead, using cmake's FetchContent seems more appropriate as this can fetch only what is actually needed.
 [submodule "3rdparty/quickpool"]
 	path = 3rdparty/quickpool
 	url = https://github.com/tnagler/quickpool.git

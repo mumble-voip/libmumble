@@ -24,6 +24,10 @@ namespace protobuf {
 } // namespace google
 
 namespace mumble {
+// CR krzmbrzl: "Pack" is a very undescriptive name. Is this supposed to represent a "NetworkPacket"? If so, we should probably name it that way.
+// Furthermore, this seems to be meant as an (abstract) base-class only, so that should probably be reflected in its name.
+// CR krzmbrzl: Taking NetHeader as an unconstrained template parameter seems dangerous. There should be some static_asserts that make sure
+// NetHeader is what we expect it to be.
 template< typename NetHeader > class Pack {
 public:
 	Pack(const Pack &pack) = default;
@@ -52,6 +56,7 @@ protected:
 	Buf m_buf;
 };
 
+// CR krzmbrzl: This should go in its own header file
 namespace tcp {
 	MUMBLE_PACK(struct NetHeader {
 		uint16_t type = Endian::toNetwork(static_cast< uint16_t >(Message::Type::Unknown));
@@ -73,6 +78,7 @@ namespace tcp {
 	};
 } // namespace tcp
 
+// CR krzmbrzl: This should go in its own header file
 namespace udp {
 	MUMBLE_PACK(struct NetHeader { uint8_t type = static_cast< uint8_t >(Message::Type::Unknown); });
 

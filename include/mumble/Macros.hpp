@@ -7,9 +7,11 @@
 #define MUMBLE_MACROS_HPP
 
 #ifdef _MSC_VER
+// CR krzmbrzl: This kind of stuff should be dealt with at cmake-level
 #	define MUMBLE_COMPILER_MSVC
 #endif
 
+// CR krzmbrzl: Maybe "MUMBLE_IMPLEMENT_ENUM_FLAG_OPERATORS" might be a better name?
 #define MUMBLE_ENUM_OPERATORS(T)                                                                     \
 	static inline T operator~(const T lhs) {                                                         \
 		return static_cast< T >(~static_cast< std::underlying_type< T >::type >(lhs));               \

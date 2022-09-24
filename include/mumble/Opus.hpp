@@ -11,6 +11,10 @@
 
 #include <memory>
 
+// CR krzmbrzl: Imo either the en- and decoding happens inside the library, in which case there is no need to expose
+// encoder and decoder to the user, or its supposed to be handled by the user, in which case this should not be
+// implemented in libmumble.
+
 namespace mumble {
 class MUMBLE_EXPORT OpusDecoder {
 public:
@@ -41,6 +45,7 @@ private:
 	std::unique_ptr< P > m_p;
 };
 
+// CR krzmbrzl: This should be in its own header file
 class MUMBLE_EXPORT OpusEncoder {
 public:
 	enum class Preset : uint8_t { Unknown, VoIP, Audio, LowDelay };

@@ -1,0 +1,12 @@
+- Excessive use of virtual functions - This seems unneeded in most cases, so why introduce the additional overhead?
+- Use of const for by-value parameters (useless in the declaration)
+- If we're going through the hassle of using PImpl to avoid library users from recompiling on a lib update, we must
+  define any functions in the public header files. Otherwise, changing these will invalidate the PImpl approach.
+  This of course also means that using any templates in public interfaces is a no-go.
+- It seems like for most classes in the public interface, we could default the constructor,
+  destructors and move/copy ctors/assignment operators
+- When defining a function/ctor that takes a parameter that is being taken ownership of (e.g. by copying it), it
+  is better to pass that parameter by value rather than by const lreference. That way the object's move-ctor can
+  be made use of to allow for move-construction. Inside the respective function you only have to move the parameter
+  to its final destination.
+- Every time we define operator==, we should also define operator!=

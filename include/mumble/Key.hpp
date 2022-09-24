@@ -28,12 +28,14 @@ public:
 	virtual Key &operator=(const Key &key);
 	virtual Key &operator=(Key &&key);
 
+	// CR krzmbrzl: Should also provide operator!=
 	virtual bool operator==(const Key &key) const;
 
 	virtual void *handle() const;
 
 	virtual bool isPrivate() const;
 
+	// CR krzmbrzl: Why return by value?
 	virtual std::string pem() const;
 
 private:
