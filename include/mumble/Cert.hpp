@@ -22,8 +22,8 @@ public:
 	using Attributes  = std::map< std::string_view, std::string >;
 	using Chain       = std::vector< Cert >;
 	using Der         = std::vector< std::byte >;
-	using DerRef      = boost::span< std::byte >;
-	using DerRefConst = boost::span< const std::byte >;
+	using DerRef      = gsl::span< std::byte >;
+	using DerRefConst = gsl::span< const std::byte >;
 
 	Cert();
 	Cert(const Cert &cert);

@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <memory>
 
-#include <boost/core/span.hpp>
+#include <gsl/span>
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -126,7 +126,7 @@ size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst tag) {
 	}
 
 	KeyBlock delta;
-	const auto deltaBytes = boost::as_writable_bytes(KeyBlockRef(delta));
+	const auto deltaBytes = gsl::as_writable_bytes(KeyBlockRef(delta));
 
 	if (!m_p->process(true, deltaBytes, m_p->m_nonce)) {
 		return {};
@@ -135,7 +135,7 @@ size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst tag) {
 	size_t written = 0;
 
 	KeyBlock checksum{}, tmp;
-	const auto tmpBytes = boost::as_writable_bytes(KeyBlockRef(tmp));
+	const auto tmpBytes = gsl::as_writable_bytes(KeyBlockRef(tmp));
 
 	while (in.size() > P::blockSize) {
 		P::s2(delta);
@@ -161,7 +161,7 @@ size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst tag) {
 	P::xorBlock(tmp, tmp, delta);
 
 	KeyBlock pad;
-	const auto padBytes = boost::as_writable_bytes(KeyBlockRef(pad));
+	const auto padBytes = gsl::as_writable_bytes(KeyBlockRef(pad));
 
 	if (!m_p->process(true, padBytes, tmpBytes)) {
 		return {};
@@ -215,14 +215,14 @@ size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
 	}
 
 	KeyBlock delta;
-	if (!m_p->process(true, boost::as_writable_bytes(KeyBlockRef(delta)), m_p->m_nonce)) {
+	if (!m_p->process(true, gsl::as_writable_bytes(KeyBlockRef(delta)), m_p->m_nonce)) {
 		return {};
 	}
 
 	size_t written = 0;
 
 	KeyBlock checksum{}, tmp;
-	const auto tmpBytes = boost::as_writable_bytes(KeyBlockRef(tmp));
+	const auto tmpBytes = gsl::as_writable_bytes(KeyBlockRef(tmp));
 
 	while (in.size() > P::blockSize) {
 		// Counter-cryptanalysis described in section 9 of https://eprint.iacr.org/2019/311
@@ -277,7 +277,7 @@ size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
 	P::xorBlock(tmp, tmp, delta);
 
 	KeyBlock pad;
-	const auto padBytes = boost::as_writable_bytes(KeyBlockRef(pad));
+	const auto padBytes = gsl::as_writable_bytes(KeyBlockRef(pad));
 
 	if (!m_p->process(true, padBytes, tmpBytes)) {
 		return {};

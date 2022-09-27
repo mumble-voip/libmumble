@@ -18,9 +18,9 @@
 #include <string>
 #include <string_view>
 
-#include <boost/core/span.hpp>
-
 #include <boost/thread/interruption.hpp>
+
+#include <gsl/span>
 
 static constexpr size_t iterations = 100000;
 

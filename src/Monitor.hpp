@@ -14,7 +14,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include <boost/core/span.hpp>
+#include <gsl/span>
 
 #if defined(HAVE_EPOLL) || defined(HAVE_WEPOLL)
 struct epoll_event;
@@ -42,7 +42,7 @@ public:
 		Event(const int32_t fd) : fd(fd), state(None) {}
 	};
 
-	using EventsRef = boost::span< Event >;
+	using EventsRef = gsl::span< Event >;
 
 	Monitor();
 	~Monitor();

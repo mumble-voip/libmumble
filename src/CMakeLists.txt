@@ -9,6 +9,13 @@ find_package(Boost REQUIRED
 	COMPONENTS
 		thread
 )
+
+if(NOT bundled-gsl)
+	find_package(Microsoft.GSL REQUIRED)
+else()
+	add_subdirectory("${3RDPARTY_DIR}/gsl" "${CMAKE_CURRENT_BINARY_DIR}/gsl" EXCLUDE_FROM_ALL)
+endif()
+
 find_package(OpenSSL REQUIRED)
 find_package(Opus)
 
@@ -126,6 +133,8 @@ target_link_libraries(mumble
 		$<TARGET_NAME_IF_EXISTS:Opus::opus>
 
 		$<$<PLATFORM_ID:Windows>:WS2_32>
+	PUBLIC
+		Microsoft.GSL::GSL
 )
 
 if(build-examples)

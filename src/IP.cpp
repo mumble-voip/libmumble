@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include <boost/core/span.hpp>
+#include <gsl/span>
 
 #ifdef OS_WINDOWS
 #	include <WS2tcpip.h>

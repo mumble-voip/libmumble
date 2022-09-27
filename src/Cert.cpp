@@ -13,7 +13,7 @@
 #include <memory>
 #include <utility>
 
-#include <boost/core/span.hpp>
+#include <gsl/span>
 
 #include <openssl/asn1.h>
 #include <openssl/bio.h>
@@ -191,7 +191,7 @@ P::P(X509 *x509) : m_x509(x509) {
 }
 
 P::P(const DerRefConst der) {
-	auto bytes = boost::as_bytes(der);
+	auto bytes = gsl::as_bytes(der);
 	d2i_X509(&m_x509, reinterpret_cast< const unsigned char ** >(&bytes), static_cast< long >(bytes.size()));
 }
 

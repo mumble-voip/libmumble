@@ -4,6 +4,7 @@
 	"version-string": "0.1.0",
 	"dependencies": [
 		"boost-thread",
+		"ms-gsl",
 		"openssl",
 		"opus",
 		"protobuf"

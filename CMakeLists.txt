@@ -18,6 +18,8 @@ if(build-tests)
 	include(CTest)
 endif()
 
+option(bundled-gsl "Use the bundled GSL version instead of looking for one on the system" ON)
+
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

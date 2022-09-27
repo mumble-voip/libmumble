@@ -22,8 +22,9 @@
 #include <utility>
 #include <vector>
 
-#include <boost/core/span.hpp>
 #include <boost/thread/thread_only.hpp>
+
+#include <gsl/span>
 
 #ifndef MUMBLE_COMPILER_MSVC
 #	include <quickpool.hpp>
@@ -240,7 +241,7 @@ void P::TCP::threadFunc(const uint32_t threads) {
 	uint32_t num = 0;
 
 	while (!m_halt) {
-		boost::span< Event > ref(events.data(), num);
+		gsl::span< Event > ref(events.data(), num);
 		pool->parallel_for_each(ref, [this](Event &event) {
 			if (m_socket && event.fd == m_socket->fd()) {
 				if (event.state & Event::Error) {

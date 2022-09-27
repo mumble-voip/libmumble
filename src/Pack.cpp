@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-#include <boost/core/span.hpp>
+#include <gsl/span>
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>

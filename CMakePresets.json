@@ -21,6 +21,10 @@
         "CMAKE_TOOLCHAIN_FILE": {
           "type": "FILEPATH",
           "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        },
+        "bundled-gsl": {
+          "type": "BOOL",
+          "value": "OFF"
         }
       }
     }

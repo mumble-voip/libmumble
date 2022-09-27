@@ -13,7 +13,7 @@
 #include <string>
 #include <string_view>
 
-#include <boost/core/span.hpp>
+#include <gsl/span>
 
 struct sockaddr_in6;
 
@@ -27,8 +27,8 @@ public:
 
 	using V6       = std::array< uint8_t, v6Size >;
 	using V4       = std::array< uint8_t, v4Size >;
-	using Ref      = boost::span< uint8_t >;
-	using RefConst = boost::span< const uint8_t >;
+	using Ref      = gsl::span< uint8_t >;
+	using RefConst = gsl::span< const uint8_t >;
 
 	IP();
 	IP(const IP &ip);

@@ -399,7 +399,7 @@ bool Node::startUDP() {
 			case Type::Audio:
 				break;
 			case Type::Ping: {
-				std::copy(packet.cbegin(), packet.cend(), pack.data().begin());
+				std::copy(packet.begin(), packet.end(), pack.data().begin());
 
 				Message::Ping ping;
 				if (!pack(ping)) {

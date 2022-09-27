@@ -157,7 +157,7 @@ uint32_t Monitor::wait(const EventsRef events, const uint32_t timeout) {
 }
 
 #if defined(HAVE_EPOLL) || defined(HAVE_WEPOLL)
-#	include <boost/core/span.hpp>
+#	include <gsl/span>
 
 uint32_t Monitor::waitEpoll(const EventsRef events, const uint32_t timeout) {
 	const int32_t ret = epoll_wait(m_handle, m_targets.data(), static_cast< int >(m_targets.size()),
@@ -168,7 +168,7 @@ uint32_t Monitor::waitEpoll(const EventsRef events, const uint32_t timeout) {
 
 	uint32_t num = 0;
 
-	for (const auto &target : boost::span< Target >(m_targets.data(), ret)) {
+	for (const auto &target : gsl::span< Target >(m_targets.data(), ret)) {
 		if (num >= events.size()) {
 			break;
 		}

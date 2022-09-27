@@ -16,7 +16,7 @@ namespace mumble {}
 #include <limits>
 #include <vector>
 
-#include <boost/core/span.hpp>
+#include <gsl/span>
 
 namespace mumble {
 enum class Code : int8_t {
@@ -110,8 +110,8 @@ static constexpr uint32_t infinite32 = UINT32_MAX;
 static constexpr uint64_t infinite64 = UINT64_MAX;
 
 using Buf         = std::vector< std::byte >;
-using BufRef      = boost::span< std::byte >;
-using BufRefConst = boost::span< const std::byte >;
+using BufRef      = gsl::span< std::byte >;
+using BufRefConst = gsl::span< const std::byte >;
 
 template< size_t size > using FixedBuf = std::array< std::byte, size >;
 

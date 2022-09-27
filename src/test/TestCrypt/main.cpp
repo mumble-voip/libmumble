@@ -17,6 +17,8 @@
 
 #include <boost/thread/interruption.hpp>
 
+#include <gsl/byte>
+
 static constexpr size_t iterations = 100000;
 
 static constexpr size_t minBufSize = 1;
