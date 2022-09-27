@@ -11,6 +11,7 @@
 
 #include "mumble/Key.hpp"
 
+#include <chrono>
 #include <map>
 #include <memory>
 
@@ -24,6 +25,7 @@ public:
 	using Der         = std::vector< std::byte >;
 	using DerRef      = gsl::span< std::byte >;
 	using DerRefConst = gsl::span< const std::byte >;
+	using TimePoint   = std::chrono::system_clock::time_point;
 
 	Cert();
 	Cert(const Cert &cert);
@@ -47,8 +49,8 @@ public:
 
 	virtual Key publicKey() const;
 
-	virtual tm since() const;
-	virtual tm until() const;
+	virtual TimePoint since() const;
+	virtual TimePoint until() const;
 
 	virtual bool isAuthority() const;
 	virtual bool isIssuer(const Cert &cert) const;

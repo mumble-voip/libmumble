@@ -8,8 +8,8 @@
 #include "mumble/Key.hpp"
 #include "mumble/Types.hpp"
 
-#include <cstddef>
 #include <cstring>
+#include <ctime>
 #include <memory>
 #include <utility>
 
@@ -37,6 +37,7 @@ using namespace mumble;
 using Attributes = Cert::Attributes;
 using Der        = Cert::Der;
 using P          = Cert::P;
+using TimePoint  = Cert::TimePoint;
 
 Cert::Cert() : m_p(new P(X509_new())) {
 }
@@ -137,26 +138,16 @@ Key Cert::publicKey() const {
 	return X509_get_pubkey(m_p->m_x509);
 }
 
-tm Cert::since() const {
+TimePoint Cert::since() const {
 	CHECK
 
-	const auto asn1 = X509_get0_notBefore(m_p->m_x509);
-
-	tm ret;
-	ASN1_TIME_to_tm(asn1, &ret);
-
-	return ret;
+	return P::parseASN1Time(X509_get0_notBefore(m_p->m_x509));
 }
 
-tm Cert::until() const {
+TimePoint Cert::until() const {
 	CHECK
 
-	const auto asn1 = X509_get0_notAfter(m_p->m_x509);
-
-	tm ret;
-	ASN1_TIME_to_tm(asn1, &ret);
-
-	return ret;
+	return P::parseASN1Time(X509_get0_notAfter(m_p->m_x509));
 }
 
 bool Cert::isAuthority() const {
@@ -228,6 +219,19 @@ std::string P::parseASN1String(const ASN1_STRING *string) {
 	OPENSSL_free(buf);
 
 	return ret;
+}
+
+TimePoint P::parseASN1Time(const ASN1_TIME *time) {
+	if (!time) {
+		return {};
+	}
+
+	tm tm;
+	if (ASN1_TIME_to_tm(time, &tm) <= 0) {
+		return {};
+	}
+
+	return std::chrono::system_clock::from_time_t(mktime(&tm));
 }
 
 Attributes P::parseX509Name(const X509_NAME *name) {

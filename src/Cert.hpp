@@ -25,6 +25,7 @@ public:
 
 private:
 	static std::string parseASN1String(const ASN1_STRING *string);
+	static TimePoint parseASN1Time(const ASN1_TIME *time);
 	static Attributes parseX509Name(const X509_NAME *name);
 
 	static int passwordCallback(char *buf, const int size, int, void *userdata);
