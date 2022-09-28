@@ -76,7 +76,6 @@ target_sources(mumble
 		"Crypt.hpp"
 		"CryptOCB2.cpp"
 		"CryptOCB2.hpp"
-		"Endian.cpp"
 		"Hash.cpp"
 		"Hash.hpp"
 		"IP.cpp"
