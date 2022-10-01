@@ -19,11 +19,9 @@ project(libmumble
 option(build-examples "Build example client and server" OFF)
 option(build-tests "Build tests" ON)
 
-if(build-tests)
-	include(CTest)
-endif()
-
 option(bundled-gsl "Use the bundled GSL version instead of looking for one on the system" ON)
+
+include(CTest)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
