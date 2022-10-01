@@ -6,7 +6,7 @@
 #include "MumbleInit.hpp"
 
 #include "mumble/IP.hpp"
-#include "mumble/Mumble.hpp"
+#include "mumble/Lib.hpp"
 #include "mumble/Types.hpp"
 
 #include <cstdio>
@@ -15,7 +15,7 @@
 using namespace mumble;
 
 MumbleInit::MumbleInit() {
-	const auto code = Mumble::init();
+	const auto code = lib::init();
 	m_ok            = code == Code::Success;
 	if (!m_ok) {
 		printf("MumbleInit() failed with error \"%s\"!\n", text(code).data());
@@ -23,7 +23,7 @@ MumbleInit::MumbleInit() {
 }
 
 MumbleInit::~MumbleInit() {
-	const auto code = Mumble::deinit();
+	const auto code = lib::deinit();
 	if (code != Code::Success) {
 		printf("~MumbleInit() failed with error \"%s\"!\n", text(code).data());
 	}

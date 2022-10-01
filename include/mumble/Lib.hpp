@@ -3,25 +3,22 @@
 // that can be found in the LICENSE file at the root of the
 // Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-#ifndef MUMBLE_MUMBLE_HPP
-#define MUMBLE_MUMBLE_HPP
+#ifndef MUMBLE_LIB_HPP
+#define MUMBLE_LIB_HPP
 
 #include "Macros.hpp"
-#include "NonCopyable.hpp"
 #include "Types.hpp"
 
+#include <cstddef>
+
 namespace mumble {
-class MUMBLE_EXPORT Mumble : NonCopyable {
-public:
-	Mumble();
-	virtual ~Mumble() = delete;
+namespace lib {
+	MUMBLE_EXPORT Version version();
 
-	static Version version();
-
-	static Code init();
-	static Code deinit();
-	static size_t initCount();
-};
+	MUMBLE_EXPORT Code init();
+	MUMBLE_EXPORT Code deinit();
+	MUMBLE_EXPORT size_t initCount();
+} // namespace lib
 } // namespace mumble
 
 #endif

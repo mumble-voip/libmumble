@@ -12,8 +12,8 @@
 #include "mumble/Connection.hpp"
 #include "mumble/Endian.hpp"
 #include "mumble/IP.hpp"
+#include "mumble/Lib.hpp"
 #include "mumble/Message.hpp"
-#include "mumble/Mumble.hpp"
 #include "mumble/Pack.hpp"
 #include "mumble/Types.hpp"
 
@@ -164,8 +164,8 @@ bool Node::startTCP() {
 			switch (pack.type()) {
 				case Type::Version: {
 					Message::Version ver;
-					ver.v1      = Mumble::version().blob32();
-					ver.v2      = Mumble::version().blob64();
+					ver.v1      = lib::version().blob32();
+					ver.v2      = lib::version().blob64();
 					ver.release = "Custom server";
 					user->send(ver);
 
@@ -338,7 +338,7 @@ bool Node::startUDP() {
 	feedbackUDP.timeout = []() { return 10000; };
 
 	feedbackUDP.legacyPing = [this](Endpoint &endpoint, legacy::udp::Ping &ping) {
-		ping.versionBlob  = Endian::toNetwork(Mumble::version().blob32());
+		ping.versionBlob  = Endian::toNetwork(lib::version().blob32());
 		ping.sessions     = Endian::toNetwork(m_userManager->num());
 		ping.maxSessions  = Endian::toNetwork(m_userManager->max());
 		ping.maxBandwidth = Endian::toNetwork(m_bandwidth);
@@ -436,7 +436,7 @@ bool Node::fillPing(udp::Message::Ping &ping) {
 		return false;
 	}
 
-	ping.serverVersion       = Mumble::version().blob64();
+	ping.serverVersion       = lib::version().blob64();
 	ping.userCount           = m_userManager->num();
 	ping.maxUserCount        = m_userManager->max();
 	ping.maxBandwidthPerUser = m_bandwidth;

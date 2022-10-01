@@ -9,7 +9,6 @@
 #include "Cert.hpp"
 #include "Key.hpp"
 #include "Macros.hpp"
-#include "Mumble.hpp"
 #include "NonCopyable.hpp"
 
 #include <functional>

@@ -3,7 +3,7 @@
 // that can be found in the LICENSE file at the root of the
 // Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-#include "mumble/Mumble.hpp"
+#include "mumble/Lib.hpp"
 
 #include "mumble/Types.hpp"
 
@@ -17,13 +17,11 @@ using namespace mumble;
 
 static std::atomic_size_t g_initCount;
 
-Mumble::Mumble() = default;
-
-Version Mumble::version() {
+Version lib::version() {
 	return { 1, 5, 0 };
 }
 
-Code Mumble::init() {
+Code lib::init() {
 #ifdef OS_WINDOWS
 	if (g_initCount == 0) {
 		WSADATA data;
@@ -51,7 +49,7 @@ Code Mumble::init() {
 	return Code::Success;
 }
 
-Code Mumble::deinit() {
+Code lib::deinit() {
 	if (g_initCount == 0) {
 		return Code::Init;
 	}
@@ -65,6 +63,6 @@ Code Mumble::deinit() {
 	return Code::Success;
 }
 
-size_t Mumble::initCount() {
+size_t lib::initCount() {
 	return g_initCount;
 }

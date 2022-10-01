@@ -6,8 +6,8 @@
 #include "MumbleInit.hpp"
 
 #include "mumble/Connection.hpp"
+#include "mumble/Lib.hpp"
 #include "mumble/Message.hpp"
-#include "mumble/Mumble.hpp"
 #include "mumble/Pack.hpp"
 #include "mumble/Peer.hpp"
 #include "mumble/Types.hpp"
@@ -40,8 +40,8 @@ static Connection::Feedback connectionFeedback(Connection &connection, std::cond
 		printf("Connection opened!\n");
 
 		Message::Version ver;
-		ver.v1      = Mumble::version().blob32();
-		ver.v2      = Mumble::version().blob64();
+		ver.v1      = lib::version().blob32();
+		ver.v2      = lib::version().blob64();
 		ver.release = "Custom client";
 		connection.write(Pack(ver).buf());
 	};
