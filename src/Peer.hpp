@@ -62,9 +62,9 @@ private:
 	};
 
 	struct UDP : Proto< FeedbackUDP, SocketUDP > {
-		Code start(const FeedbackUDP &feedback);
+		Code start(const FeedbackUDP &feedback, const uint32_t bufferSize);
 
-		void threadFunc();
+		void threadFunc(const uint32_t bufferSize);
 	};
 
 	P(const P &)            = delete;

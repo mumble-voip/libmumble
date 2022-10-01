@@ -84,8 +84,8 @@ Code Peer::stopTCP() {
 	return m_p->m_tcp.stop();
 }
 
-Code Peer::startUDP(const FeedbackUDP &feedback) {
-	return m_p->m_udp.start(feedback);
+Code Peer::startUDP(const FeedbackUDP &feedback, const uint32_t bufferSize) {
+	return m_p->m_udp.start(feedback, bufferSize);
 }
 
 Code Peer::stopUDP() {
@@ -196,7 +196,7 @@ Code P::TCP::start(const FeedbackTCP &feedback, const uint32_t threads) {
 	return Code::Success;
 }
 
-Code P::UDP::start(const FeedbackUDP &feedback) {
+Code P::UDP::start(const FeedbackUDP &feedback, const uint32_t bufferSize) {
 	if (m_thread) {
 		return Code::Busy;
 	}
@@ -206,7 +206,7 @@ Code P::UDP::start(const FeedbackUDP &feedback) {
 	}
 
 	m_feedback = feedback;
-	m_thread   = std::make_unique< boost::thread >(&UDP::threadFunc, this);
+	m_thread   = std::make_unique< boost::thread >(&UDP::threadFunc, this, bufferSize);
 
 	return Code::Success;
 }
@@ -316,7 +316,7 @@ void P::TCP::threadFunc(const uint32_t threads) {
 	}
 }
 
-void P::UDP::threadFunc() {
+void P::UDP::threadFunc(const uint32_t bufferSize) {
 	using namespace udp;
 	using namespace legacy::udp;
 
@@ -329,7 +329,7 @@ void P::UDP::threadFunc() {
 		m_feedback.started();
 	}
 
-	Pack pack(1024);
+	Pack pack(bufferSize ? bufferSize : 1024);
 	Event event(m_socket->fd());
 
 	while (!m_halt) {

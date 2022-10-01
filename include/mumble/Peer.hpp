@@ -55,7 +55,7 @@ public:
 	virtual Code startTCP(const FeedbackTCP &feedback, const uint32_t threads = 0);
 	virtual Code stopTCP();
 
-	virtual Code startUDP(const FeedbackUDP &feedback);
+	virtual Code startUDP(const FeedbackUDP &feedback, const uint32_t bufferSize = 0);
 	virtual Code stopUDP();
 
 	virtual Code bindTCP(Endpoint &endpoint, const bool ipv6Only = false);
