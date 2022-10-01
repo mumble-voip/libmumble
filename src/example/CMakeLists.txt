@@ -10,7 +10,7 @@ list(APPEND EXAMPLES
 	"ExampleServer"
 )
 
-add_library(Example STATIC)
+add_library(Example OBJECT)
 
 target_include_directories(Example
 	PUBLIC

@@ -10,7 +10,7 @@ find_package(Protobuf REQUIRED)
 protobuf_generate_cpp(TCP_CPP TCP_HPP "MumbleTCP.proto")
 protobuf_generate_cpp(UDP_CPP UDP_HPP "MumbleUDP.proto")
 
-add_library(Proto STATIC)
+add_library(Proto OBJECT)
 
 target_disable_warnings(Proto)
 

@@ -12,7 +12,7 @@ list(APPEND TESTS
 	"TestOpus"
 )
 
-add_library(Test STATIC)
+add_library(Test OBJECT)
 
 target_include_directories(Test
 	PUBLIC
