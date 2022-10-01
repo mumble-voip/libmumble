@@ -7,12 +7,13 @@
 #define MUMBLE_HASH_HPP
 
 #include "Macros.hpp"
+#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class MUMBLE_EXPORT Hash {
+class MUMBLE_EXPORT Hash : NonCopyable {
 public:
 	class P;
 
@@ -36,9 +37,6 @@ public:
 	virtual bool reset();
 
 private:
-	Hash(const Hash &)                    = delete;
-	virtual Hash &operator=(const Hash &) = delete;
-
 	std::unique_ptr< P > m_p;
 };
 } // namespace mumble

@@ -3,24 +3,18 @@
 // that can be found in the LICENSE file at the root of the
 // Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-#ifndef MUMBLE_MUMBLE_HPP
-#define MUMBLE_MUMBLE_HPP
-
-#include "Macros.hpp"
-#include "NonCopyable.hpp"
-#include "Types.hpp"
+#ifndef MUMBLE_NONCOPYABLE_HPP
+#define MUMBLE_NONCOPYABLE_HPP
 
 namespace mumble {
-class MUMBLE_EXPORT Mumble : NonCopyable {
+class NonCopyable {
 public:
-	Mumble();
-	virtual ~Mumble() = delete;
+	NonCopyable()  = default;
+	~NonCopyable() = default;
 
-	static Version version();
-
-	static Code init();
-	static Code deinit();
-	static size_t initCount();
+private:
+	NonCopyable(const NonCopyable &)            = delete;
+	NonCopyable &operator=(const NonCopyable &) = delete;
 };
 } // namespace mumble
 

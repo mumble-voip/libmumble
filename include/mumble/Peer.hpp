@@ -8,6 +8,7 @@
 
 #include "Macros.hpp"
 #include "Message.hpp"
+#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <functional>
@@ -16,7 +17,7 @@
 namespace mumble {
 class Connection;
 
-class MUMBLE_EXPORT Peer {
+class MUMBLE_EXPORT Peer : NonCopyable {
 public:
 	class P;
 
@@ -69,9 +70,6 @@ public:
 	virtual Code sendUDP(const Endpoint &endpoint, const BufRefConst data);
 
 private:
-	Peer(const Peer &)                    = delete;
-	virtual Peer &operator=(const Peer &) = delete;
-
 	std::unique_ptr< P > m_p;
 };
 } // namespace mumble

@@ -7,12 +7,13 @@
 #define MUMBLE_CRYPTOCB2_HPP
 
 #include "Macros.hpp"
+#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class MUMBLE_EXPORT CryptOCB2 {
+class MUMBLE_EXPORT CryptOCB2 : NonCopyable {
 public:
 	class P;
 
@@ -37,9 +38,6 @@ public:
 	virtual size_t encrypt(BufRef out, BufRefConst in, const BufRef tag = {});
 
 private:
-	CryptOCB2(const CryptOCB2 &)                    = delete;
-	virtual CryptOCB2 &operator=(const CryptOCB2 &) = delete;
-
 	std::unique_ptr< P > m_p;
 };
 } // namespace mumble

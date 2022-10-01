@@ -7,12 +7,13 @@
 #define MUMBLE_CRYPT_HPP
 
 #include "Macros.hpp"
+#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class MUMBLE_EXPORT Crypt {
+class MUMBLE_EXPORT Crypt : NonCopyable {
 public:
 	class P;
 
@@ -51,9 +52,6 @@ public:
 	virtual size_t encrypt(const BufRef out, const BufRefConst in, const BufRef tag = {}, const BufRefConst aad = {});
 
 private:
-	Crypt(const Crypt &)                    = delete;
-	virtual Crypt &operator=(const Crypt &) = delete;
-
 	std::unique_ptr< P > m_p;
 };
 } // namespace mumble

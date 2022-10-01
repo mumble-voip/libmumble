@@ -7,12 +7,13 @@
 #define MUMBLE_OPUS_HPP
 
 #include "Macros.hpp"
+#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class MUMBLE_EXPORT OpusDecoder {
+class MUMBLE_EXPORT OpusDecoder : NonCopyable {
 public:
 	class P;
 
@@ -41,7 +42,7 @@ private:
 	std::unique_ptr< P > m_p;
 };
 
-class MUMBLE_EXPORT OpusEncoder {
+class MUMBLE_EXPORT OpusEncoder : NonCopyable {
 public:
 	enum class Preset : uint8_t { Unknown, VoIP, Audio, LowDelay };
 

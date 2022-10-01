@@ -10,6 +10,7 @@
 #include "Key.hpp"
 #include "Macros.hpp"
 #include "Mumble.hpp"
+#include "NonCopyable.hpp"
 
 #include <functional>
 
@@ -18,7 +19,7 @@ namespace tcp {
 	class Pack;
 }
 
-class MUMBLE_EXPORT Connection {
+class MUMBLE_EXPORT Connection : NonCopyable {
 public:
 	class P;
 	using UniqueP = std::unique_ptr< P >;
@@ -61,9 +62,6 @@ public:
 		const BufRefConst data, const bool wait = true, const std::function< bool() > halt = []() { return false; });
 
 private:
-	Connection(const Connection &)                    = delete;
-	virtual Connection &operator=(const Connection &) = delete;
-
 	UniqueP m_p;
 };
 } // namespace mumble

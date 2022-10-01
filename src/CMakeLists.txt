@@ -113,6 +113,7 @@ target_sources(mumble
 		"${INCLUDE_DIR}/mumble/Macros.hpp"
 		"${INCLUDE_DIR}/mumble/Message.hpp"
 		"${INCLUDE_DIR}/mumble/Mumble.hpp"
+		"${INCLUDE_DIR}/mumble/NonCopyable.hpp"
 		"${INCLUDE_DIR}/mumble/Opus.hpp"
 		"${INCLUDE_DIR}/mumble/Pack.hpp"
 		"${INCLUDE_DIR}/mumble/Peer.hpp"
