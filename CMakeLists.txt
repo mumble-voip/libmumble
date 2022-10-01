@@ -9,7 +9,12 @@ list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 )
 
-project(libmumble)
+project(libmumble
+	VERSION "0.0.0.0"
+	DESCRIPTION "The official Mumble library."
+	HOMEPAGE_URL "https://www.mumble.info"
+	LANGUAGES "C" "CXX"
+)
 
 option(build-examples "Build example client and server" OFF)
 option(build-tests "Build tests" ON)
