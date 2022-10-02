@@ -36,7 +36,7 @@ Monitor::Monitor() : m_trigger(Socket::localPair()) {
 	m_handle = epoll_create(1);
 #endif
 	if (*this) {
-		add(m_trigger.first.fd(), true, false);
+		add(m_trigger.first.handle(), true, false);
 	}
 }
 
@@ -128,7 +128,7 @@ bool Monitor::trigger() {
 #endif
 	static_assert(sizeof(byte) == 1);
 
-	return send(m_trigger.second.fd(), &byte, sizeof(byte), 0) >= 1;
+	return send(m_trigger.second.handle(), &byte, sizeof(byte), 0) >= 1;
 }
 
 bool Monitor::untrigger() {
@@ -142,7 +142,7 @@ bool Monitor::untrigger() {
 #endif
 	static_assert(sizeof(byte) == 1);
 
-	return recv(m_trigger.first.fd(), &byte, sizeof(byte), 0) >= 1;
+	return recv(m_trigger.first.handle(), &byte, sizeof(byte), 0) >= 1;
 }
 
 uint32_t Monitor::wait(const EventsRef events, const uint32_t timeout) {
@@ -179,7 +179,7 @@ uint32_t Monitor::waitEpoll(const EventsRef events, const uint32_t timeout) {
 		event.state = Event::None;
 
 		if (target.events & EPOLLIN) {
-			if (target.data.fd != m_trigger.first.fd()) {
+			if (target.data.fd != m_trigger.first.handle()) {
 				event.state |= Event::InReady;
 			} else {
 				event.state |= Event::Triggered;
@@ -227,7 +227,7 @@ uint32_t Monitor::waitPoll(const EventsRef events, const uint32_t timeout) {
 		event.state = Event::None;
 
 		if (target.revents & POLLIN) {
-			if (target.fd != m_trigger.first.fd()) {
+			if (target.fd != m_trigger.first.handle()) {
 				event.state |= Event::InReady;
 			} else {
 				event.state |= Event::Triggered;

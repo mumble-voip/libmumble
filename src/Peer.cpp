@@ -73,7 +73,7 @@ std::pair< Code, int32_t > Peer::connect(const Endpoint &peerEndpoint, const End
 		return { code, {} };
 	}
 
-	return { Code::Success, socket.stealFD() };
+	return { Code::Success, socket.stealHandle() };
 }
 
 Code Peer::startTCP(const FeedbackTCP &feedback, const uint32_t threads) {
@@ -113,8 +113,8 @@ Code Peer::addTCP(const SharedConnection &connection) {
 
 	std::unique_lock< std::shared_mutex > lock(tcp.m_mutex);
 
-	tcp.m_connections[connection->fd()] = connection;
-	tcp.m_monitor.add(connection->fd(), true, false);
+	tcp.m_connections[connection->socketHandle()] = connection;
+	tcp.m_monitor.add(connection->socketHandle(), true, false);
 
 	return Code::Success;
 }
@@ -124,8 +124,8 @@ Code Peer::delTCP(const SharedConnection &connection) {
 
 	std::unique_lock< std::shared_mutex > lock(tcp.m_mutex);
 
-	tcp.m_monitor.del(connection->fd());
-	tcp.m_connections.extract(connection->fd());
+	tcp.m_monitor.del(connection->socketHandle());
+	tcp.m_connections.extract(connection->socketHandle());
 
 	return Code::Success;
 }
@@ -161,7 +161,7 @@ Code P::Proto< Feedback, Socket >::bind(Endpoint &endpoint, const bool ipv6Only)
 		return Code::Open;
 	}
 
-	if (!m_monitor.add(m_socket->fd(), true, false)) {
+	if (!m_monitor.add(m_socket->handle(), true, false)) {
 		return Code::Failure;
 	}
 
@@ -243,7 +243,7 @@ void P::TCP::threadFunc(const uint32_t threads) {
 	while (!m_halt) {
 		gsl::span< Event > ref(events.data(), num);
 		pool->parallel_for_each(ref, [this](Event &event) {
-			if (m_socket && event.fd == m_socket->fd()) {
+			if (m_socket && event.fd == m_socket->handle()) {
 				if (event.state & Event::Error) {
 					m_feedback.failed(Code::Failure);
 					return;
@@ -330,7 +330,7 @@ void P::UDP::threadFunc(const uint32_t bufferSize) {
 	}
 
 	Pack pack(bufferSize ? bufferSize : 1024);
-	Event event(m_socket->fd());
+	Event event(m_socket->handle());
 
 	while (!m_halt) {
 		if (event.state & Event::Error) {

@@ -82,7 +82,7 @@ bool Node::startTCP() {
 
 	feedbackTCP.timeout = []() { return 10000; };
 
-	feedbackTCP.connection = [this](const Endpoint &endpoint, int32_t fd) {
+	feedbackTCP.connection = [this](const Endpoint &endpoint, int32_t socketHandle) {
 		printf("Incoming connection from [%s]:%u\n", endpoint.ip.text().data(), endpoint.port);
 
 		if (m_userManager->full()) {
@@ -94,7 +94,7 @@ bool Node::startTCP() {
 			return false;
 		}
 
-		auto user    = std::make_shared< User >(fd, id.value());
+		auto user    = std::make_shared< User >(socketHandle, id.value());
 		auto userPtr = std::weak_ptr< User >(user);
 
 		Connection::Feedback feedback;

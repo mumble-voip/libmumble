@@ -17,7 +17,7 @@ namespace mumble {
 class SocketTCP : public Socket {
 public:
 	SocketTCP();
-	SocketTCP(const int32_t fd);
+	SocketTCP(const int32_t handle);
 
 	int listen();
 

@@ -28,8 +28,8 @@ SocketTLS::SocketTLS(SocketTLS &&socket)
 	  m_sslCtx(std::exchange(socket.m_sslCtx, nullptr)), m_closed(socket.m_closed.load()) {
 }
 
-SocketTLS::SocketTLS(const int32_t fd, const bool server)
-	: SocketTCP(fd), m_ssl(nullptr), m_sslCtx(nullptr), m_closed(true) {
+SocketTLS::SocketTLS(const int32_t handle, const bool server)
+	: SocketTCP(handle), m_ssl(nullptr), m_sslCtx(nullptr), m_closed(true) {
 	if (!*static_cast< SocketTCP * >(this)) {
 		return;
 	}
@@ -44,7 +44,7 @@ SocketTLS::SocketTLS(const int32_t fd, const bool server)
 		return;
 	}
 
-	SSL_set_fd(m_ssl, m_fd);
+	SSL_set_fd(m_ssl, m_handle);
 	SSL_set_read_ahead(m_ssl, 1);
 	SSL_set_options(m_ssl, SSL_MODE_ENABLE_PARTIAL_WRITE);
 	SSL_set_verify(m_ssl, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE, verifyCallback);

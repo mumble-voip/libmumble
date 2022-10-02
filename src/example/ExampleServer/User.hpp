@@ -60,7 +60,7 @@ public:
 		}
 	};
 
-	User(const int32_t fd, const uint32_t id);
+	User(const int32_t socketHandle, const uint32_t id);
 	virtual ~User();
 
 	uint32_t id() const;

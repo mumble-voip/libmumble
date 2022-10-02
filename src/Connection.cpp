@@ -24,7 +24,8 @@ using UniqueP  = Connection::UniqueP;
 Connection::Connection(Connection &&connection) : m_p(std::exchange(connection.m_p, nullptr)) {
 }
 
-Connection::Connection(const int32_t fd, const bool server) : m_p(std::make_unique< P >(SocketTLS(fd, server))) {
+Connection::Connection(const int32_t socketHandle, const bool server)
+	: m_p(std::make_unique< P >(SocketTLS(socketHandle, server))) {
 }
 
 Connection::~Connection() = default;
@@ -34,7 +35,7 @@ Connection::operator bool() const {
 }
 
 Code Connection::operator()(const Feedback &feedback, const std::function< bool() > halt) {
-	if (!m_p->m_monitorIn.add(m_p->m_fd, true, false) || !m_p->m_monitorOut.add(m_p->m_fd, false, true)) {
+	if (!m_p->m_monitorIn.add(m_p->m_handle, true, false) || !m_p->m_monitorOut.add(m_p->m_handle, false, true)) {
 		return Code::Failure;
 	}
 
@@ -61,8 +62,8 @@ const UniqueP &Connection::p() const {
 	return m_p;
 }
 
-int32_t Connection::fd() const {
-	return m_p->fd();
+int32_t Connection::socketHandle() const {
+	return m_p->handle();
 }
 
 Endpoint Connection::endpoint() const {

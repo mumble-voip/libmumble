@@ -36,7 +36,7 @@ public:
 	};
 
 	Connection(Connection &&connection);
-	Connection(const int32_t fd, const bool server);
+	Connection(const int32_t socketHandle, const bool server);
 	virtual ~Connection();
 
 	virtual explicit operator bool() const;
@@ -45,7 +45,7 @@ public:
 		const Feedback &feedback, const std::function< bool() > halt = []() { return false; });
 
 	virtual const UniqueP &p() const;
-	virtual int32_t fd() const;
+	virtual int32_t socketHandle() const;
 
 	virtual Endpoint endpoint() const;
 	virtual Endpoint peerEndpoint() const;

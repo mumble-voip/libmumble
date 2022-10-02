@@ -18,9 +18,9 @@
 
 using namespace mumble;
 
-User::User(const int32_t fd, const uint32_t id)
+User::User(const int32_t socketHandle, const uint32_t id)
 	: m_id(id), m_cryptOK(false), m_good(0), m_late(0), m_lost(0), m_decryptHistory({}),
-	  m_connection(std::make_shared< Connection >(fd, true)) {
+	  m_connection(std::make_shared< Connection >(socketHandle, true)) {
 	const auto key = m_decrypt.genKey();
 	if (!m_decrypt.setKey(key) || !m_encrypt.setKey(key)) {
 		return;

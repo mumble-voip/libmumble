@@ -30,11 +30,12 @@ SocketUDP::SocketUDP() : Socket(Type::UDP) {
 Code SocketUDP::read(Endpoint &endpoint, BufRef &buf) {
 	sockaddr_in6 addr;
 #ifdef OS_WINDOWS
-	auto addrsize  = static_cast< int >(sizeof(addr));
-	const auto ret = recvfrom(m_fd, CAST_BUF(buf.data()), CAST_SIZE(buf.size()), 0, CAST_SOCKADDR(&addr), &addrsize);
+	auto addrsize = static_cast< int >(sizeof(addr));
+	const auto ret =
+		recvfrom(m_handle, CAST_BUF(buf.data()), CAST_SIZE(buf.size()), 0, CAST_SOCKADDR(&addr), &addrsize);
 #else
 	socklen_t addrsize = sizeof(addr);
-	const auto ret     = recvfrom(m_fd, buf.data(), buf.size(), 0, CAST_SOCKADDR(&addr), &addrsize);
+	const auto ret     = recvfrom(m_handle, buf.data(), buf.size(), 0, CAST_SOCKADDR(&addr), &addrsize);
 #endif
 	if (ret <= 0) {
 		return osErrorToCode(osError());
@@ -53,10 +54,10 @@ Code SocketUDP::write(const Endpoint &endpoint, const BufRefConst buf) {
 	endpoint.ip.toSockAddr(addr);
 	addr.sin6_port = Endian::toNetwork(endpoint.port);
 #ifdef OS_WINDOWS
-	const auto ret =
-		sendto(m_fd, CAST_BUF_CONST(buf.data()), CAST_SIZE(buf.size()), 0, CAST_SOCKADDR_CONST(&addr), sizeof(addr));
+	const auto ret = sendto(m_handle, CAST_BUF_CONST(buf.data()), CAST_SIZE(buf.size()), 0, CAST_SOCKADDR_CONST(&addr),
+							sizeof(addr));
 #else
-	const auto ret     = sendto(m_fd, buf.data(), buf.size(), 0, CAST_SOCKADDR_CONST(&addr), sizeof(addr));
+	const auto ret     = sendto(m_handle, buf.data(), buf.size(), 0, CAST_SOCKADDR_CONST(&addr), sizeof(addr));
 #endif
 	if (ret <= 0) {
 		return osErrorToCode(osError());

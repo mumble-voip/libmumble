@@ -38,7 +38,7 @@ public:
 		int32_t fd;
 		State state;
 
-		Event() : fd(Socket::invalidFD), state(None) {}
+		Event() : fd(Socket::invalidHandle), state(None) {}
 		Event(const int32_t fd) : fd(fd), state(None) {}
 	};
 

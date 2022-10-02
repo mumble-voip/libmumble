@@ -23,7 +23,7 @@ public:
 	enum Code : int8_t { Memory = -3, Failure, Unknown, Success, Retry, Shutdown, WaitIn, WaitOut };
 
 	SocketTLS(SocketTLS &&socket);
-	SocketTLS(const int32_t fd, const bool server);
+	SocketTLS(const int32_t handle, const bool server);
 	~SocketTLS();
 
 	explicit operator bool() const;

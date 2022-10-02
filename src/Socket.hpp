@@ -24,18 +24,18 @@ public:
 
 	enum class Type : uint8_t { Unknown, Local, TCP, UDP };
 
-	static constexpr int8_t invalidFD = -1;
+	static constexpr int8_t invalidHandle = -1;
 
 	Socket();
 	Socket(Socket &&socket);
-	Socket(const int32_t fd);
+	Socket(const int32_t handle);
 	Socket(const Type type);
 	~Socket();
 
 	explicit operator bool() const;
 
-	int32_t fd() const;
-	int32_t stealFD();
+	int32_t handle() const;
+	int32_t stealHandle();
 
 	int getEndpoint(Endpoint &endpoint) const;
 	int setEndpoint(const Endpoint &endpoint, const bool ipv6Only = false);
@@ -44,7 +44,7 @@ public:
 
 	static Pair localPair();
 
-	static void close(const int32_t fd);
+	static void close(const int32_t handle);
 
 	static int osError();
 	static constexpr Code osErrorToCode(const int error) {
@@ -135,7 +135,7 @@ public:
 	}
 
 protected:
-	int32_t m_fd;
+	int32_t m_handle;
 };
 } // namespace mumble
 

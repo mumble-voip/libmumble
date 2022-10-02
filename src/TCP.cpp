@@ -22,11 +22,11 @@ using namespace mumble;
 SocketTCP::SocketTCP() : Socket(Type::TCP) {
 }
 
-SocketTCP::SocketTCP(const int32_t fd) : Socket(fd) {
+SocketTCP::SocketTCP(const int32_t handle) : Socket(handle) {
 }
 
 int SocketTCP::listen() {
-	if (::listen(m_fd, SOMAXCONN) != 0) {
+	if (::listen(m_handle, SOMAXCONN) != 0) {
 		return osError();
 	}
 
@@ -41,15 +41,15 @@ std::pair< int, int32_t > SocketTCP::accept(Endpoint &endpoint) {
 	socklen_t size = sizeof(addr);
 #endif
 	// Explicit return data type because socket handles are unsigned on Windows.
-	const auto fd = static_cast< int32_t >(::accept(m_fd, reinterpret_cast< sockaddr * >(&addr), &size));
-	if (fd == invalidFD) {
-		return { osError(), invalidFD };
+	const auto handle = static_cast< int32_t >(::accept(m_handle, reinterpret_cast< sockaddr * >(&addr), &size));
+	if (handle == invalidHandle) {
+		return { osError(), invalidHandle };
 	}
 
 	endpoint.ip   = IP(addr);
 	endpoint.port = Endian::toHost(addr.sin6_port);
 
-	return { 0, fd };
+	return { 0, handle };
 }
 
 int SocketTCP::connect(const Endpoint &endpoint) {
@@ -57,7 +57,7 @@ int SocketTCP::connect(const Endpoint &endpoint) {
 	endpoint.ip.toSockAddr(addr);
 	addr.sin6_port = Endian::toNetwork(endpoint.port);
 
-	if (::connect(m_fd, reinterpret_cast< sockaddr * >(&addr), sizeof(addr)) != 0) {
+	if (::connect(m_handle, reinterpret_cast< sockaddr * >(&addr), sizeof(addr)) != 0) {
 		return osError();
 	}
 
@@ -71,7 +71,7 @@ int SocketTCP::getPeerEndpoint(Endpoint &endpoint) const {
 #else
 	socklen_t size = sizeof(addr);
 #endif
-	if (getpeername(m_fd, reinterpret_cast< sockaddr * >(&addr), &size) != 0) {
+	if (getpeername(m_handle, reinterpret_cast< sockaddr * >(&addr), &size) != 0) {
 		return osError();
 	}
 
