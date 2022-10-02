@@ -308,7 +308,7 @@ void P::TCP::threadFunc(const uint32_t threads) {
 			events.resize(m_monitor.num());
 		}
 
-		num = m_monitor.wait(events, m_feedback.timeout ? m_feedback.timeout() : infinite32);
+		num = m_monitor.wait(events, m_feedback.timeout ? m_feedback.timeout() : m_monitor.timeoutMax);
 	}
 
 	if (m_feedback.stopped) {
@@ -381,7 +381,7 @@ void P::UDP::threadFunc(const uint32_t bufferSize) {
 			}
 		}
 
-		m_monitor.wait({ &event, 1 }, m_feedback.timeout ? m_feedback.timeout() : infinite32);
+		m_monitor.wait({ &event, 1 }, m_feedback.timeout ? m_feedback.timeout() : m_monitor.timeoutMax);
 	}
 
 	if (m_feedback.stopped) {

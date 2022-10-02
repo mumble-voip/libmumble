@@ -11,6 +11,7 @@
 #include "Socket.hpp"
 
 #include <cstdint>
+#include <limits>
 #include <unordered_set>
 #include <vector>
 
@@ -41,6 +42,8 @@ public:
 		Event() : fd(Socket::invalidHandle), state(None) {}
 		Event(const int32_t fd) : fd(fd), state(None) {}
 	};
+
+	static constexpr auto timeoutMax = std::numeric_limits< uint32_t >::max();
 
 	using EventsRef = gsl::span< Event >;
 

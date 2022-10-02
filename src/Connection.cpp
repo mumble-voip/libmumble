@@ -215,7 +215,7 @@ Code P::handleWait(Monitor &monitor) {
 	using Code = mumble::Code;
 
 	Monitor::Event event;
-	if (!monitor.wait({ &event, 1 }, m_feedback.timeout ? m_feedback.timeout() : infinite32)) {
+	if (!monitor.wait({ &event, 1 }, m_feedback.timeout ? m_feedback.timeout() : monitor.timeoutMax)) {
 		return Code::Timeout;
 	}
 

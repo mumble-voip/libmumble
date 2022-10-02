@@ -7,6 +7,7 @@
 
 #include "mumble/Types.hpp"
 
+#include <limits>
 #include <utility>
 
 #include <opus.h>
@@ -192,7 +193,7 @@ uint32_t Encoder::bitrate() const {
 
 bool Encoder::setBitrate(const uint32_t bitrate) {
 	opus_int32 value;
-	if (bitrate == infinite32) {
+	if (bitrate == std::numeric_limits< decltype(bitrate) >::max()) {
 		value = OPUS_BITRATE_MAX;
 	} else if (!bitrate) {
 		value = OPUS_AUTO;

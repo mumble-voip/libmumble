@@ -104,11 +104,6 @@ struct Version {
 	static constexpr auto offsetPatch32 = 0;
 };
 
-static constexpr uint8_t infinite8   = UINT8_MAX;
-static constexpr uint16_t infinite16 = UINT16_MAX;
-static constexpr uint32_t infinite32 = UINT32_MAX;
-static constexpr uint64_t infinite64 = UINT64_MAX;
-
 using Buf         = std::vector< std::byte >;
 using BufRef      = gsl::span< std::byte >;
 using BufRefConst = gsl::span< const std::byte >;
