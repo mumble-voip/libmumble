@@ -15,8 +15,10 @@
 
 #include <boost/core/span.hpp>
 
-// CR krzmbrzl: This naming is inconsistent with other class names (the use of underscore). Also the name could probably use some
+// XCR krzmbrzl: This naming is inconsistent with other class names (the use of underscore). Also the name could probably use some
 // general improving.
+//
+// Davide: Unfortunately this doesn't depend on us, it's the "standard" structure name that is provided through the OS API.
 struct sockaddr_in6;
 
 namespace mumble {
@@ -40,7 +42,8 @@ public:
 	virtual ~IP();
 
 	virtual IP &operator=(const IP &ip);
-	// CR krzmbrzl: Should also implement operator!=
+	// XCR krzmbrzl: Should also implement operator!=
+	// Davide: It's implicit. https://en.cppreference.com/w/cpp/language/operators
 	virtual bool operator==(const IP &ip) const;
 
 	virtual RefConst v6() const;
@@ -54,7 +57,8 @@ public:
 
 	virtual bool isWildcard() const;
 
-	// CR krzmbrzl: Why return by value?
+	// XCR krzmbrzl: Why return by value?
+	// Davide: We cannot return something we don't store ourselves as reference (the IP address is stored as an array of bytes).
 	virtual std::string text() const;
 
 	virtual void toSockAddr(sockaddr_in6 &sockaddr) const;

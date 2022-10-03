@@ -1,4 +1,3 @@
-// CR krzmbrzl: Including 3rdparty source files into our repo is a no-go
 /*
 Copyright 2019 Glen Joseph Fernandes
 (glenjofe@gmail.com)

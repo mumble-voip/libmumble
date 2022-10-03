@@ -24,10 +24,15 @@ namespace protobuf {
 } // namespace google
 
 namespace mumble {
-// CR krzmbrzl: "Pack" is a very undescriptive name. Is this supposed to represent a "NetworkPacket"? If so, we should probably name it that way.
+// XCR krzmbrzl: "Pack" is a very undescriptive name. Is this supposed to represent a "NetworkPacket"? If so, we should probably name it that way.
 // Furthermore, this seems to be meant as an (abstract) base-class only, so that should probably be reflected in its name.
-// CR krzmbrzl: Taking NetHeader as an unconstrained template parameter seems dangerous. There should be some static_asserts that make sure
+//
+// Davide: What about "NetPacket"? Or, more specifically, "NetworkPacketBase"?
+
+// XCR krzmbrzl: Taking NetHeader as an unconstrained template parameter seems dangerous. There should be some static_asserts that make sure
 // NetHeader is what we expect it to be.
+//
+// Davide: Technically we don't need that, as there must be a specific specialization for every different "NetHeader".
 template< typename NetHeader > class Pack {
 public:
 	Pack(const Pack &pack) = default;
@@ -56,7 +61,8 @@ protected:
 	Buf m_buf;
 };
 
-// CR krzmbrzl: This should go in its own header file
+// XCR krzmbrzl: This should go in its own header file
+// Davide: How would you call it? Maybe namespaces should be in their own directory...
 namespace tcp {
 	MUMBLE_PACK(struct NetHeader {
 		uint16_t type = Endian::toNetwork(static_cast< uint16_t >(Message::Type::Unknown));
@@ -78,7 +84,8 @@ namespace tcp {
 	};
 } // namespace tcp
 
-// CR krzmbrzl: This should go in its own header file
+// XCR krzmbrzl: This should go in its own header file
+// Davide: How would you call it? Maybe namespaces should be in their own directory...
 namespace udp {
 	MUMBLE_PACK(struct NetHeader { uint8_t type = static_cast< uint8_t >(Message::Type::Unknown); });
 

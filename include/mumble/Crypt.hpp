@@ -34,17 +34,17 @@ public:
 	virtual uint32_t nonceSize() const;
 
 	virtual BufRefConst key() const;
-	// CR krzmbrzl: Why return by value?
+	// XCR krzmbrzl: Why return by value?
+	// Davide: The key is generated and returned, not set.
 	virtual Buf genKey() const;
 	virtual bool setKey(const BufRefConst key);
 
 	virtual BufRefConst nonce() const;
-	// CR krzmbrzl: Why return by value?
+	// XCR krzmbrzl: Why return by value?
+	// Davide: The nonce is generated and returned, not set.
 	virtual Buf genNonce() const;
 	virtual bool setNonce(const BufRefConst nonce);
 
-	// CR krzmbrzl: The function naming here seems a bit odd. A function called "padding" sounds like it returns the used padding, not
-	// whether padding is used in the first place. Maybe "usesPadding" is a better name?
 	virtual bool padding() const;
 	virtual bool togglePadding(const bool enable);
 

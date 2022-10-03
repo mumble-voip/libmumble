@@ -11,10 +11,11 @@
 
 #include <memory>
 
-// CR krzmbrzl: Imo either the en- and decoding happens inside the library, in which case there is no need to expose
+// XCR krzmbrzl: Imo either the en- and decoding happens inside the library, in which case there is no need to expose
 // encoder and decoder to the user, or its supposed to be handled by the user, in which case this should not be
 // implemented in libmumble.
-
+//
+// Davide: As discussed, we're going to move these classes into an audio-specific library.
 namespace mumble {
 class MUMBLE_EXPORT OpusDecoder {
 public:
@@ -45,7 +46,8 @@ private:
 	std::unique_ptr< P > m_p;
 };
 
-// CR krzmbrzl: This should be in its own header file
+// XCR krzmbrzl: This should be in its own header file
+// Davide: Okay, let's do that when we move the classes.
 class MUMBLE_EXPORT OpusEncoder {
 public:
 	enum class Preset : uint8_t { Unknown, VoIP, Audio, LowDelay };

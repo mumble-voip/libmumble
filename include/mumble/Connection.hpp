@@ -23,7 +23,8 @@ public:
 	class P;
 	using UniqueP = std::unique_ptr< P >;
 
-	// CR krzmbrzl: "Feedback" seems like a bad name for this. How about "Callbacks" instead?
+	// XCR krzmbrzl: "Feedback" seems like a bad name for this. How about "Callbacks" instead?
+	// Davide: I actually think the current name is great; it indicates that events are sent to the API user.
 	struct Feedback {
 		std::function< void() > opened;
 		std::function< void() > closed;
@@ -45,22 +46,26 @@ public:
 	virtual Code operator()(
 		const Feedback &feedback, const std::function< bool() > halt = []() { return false; });
 
-	// CR krzmbrzl: What is this supposed to be used for? Returning a unique_ptr reference seems a bit silly. Either you want
+	// XCR krzmbrzl: What is this supposed to be used for? Returning a unique_ptr reference seems a bit silly. Either you want
 	// ownership transfer, in which case you return by value, or you simply return the underlying plain pointer (which is more efficient anyway)
+	//
+	// Davide: This is actually used internally to access the stuff in P ("m_p" is private).
+	// It's kind of a hack, that will be definitely removed while getting rid of PImpl (as discussed).
 	virtual const UniqueP &p() const;
-	// CR krzmbrzl: Unreadable function name: I'm guessing this returns a file-descriptor? In that case let's be more explicit and name
-	// the function "fileDescriptor".
 	virtual int32_t fd() const;
 
 	virtual Endpoint endpoint() const;
 	virtual Endpoint peerEndpoint() const;
 
 	virtual const Cert::Chain &cert() const;
-	// CR krzmbrzl: Why return by value?
+	// XCR krzmbrzl: Why return by value?
+	// Davide: We don't store the certificate chain ourselves: it's always retrieved through the OpenSSL context.
 	virtual Cert::Chain peerCert() const;
 
-	// CR krzmbrzl: I assume the passed cert is being taken ownership of? In that case passing by value is probably more efficient
+	// XCR krzmbrzl: I assume the passed cert is being taken ownership of? In that case passing by value is probably more efficient
 	// as this allows the type to also be move-constructed.
+	//
+	// Davide: It's copied.
 	virtual bool setCert(const Cert::Chain &cert, const Key &key);
 
 	virtual Code process(

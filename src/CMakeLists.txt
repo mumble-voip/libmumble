@@ -5,7 +5,8 @@
 
 include(MumbleCompiler)
 
-# CR krzmbrzl: Which version to we require?
+# XCR krzmbrzl: Which version to we require?
+# Davide: Excellent question. In theory the minimum version is the one that introduced threading.
 find_package(Boost REQUIRED
 	COMPONENTS
 		thread
@@ -44,7 +45,8 @@ endif()
 
 target_compile_definitions(mumble
 	PRIVATE
-		# CR krzmbrzl: This macro name seems a bit odd. Maybe prefer "MUMBLE_INTERNAL_IMPLEMENTATION" or something similar?
+		# XCR krzmbrzl: This macro name seems a bit odd. Maybe prefer "MUMBLE_INTERNAL_IMPLEMENTATION" or something similar?
+		# Davide: What about "MUMBLE_BUILD"? It is strictly used to indicate that we are building the library.
 		"MUMBLE_SRC"
 
 		$<$<BOOL:${HAVE_EPOLL}>:$<IF:$<PLATFORM_ID:Windows>,HAVE_WEPOLL,HAVE_EPOLL>>
@@ -59,7 +61,8 @@ target_include_directories(mumble
 		${INCLUDE_DIR}
 )
 
-# CR krzmbrzl: We should probably not copy mainline Mumble's bad habit of listing header files as "source files"
+# XCR krzmbrzl: We should probably not copy mainline Mumble's bad habit of listing header files as "source files"
+# Davide: I don't see the problem, it's just to be explicit.
 target_sources(mumble
 	PRIVATE
 		"Base64.cpp"
@@ -97,7 +100,8 @@ target_sources(mumble
 
 		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll/wepoll.c>
 		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll/wepoll.h>
-	# CR krzmbrzl: Why should we list these as "sources"? We should instead only set the public include directory and that should be enough
+	# XCR krzmbrzl: Why should we list these as "sources"? We should instead only set the public include directory and that should be enough
+	# Davide: Yes, this is just to be explicit.
 	PUBLIC
 		"${INCLUDE_DIR}/mumble/Base64.hpp"
 		"${INCLUDE_DIR}/mumble/Cert.hpp"
@@ -126,7 +130,8 @@ target_link_libraries(mumble
 		OpenSSL::SSL
 		quickpool
 
-		# CR krzmbrzl: Doesn't Opus_LINK_LIBRARIES and Opus::opus duplicate each other?
+		# XCR krzmbrzl: Doesn't Opus_LINK_LIBRARIES and Opus::opus duplicate each other?
+		# Davide: The first is set with pkgconfig, the second with the FindModule.
 		${Opus_LINK_LIBRARIES}
 		$<TARGET_NAME_IF_EXISTS:Opus::opus>
 

@@ -28,14 +28,17 @@ public:
 	virtual Key &operator=(const Key &key);
 	virtual Key &operator=(Key &&key);
 
-	// CR krzmbrzl: Should also provide operator!=
+	// XCR krzmbrzl: Should also provide operator!=
+	// Davide: It's implicit. https://en.cppreference.com/w/cpp/language/operators
 	virtual bool operator==(const Key &key) const;
 
 	virtual void *handle() const;
 
 	virtual bool isPrivate() const;
 
-	// CR krzmbrzl: Why return by value?
+	// XCR krzmbrzl: Why return by value?
+	// Davide: We store the certificate only through its OpenSSL handle.
+	// The PEM string is generated and returned.
 	virtual std::string pem() const;
 
 private:

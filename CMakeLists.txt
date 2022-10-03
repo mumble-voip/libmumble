@@ -3,21 +3,19 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-# CR krmzbrzl: This is a very odd version requirement. I doubt this is the actually required minimal version
+# XCR krmzbrzl: This is a very odd version requirement. I doubt this is the actually required minimal version
+# Davide: Can probably be significantly lower, I just set the CMake version I had when creating the project.
 cmake_minimum_required(VERSION 3.18.4)
 
 list(APPEND CMAKE_MODULE_PATH
 	"${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 )
 
-# CR krmzbrzl: We should add more meta-information to this project call
 project(libmumble)
 
 option(build-examples "Build example client and server" OFF)
 option(build-tests "Build tests" ON)
 
-# CR krmzbrzl: CTest should always be included. That allows to unconditionally run ctest and not have it fail,
-# even if tests are not actually built.
 if(build-tests)
 	include(CTest)
 endif()
@@ -29,7 +27,9 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# CR krmzbrzl: I guess it would be good-practice to prefix these variables with "MUMBLE_"
+# XCR krmzbrzl: I guess it would be good-practice to prefix these variables with "MUMBLE_"
+# Davide: I thought about it, but then I realized it's unnecessary: these variables are only ever "seen" in this
+# specific project, even when added through add_subdirectory().
 set(3RDPARTY_DIR "${PROJECT_SOURCE_DIR}/3rdparty")
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 
@@ -53,7 +53,8 @@ if(MSVC)
 	)
 endif()
 
-# CR krmzbrzl: This should be a CACHE variable (otherwise cmake will issue a warning)
+# XCR krmzbrzl: This should be a CACHE variable (otherwise cmake will issue a warning)
+# Davide: I didn't spot any related warnings so far...
 set(QUICKPOOL_TEST OFF)
 
 add_subdirectory("${3RDPARTY_DIR}/quickpool")

@@ -12,7 +12,10 @@
 #include <memory>
 
 namespace mumble {
-	// CR krzmbrzl: Why is this a completely separate class and not a child-class of the regular Cryp class?
+	// XCR krzmbrzl: Why is this a completely separate class and not a child-class of the regular Cryp class?
+	// Davide: This class provides our own OCB2 implementation, as a result the internal code is completely different.
+	// Inheriting from Crypt would pull in variables that we don't use.
+	// Also, this class is specifically optimized for fixed block, key and nonce size.
 class MUMBLE_EXPORT CryptOCB2 {
 public:
 	class P;

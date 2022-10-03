@@ -22,7 +22,8 @@ public:
 
 	using SharedConnection = std::shared_ptr< Connection >;
 
-	// CR krzmbrzl: Again, "Callbacks" is probably a better name
+	// XCR krzmbrzl: Again, "Callbacks" is probably a better name
+	// Davide: Replied to the other comment.
 	struct Feedback {
 		std::function< void() > started;
 		std::function< void() > stopped;
@@ -52,14 +53,17 @@ public:
 
 	static std::pair< Code, int32_t > connect(const Endpoint &peerEndpoint, const Endpoint &endpoint = {});
 
-	// CR krzmbrzl: Presumably we are taking ownership of feedback, so passing by value would also allow move-construction
+	// XCR krzmbrzl: Presumably we are taking ownership of feedback, so passing by value would also allow move-construction
+	// Davide: We're copying it.
 	virtual Code startTCP(const FeedbackTCP &feedback, const uint32_t threads = 0);
 	virtual Code stopTCP();
 
 	virtual Code startUDP(const FeedbackUDP &feedback);
 	virtual Code stopUDP();
 
-	// CR krzmbrzl: Why is endpoint passed as a non-const reference?
+	// XCR krzmbrzl: Why is endpoint passed as a non-const reference?
+	// Davide: The syscall may return a different IP address and/or port compared to the requested ones.
+	// This is guaranteed to happen when asking for a random port (0).
 	virtual Code bindTCP(Endpoint &endpoint, const bool ipv6Only = false);
 	virtual Code unbindTCP();
 

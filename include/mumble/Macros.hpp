@@ -7,11 +7,16 @@
 #define MUMBLE_MACROS_HPP
 
 #ifdef _MSC_VER
-// CR krzmbrzl: This kind of stuff should be dealt with at cmake-level
+// XCR krzmbrzl: This kind of stuff should be dealt with at cmake-level
+// Davide: I did it here for consistency.
+// However, your comment made me realize that "_MSC_VER" is defined by clang-cl too.
+// The compiler mimics MSVC, but we should take advantage of Clang's features instead.
+// What do you think?
 #	define MUMBLE_COMPILER_MSVC
 #endif
 
-// CR krzmbrzl: Maybe "MUMBLE_IMPLEMENT_ENUM_FLAG_OPERATORS" might be a better name?
+// XCR krzmbrzl: Maybe "MUMBLE_IMPLEMENT_ENUM_FLAG_OPERATORS" might be a better name?
+// Davide: Far too long in my opinion...
 #define MUMBLE_ENUM_OPERATORS(T)                                                                     \
 	static inline T operator~(const T lhs) {                                                         \
 		return static_cast< T >(~static_cast< std::underlying_type< T >::type >(lhs));               \
