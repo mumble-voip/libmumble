@@ -22,8 +22,8 @@ public:
 
 	virtual explicit operator bool();
 
-	virtual size_t decode(const BufRef out, const BufRefConst in);
-	static size_t encode(const BufRef out, const BufRefConst in);
+	virtual size_t decode(const BufView out, const BufViewConst in);
+	static size_t encode(const BufView out, const BufViewConst in);
 
 private:
 	std::unique_ptr< P > m_p;

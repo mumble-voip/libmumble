@@ -25,14 +25,14 @@ public:
 	static constexpr uint8_t v6Size = 16;
 	static constexpr uint8_t v4Size = 4;
 
-	using V6       = std::array< uint8_t, v6Size >;
-	using V4       = std::array< uint8_t, v4Size >;
-	using Ref      = gsl::span< uint8_t >;
-	using RefConst = gsl::span< const uint8_t >;
+	using V6        = std::array< uint8_t, v6Size >;
+	using V4        = std::array< uint8_t, v4Size >;
+	using View      = gsl::span< uint8_t >;
+	using ViewConst = gsl::span< const uint8_t >;
 
 	IP();
 	IP(const IP &ip);
-	IP(const RefConst ref);
+	IP(const ViewConst view);
 	IP(const std::string_view string);
 	IP(const sockaddr_in6 &sockaddr);
 	virtual ~IP();
@@ -40,11 +40,11 @@ public:
 	virtual IP &operator=(const IP &ip);
 	virtual bool operator==(const IP &ip) const;
 
-	virtual RefConst v6() const;
-	virtual RefConst v4() const;
+	virtual ViewConst v6() const;
+	virtual ViewConst v4() const;
 
-	virtual Ref v6();
-	virtual Ref v4();
+	virtual View v6();
+	virtual View v4();
 
 	virtual bool isV6() const;
 	virtual bool isV4() const;

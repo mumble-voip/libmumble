@@ -33,8 +33,8 @@ public:
 	mumble::Code handleState(const State state);
 
 private:
-	mumble::Code read(BufRef buf, const bool wait, const std::function< bool() > halt);
-	mumble::Code write(BufRefConst buf, const bool wait, const std::function< bool() > halt);
+	mumble::Code read(BufView buf, const bool wait, const std::function< bool() > halt);
+	mumble::Code write(BufViewConst buf, const bool wait, const std::function< bool() > halt);
 
 	mumble::Code handleCode(const Code code, const bool wait);
 	mumble::Code handleWait(Monitor &monitor);

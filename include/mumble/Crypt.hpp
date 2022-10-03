@@ -34,22 +34,23 @@ public:
 	virtual uint32_t keySize() const;
 	virtual uint32_t nonceSize() const;
 
-	virtual BufRefConst key() const;
+	virtual BufViewConst key() const;
 	virtual Buf genKey() const;
-	virtual bool setKey(const BufRefConst key);
+	virtual bool setKey(const BufViewConst key);
 
-	virtual BufRefConst nonce() const;
+	virtual BufViewConst nonce() const;
 	virtual Buf genNonce() const;
-	virtual bool setNonce(const BufRefConst nonce);
+	virtual bool setNonce(const BufViewConst nonce);
 
 	virtual bool padding() const;
 	virtual bool togglePadding(const bool enable);
 
 	virtual bool reset();
 
-	virtual size_t decrypt(const BufRef out, const BufRefConst in, const BufRefConst tag = {},
-						   const BufRefConst aad = {});
-	virtual size_t encrypt(const BufRef out, const BufRefConst in, const BufRef tag = {}, const BufRefConst aad = {});
+	virtual size_t decrypt(const BufView out, const BufViewConst in, const BufViewConst tag = {},
+						   const BufViewConst aad = {});
+	virtual size_t encrypt(const BufView out, const BufViewConst in, const BufView tag = {},
+						   const BufViewConst aad = {});
 
 private:
 	std::unique_ptr< P > m_p;

@@ -58,7 +58,7 @@ public:
 	virtual Code process(
 		const bool wait = true, const std::function< bool() > halt = []() { return false; });
 	virtual Code write(
-		const BufRefConst data, const bool wait = true, const std::function< bool() > halt = []() { return false; });
+		const BufViewConst data, const bool wait = true, const std::function< bool() > halt = []() { return false; });
 
 private:
 	UniqueP m_p;

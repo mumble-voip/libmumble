@@ -96,7 +96,7 @@ void UserManager::del(const uint32_t id) {
 	}
 }
 
-UserPtr UserManager::tryDecrypt(const BufRef out, const BufRefConst in, const Endpoint &endpoint) {
+UserPtr UserManager::tryDecrypt(const BufView out, const BufViewConst in, const Endpoint &endpoint) {
 	UserPtr user;
 
 	{

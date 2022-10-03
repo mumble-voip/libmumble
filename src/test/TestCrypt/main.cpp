@@ -31,7 +31,7 @@ static size_t bufSize(std::mt19937 &algorithm) {
 	return gen(algorithm);
 }
 
-template< typename T > static uint8_t test(T &crypt, const BufRefConst in) {
+template< typename T > static uint8_t test(T &crypt, const BufViewConst in) {
 	if (!crypt.setKey(crypt.genKey())) {
 		return 10;
 	}

@@ -43,7 +43,7 @@ Hash &Hash::operator=(Hash &&crypt) {
 	return *this;
 }
 
-size_t Hash::operator()(const BufRef out, const BufRefConst in) {
+size_t Hash::operator()(const BufView out, const BufViewConst in) {
 	CHECK
 
 	if (!out.size()) {

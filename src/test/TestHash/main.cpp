@@ -26,7 +26,7 @@ static constexpr size_t iterations = 100000;
 
 using namespace mumble;
 
-static std::string toHex(const BufRefConst bytes) {
+static std::string toHex(const BufViewConst bytes) {
 	std::ostringstream stream;
 
 	stream << std::hex << std::setfill('0');
@@ -40,7 +40,7 @@ static std::string toHex(const BufRefConst bytes) {
 
 static uint8_t test(Hash &hash, const Data::List &list, const size_t index) {
 	const auto &input = Data::input[index];
-	const BufRefConst in(reinterpret_cast< const std::byte * >(input.data()), input.size());
+	const BufViewConst in(reinterpret_cast< const std::byte * >(input.data()), input.size());
 
 	Buf digest(hash({}, in));
 

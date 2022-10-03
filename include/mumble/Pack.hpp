@@ -36,13 +36,13 @@ public:
 
 	virtual bool operator==(const Pack &pack) const { return pack.m_buf == m_buf; }
 
-	virtual BufRefConst buf() const { return m_buf; }
+	virtual BufViewConst buf() const { return m_buf; }
 
-	virtual BufRef buf() { return m_buf; }
+	virtual BufView buf() { return m_buf; }
 
-	virtual BufRefConst data() const { return { m_buf.data() + sizeof(NetHeader), m_buf.size() - sizeof(NetHeader) }; }
+	virtual BufViewConst data() const { return { m_buf.data() + sizeof(NetHeader), m_buf.size() - sizeof(NetHeader) }; }
 
-	virtual BufRef data() { return { m_buf.data() + sizeof(NetHeader), m_buf.size() - sizeof(NetHeader) }; }
+	virtual BufView data() { return { m_buf.data() + sizeof(NetHeader), m_buf.size() - sizeof(NetHeader) }; }
 
 	virtual const NetHeader &header() const { return *reinterpret_cast< const NetHeader * >(m_buf.data()); }
 

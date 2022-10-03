@@ -104,9 +104,9 @@ struct Version {
 	static constexpr auto offsetPatch32 = 0;
 };
 
-using Buf         = std::vector< std::byte >;
-using BufRef      = gsl::span< std::byte >;
-using BufRefConst = gsl::span< const std::byte >;
+using Buf          = std::vector< std::byte >;
+using BufView      = gsl::span< std::byte >;
+using BufViewConst = gsl::span< const std::byte >;
 
 template< size_t size > using FixedBuf = std::array< std::byte, size >;
 

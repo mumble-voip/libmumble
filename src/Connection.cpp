@@ -131,7 +131,7 @@ Code Connection::process(const bool wait, const std::function< bool() > halt) {
 	return Code::Success;
 }
 
-Code Connection::write(const BufRefConst data, const bool wait, const std::function< bool() > halt) {
+Code Connection::write(const BufViewConst data, const bool wait, const std::function< bool() > halt) {
 	return m_p->write(data, wait, halt);
 }
 
@@ -149,7 +149,7 @@ P::operator bool() const {
 	return SocketTLS::operator bool() && m_monitorIn && m_monitorOut;
 }
 
-Code P::read(BufRef buf, const bool wait, const std::function< bool() > halt) {
+Code P::read(BufView buf, const bool wait, const std::function< bool() > halt) {
 	using Code = mumble::Code;
 
 	while (!halt()) {
@@ -164,7 +164,7 @@ Code P::read(BufRef buf, const bool wait, const std::function< bool() > halt) {
 	return Code::Cancel;
 }
 
-Code P::write(BufRefConst buf, const bool wait, const std::function< bool() > halt) {
+Code P::write(BufViewConst buf, const bool wait, const std::function< bool() > halt) {
 	using Code = mumble::Code;
 
 	while (!halt()) {

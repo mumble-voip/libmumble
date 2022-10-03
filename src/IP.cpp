@@ -24,9 +24,9 @@ static constexpr uint8_t v4StrSize = 16;
 
 using namespace mumble;
 
-using P        = IP::P;
-using Ref      = IP::Ref;
-using RefConst = IP::RefConst;
+using P         = IP::P;
+using View      = IP::View;
+using ViewConst = IP::ViewConst;
 
 IP::IP() : m_bytes({}) {
 }
@@ -34,15 +34,15 @@ IP::IP() : m_bytes({}) {
 IP::IP(const IP &ip) : m_bytes(ip.m_bytes) {
 }
 
-IP::IP(const RefConst ref) {
-	switch (ref.size()) {
+IP::IP(const ViewConst view) {
+	switch (view.size()) {
 		case v6Size:
-			std::copy(ref.begin(), ref.end(), m_bytes.begin());
+			std::copy(view.begin(), view.end(), m_bytes.begin());
 			break;
 		case v4Size:
 			std::fill_n(&m_bytes[0], 10, 0x00);
 			std::fill_n(&m_bytes[10], 2, 0xff);
-			std::copy(ref.begin(), ref.end(), &m_bytes[12]);
+			std::copy(view.begin(), view.end(), &m_bytes[12]);
 	}
 }
 
@@ -72,19 +72,19 @@ bool IP::operator==(const IP &ip) const {
 	return m_bytes == ip.m_bytes;
 }
 
-RefConst IP::v6() const {
+ViewConst IP::v6() const {
 	return m_bytes;
 }
 
-RefConst IP::v4() const {
+ViewConst IP::v4() const {
 	return { m_bytes.data() + 12, m_bytes.size() - 12 };
 }
 
-Ref IP::v6() {
+View IP::v6() {
 	return m_bytes;
 }
 
-Ref IP::v4() {
+View IP::v4() {
 	return { m_bytes.data() + 12, m_bytes.size() - 12 };
 }
 
@@ -105,8 +105,8 @@ bool IP::isV4() const {
 }
 
 bool IP::isWildcard() const {
-	const auto ref = isV6() ? v6() : v4();
-	return std::all_of(ref.begin(), ref.end(), [](const uint8_t byte) { return byte == 0x00; });
+	const auto view = isV6() ? v6() : v4();
+	return std::all_of(view.begin(), view.end(), [](const uint8_t byte) { return byte == 0x00; });
 }
 
 std::string IP::text() const {

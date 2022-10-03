@@ -25,7 +25,7 @@ public:
 
 	virtual Hash &operator=(Hash &&crypt);
 
-	virtual size_t operator()(const BufRef out, const BufRefConst in);
+	virtual size_t operator()(const BufView out, const BufViewConst in);
 
 	virtual void *handle() const;
 

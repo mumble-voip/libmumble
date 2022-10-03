@@ -352,7 +352,7 @@ bool Node::startUDP() {
 		m_server.sendUDP(endpoint, Pack(ping).buf());
 	};
 
-	feedbackUDP.encrypted = [this](Endpoint &endpoint, BufRef buf) {
+	feedbackUDP.encrypted = [this](Endpoint &endpoint, BufView buf) {
 		auto user = (*m_userManager)[endpoint];
 
 		Buf decrypted(buf.size());
@@ -373,7 +373,7 @@ bool Node::startUDP() {
 			return;
 		}
 
-		BufRefConst packet = { decrypted.data(), size };
+		BufViewConst packet = { decrypted.data(), size };
 
 		if (legacy::udp::type(packet) == legacy::udp::Type::Ping) {
 			printf("[#%u] (UDP) Legacy ping received!\n", user->id());

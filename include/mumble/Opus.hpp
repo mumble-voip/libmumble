@@ -23,7 +23,7 @@ public:
 
 	virtual explicit operator bool() const;
 
-	virtual size_t operator()(const BufRef out, const BufRefConst in, const bool decodeFEC = false);
+	virtual size_t operator()(const BufView out, const BufViewConst in, const bool decodeFEC = false);
 
 	virtual Code init(const uint32_t sampleRate = 48000);
 	virtual Code reset();
@@ -36,7 +36,7 @@ public:
 	virtual bool phaseInversion() const;
 	virtual bool togglePhaseInversion(const bool enable);
 
-	virtual uint32_t packetSamples(const BufRefConst packet);
+	virtual uint32_t packetSamples(const BufViewConst packet);
 
 private:
 	std::unique_ptr< P > m_p;
@@ -54,7 +54,7 @@ public:
 
 	virtual explicit operator bool() const;
 
-	virtual size_t operator()(const BufRef out, const BufRefConst in);
+	virtual size_t operator()(const BufView out, const BufViewConst in);
 
 	virtual Code init(const uint32_t sampleRate = 48000, const Preset preset = Preset::VoIP);
 	virtual Code reset();

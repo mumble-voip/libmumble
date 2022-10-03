@@ -145,7 +145,7 @@ bool Monitor::untrigger() {
 	return recv(m_trigger.first.handle(), &byte, sizeof(byte), 0) >= 1;
 }
 
-uint32_t Monitor::wait(const EventsRef events, const uint32_t timeout) {
+uint32_t Monitor::wait(const EventsView events, const uint32_t timeout) {
 	if (!events.size()) {
 		return {};
 	}
@@ -159,7 +159,7 @@ uint32_t Monitor::wait(const EventsRef events, const uint32_t timeout) {
 #if defined(HAVE_EPOLL) || defined(HAVE_WEPOLL)
 #	include <gsl/span>
 
-uint32_t Monitor::waitEpoll(const EventsRef events, const uint32_t timeout) {
+uint32_t Monitor::waitEpoll(const EventsView events, const uint32_t timeout) {
 	const int32_t ret = epoll_wait(m_handle, m_targets.data(), static_cast< int >(m_targets.size()),
 								   timeout == timeoutMax ? -1 : timeout);
 	if (ret < 1) {
@@ -204,7 +204,7 @@ uint32_t Monitor::waitEpoll(const EventsRef events, const uint32_t timeout) {
 	return num;
 }
 #else
-uint32_t Monitor::waitPoll(const EventsRef events, const uint32_t timeout) {
+uint32_t Monitor::waitPoll(const EventsView events, const uint32_t timeout) {
 	const int32_t ret = poll(m_targets.data(), m_targets.size(), timeout == timeoutMax ? -1 : timeout);
 	if (ret < 1) {
 		return {};

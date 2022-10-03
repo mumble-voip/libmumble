@@ -24,12 +24,12 @@ static constexpr size_t iterations = 1000000;
 using namespace mumble;
 
 static std::string decode(Base64 &base64, const Data::Entry &entry) {
-	const BufRefConst in(reinterpret_cast< const std::byte * >(entry.second.data()), entry.second.size());
+	const BufViewConst in(reinterpret_cast< const std::byte * >(entry.second.data()), entry.second.size());
 
 	std::string ret;
 	ret.resize(base64.decode({}, in));
 
-	const BufRef out(reinterpret_cast< std::byte * >(ret.data()), ret.size());
+	const BufView out(reinterpret_cast< std::byte * >(ret.data()), ret.size());
 
 	const auto written = base64.decode(out, in);
 	if (!written) {
@@ -42,12 +42,12 @@ static std::string decode(Base64 &base64, const Data::Entry &entry) {
 }
 
 static std::string encode(const Data::Entry &entry) {
-	const BufRefConst in(reinterpret_cast< const std::byte * >(entry.first.data()), entry.first.size());
+	const BufViewConst in(reinterpret_cast< const std::byte * >(entry.first.data()), entry.first.size());
 
 	std::string ret;
 	ret.resize(Base64::encode({}, in) - 1);
 
-	const BufRef out(reinterpret_cast< std::byte * >(ret.data()), ret.size());
+	const BufView out(reinterpret_cast< std::byte * >(ret.data()), ret.size());
 
 	const auto written = Base64::encode(out, in);
 	if (!written) {

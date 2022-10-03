@@ -35,7 +35,7 @@ namespace legacy {
 			uint32_t maxBandwidth = 0;
 		});
 
-		static inline bool isPlainPing(const BufRefConst data) {
+		static inline bool isPlainPing(const BufViewConst data) {
 			if (data.size() != 12 && data.size() != 24) {
 				return false;
 			}
@@ -45,7 +45,7 @@ namespace legacy {
 			return !ping->versionBlob;
 		}
 
-		static inline Type type(const BufRefConst data) {
+		static inline Type type(const BufViewConst data) {
 			const auto byte = (static_cast< uint8_t >(data[0]) >> 5) & 0x7;
 			return static_cast< Type >(byte);
 		}

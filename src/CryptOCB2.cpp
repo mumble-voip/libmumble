@@ -28,10 +28,10 @@ using namespace mumble;
 
 using P = CryptOCB2::P;
 
-using KeyBlock         = P::KeyBlock;
-using KeyBlockRef      = P::KeyBlockRef;
-using KeyBlockRefConst = P::KeyBlockRefConst;
-using SubBlock         = P::SubBlock;
+using KeyBlock          = P::KeyBlock;
+using KeyBlockView      = P::KeyBlockView;
+using KeyBlockViewConst = P::KeyBlockViewConst;
+using SubBlock          = P::SubBlock;
 
 CryptOCB2::CryptOCB2() : m_p(new P) {
 }
@@ -60,7 +60,7 @@ uint32_t CryptOCB2::nonceSize() const {
 	return P::nonceSize;
 }
 
-BufRefConst CryptOCB2::key() const {
+BufViewConst CryptOCB2::key() const {
 	CHECK
 
 	return m_p->m_key;
@@ -77,7 +77,7 @@ Buf CryptOCB2::genKey() const {
 	return key;
 }
 
-bool CryptOCB2::setKey(const BufRefConst key) {
+bool CryptOCB2::setKey(const BufViewConst key) {
 	CHECK
 
 	if (key.size() != P::keySize) {
@@ -89,7 +89,7 @@ bool CryptOCB2::setKey(const BufRefConst key) {
 	return EVP_CipherInit_ex(m_p->m_ctx, nullptr, nullptr, CAST_BUF_CONST(key.data()), nullptr, -1) > 0;
 }
 
-BufRefConst CryptOCB2::nonce() const {
+BufViewConst CryptOCB2::nonce() const {
 	CHECK
 
 	return m_p->m_nonce;
@@ -106,7 +106,7 @@ Buf CryptOCB2::genNonce() const {
 	return nonce;
 }
 
-bool CryptOCB2::setNonce(const BufRefConst nonce) {
+bool CryptOCB2::setNonce(const BufViewConst nonce) {
 	CHECK
 
 	if (nonce.size() != P::nonceSize) {
@@ -118,7 +118,7 @@ bool CryptOCB2::setNonce(const BufRefConst nonce) {
 	return true;
 }
 
-size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst tag) {
+size_t CryptOCB2::decrypt(BufView out, BufViewConst in, const BufViewConst tag) {
 	CHECK
 
 	if (!out.size()) {
@@ -126,7 +126,7 @@ size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst tag) {
 	}
 
 	KeyBlock delta;
-	const auto deltaBytes = gsl::as_writable_bytes(KeyBlockRef(delta));
+	const auto deltaBytes = gsl::as_writable_bytes(KeyBlockView(delta));
 
 	if (!m_p->process(true, deltaBytes, m_p->m_nonce)) {
 		return {};
@@ -135,20 +135,20 @@ size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst tag) {
 	size_t written = 0;
 
 	KeyBlock checksum{}, tmp;
-	const auto tmpBytes = gsl::as_writable_bytes(KeyBlockRef(tmp));
+	const auto tmpBytes = gsl::as_writable_bytes(KeyBlockView(tmp));
 
 	while (in.size() > P::blockSize) {
 		P::s2(delta);
-		P::xorBlock(tmp, delta, P::toBlockRef(in));
+		P::xorBlock(tmp, delta, P::toBlockView(in));
 
 		if (!m_p->process(false, tmpBytes, tmpBytes)) {
 			return {};
 		}
 
-		P::xorBlock(P::toBlockRef(out), delta, tmp);
+		P::xorBlock(P::toBlockView(out), delta, tmp);
 		written += P::blockSize;
 
-		P::xorBlock(checksum, checksum, P::toBlockRef(out));
+		P::xorBlock(checksum, checksum, P::toBlockView(out));
 
 		in  = in.subspan(P::blockSize);
 		out = out.subspan(P::blockSize);
@@ -161,7 +161,7 @@ size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst tag) {
 	P::xorBlock(tmp, tmp, delta);
 
 	KeyBlock pad;
-	const auto padBytes = gsl::as_writable_bytes(KeyBlockRef(pad));
+	const auto padBytes = gsl::as_writable_bytes(KeyBlockView(pad));
 
 	if (!m_p->process(true, padBytes, tmpBytes)) {
 		return {};
@@ -203,7 +203,7 @@ size_t CryptOCB2::decrypt(BufRef out, BufRefConst in, const BufRefConst tag) {
 	return written;
 }
 
-size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
+size_t CryptOCB2::encrypt(BufView out, BufViewConst in, const BufView tag) {
 	CHECK
 
 	if (!out.size()) {
@@ -215,14 +215,14 @@ size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
 	}
 
 	KeyBlock delta;
-	if (!m_p->process(true, gsl::as_writable_bytes(KeyBlockRef(delta)), m_p->m_nonce)) {
+	if (!m_p->process(true, gsl::as_writable_bytes(KeyBlockView(delta)), m_p->m_nonce)) {
 		return {};
 	}
 
 	size_t written = 0;
 
 	KeyBlock checksum{}, tmp;
-	const auto tmpBytes = gsl::as_writable_bytes(KeyBlockRef(tmp));
+	const auto tmpBytes = gsl::as_writable_bytes(KeyBlockView(tmp));
 
 	while (in.size() > P::blockSize) {
 		// Counter-cryptanalysis described in section 9 of https://eprint.iacr.org/2019/311
@@ -247,7 +247,7 @@ size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
 		}
 
 		P::s2(delta);
-		P::xorBlock(tmp, delta, P::toBlockRef(in));
+		P::xorBlock(tmp, delta, P::toBlockView(in));
 
 		if (flipABit) {
 			*reinterpret_cast< uint8_t * >(tmp.data()) ^= 1;
@@ -257,10 +257,10 @@ size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
 			return {};
 		}
 
-		P::xorBlock(P::toBlockRef(out), delta, tmp);
+		P::xorBlock(P::toBlockView(out), delta, tmp);
 		written += P::blockSize;
 
-		P::xorBlock(checksum, checksum, P::toBlockRef(in));
+		P::xorBlock(checksum, checksum, P::toBlockView(in));
 
 		if (flipABit) {
 			*reinterpret_cast< uint8_t * >(checksum.data()) ^= 1;
@@ -277,7 +277,7 @@ size_t CryptOCB2::encrypt(BufRef out, BufRefConst in, const BufRef tag) {
 	P::xorBlock(tmp, tmp, delta);
 
 	KeyBlock pad;
-	const auto padBytes = gsl::as_writable_bytes(KeyBlockRef(pad));
+	const auto padBytes = gsl::as_writable_bytes(KeyBlockView(pad));
 
 	if (!m_p->process(true, padBytes, tmpBytes)) {
 		return {};
@@ -327,7 +327,7 @@ P::~P() {
 	}
 }
 
-size_t P::process(const bool encrypt, const BufRef out, const BufRefConst in) {
+size_t P::process(const bool encrypt, const BufView out, const BufViewConst in) {
 	if (static_cast< bool >(EVP_CIPHER_CTX_encrypting(m_ctx)) == encrypt) {
 		if (EVP_CipherInit_ex(m_ctx, nullptr, nullptr, nullptr, nullptr, encrypt) <= 0) {
 			return {};
@@ -360,13 +360,13 @@ size_t P::process(const bool encrypt, const BufRef out, const BufRefConst in) {
 	return written1 + written2;
 }
 
-void P::xorBlock(const KeyBlockRef dst, const KeyBlockRefConst a, const KeyBlockRefConst b) {
+void P::xorBlock(const KeyBlockView dst, const KeyBlockViewConst a, const KeyBlockViewConst b) {
 	for (uint8_t i = 0; i < subBlocks; ++i) {
 		dst[i] = a[i] ^ b[i];
 	}
 }
 
-void P::s2(const KeyBlockRef block) {
+void P::s2(const KeyBlockView block) {
 	const SubBlock carry = Endian::swap(block[0]) >> shiftBits;
 
 	for (uint8_t i = 0; i < subBlocks - 1; ++i) {
@@ -376,7 +376,7 @@ void P::s2(const KeyBlockRef block) {
 	block[subBlocks - 1] = Endian::swap((Endian::swap(block[subBlocks - 1]) << 1) ^ (carry * 0x87));
 }
 
-void P::s3(const KeyBlockRef block) {
+void P::s3(const KeyBlockView block) {
 	const SubBlock carry = Endian::swap(block[0]) >> shiftBits;
 
 	for (uint8_t i = 0; i < subBlocks - 1; ++i) {
@@ -386,10 +386,10 @@ void P::s3(const KeyBlockRef block) {
 	block[subBlocks - 1] ^= Endian::swap((Endian::swap(block[subBlocks - 1]) << 1) ^ (carry * 0x87));
 }
 
-KeyBlockRef P::toBlockRef(const BufRef buf) {
-	return KeyBlockRef(reinterpret_cast< SubBlock * >(buf.data()), subBlocks);
+KeyBlockView P::toBlockView(const BufView buf) {
+	return KeyBlockView(reinterpret_cast< SubBlock * >(buf.data()), subBlocks);
 }
 
-KeyBlockRefConst P::toBlockRef(const BufRefConst buf) {
-	return KeyBlockRefConst(reinterpret_cast< const SubBlock * >(buf.data()), subBlocks);
+KeyBlockViewConst P::toBlockView(const BufViewConst buf) {
+	return KeyBlockViewConst(reinterpret_cast< const SubBlock * >(buf.data()), subBlocks);
 }

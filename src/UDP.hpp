@@ -15,8 +15,8 @@ class SocketUDP : public Socket {
 public:
 	SocketUDP();
 
-	Code read(Endpoint &endpoint, BufRef &buf);
-	Code write(const Endpoint &endpoint, const BufRefConst buf);
+	Code read(Endpoint &endpoint, BufView &buf);
+	Code write(const Endpoint &endpoint, const BufViewConst buf);
 };
 } // namespace mumble
 

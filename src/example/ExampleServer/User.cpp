@@ -61,19 +61,19 @@ uint32_t User::lost() const {
 	return m_lost;
 }
 
-BufRefConst User::key() const {
+BufViewConst User::key() const {
 	return m_decrypt.key();
 }
 
-BufRefConst User::decryptNonce() const {
+BufViewConst User::decryptNonce() const {
 	return m_decrypt.nonce();
 }
 
-BufRefConst User::encryptNonce() const {
+BufViewConst User::encryptNonce() const {
 	return m_encrypt.nonce();
 }
 
-size_t User::decrypt(const BufRef out, const BufRefConst in) {
+size_t User::decrypt(const BufView out, const BufViewConst in) {
 	// The checksum header occupies 4 bytes.
 	if (in.size() < 4) {
 		return {};
@@ -173,7 +173,7 @@ size_t User::decrypt(const BufRef out, const BufRefConst in) {
 	return written;
 }
 
-size_t User::encrypt(const BufRef out, const BufRefConst in) {
+size_t User::encrypt(const BufView out, const BufViewConst in) {
 	// The maximum packet size allowed in the Mumble protocol is 1024 bytes.
 	// 4 bytes are used for the checksum header, leaving 1020 bytes for the data.
 	if (out.size() < 4 || in.size() > 1020) {

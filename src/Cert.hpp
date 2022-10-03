@@ -19,7 +19,7 @@ class Cert::P {
 
 public:
 	P(X509 *x509);
-	P(const DerRefConst der);
+	P(const DerViewConst der);
 	P(const std::string_view pem, std::string_view password = {});
 	~P();
 

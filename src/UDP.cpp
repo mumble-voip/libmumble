@@ -27,7 +27,7 @@ using namespace mumble;
 SocketUDP::SocketUDP() : Socket(Type::UDP) {
 }
 
-Code SocketUDP::read(Endpoint &endpoint, BufRef &buf) {
+Code SocketUDP::read(Endpoint &endpoint, BufView &buf) {
 	sockaddr_in6 addr;
 #ifdef OS_WINDOWS
 	auto addrsize = static_cast< int >(sizeof(addr));
@@ -49,7 +49,7 @@ Code SocketUDP::read(Endpoint &endpoint, BufRef &buf) {
 	return Code::Success;
 }
 
-Code SocketUDP::write(const Endpoint &endpoint, const BufRefConst buf) {
+Code SocketUDP::write(const Endpoint &endpoint, const BufViewConst buf) {
 	sockaddr_in6 addr = {};
 	endpoint.ip.toSockAddr(addr);
 	addr.sin6_port = Endian::toNetwork(endpoint.port);

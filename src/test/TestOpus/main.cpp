@@ -24,7 +24,7 @@ static constexpr std::array< uint16_t, 6 > bufferSamples = { 120, 240, 480, 960,
 
 using namespace mumble;
 
-static uint8_t test(OpusDecoder &decoder, OpusEncoder &encoder, const BufRefConst in, const BufRef out) {
+static uint8_t test(OpusDecoder &decoder, OpusEncoder &encoder, const BufViewConst in, const BufView out) {
 	if (!encoder(out, in)) {
 		return 10;
 	}
@@ -71,8 +71,8 @@ static uint8_t thread() {
 		std::vector< float > data(samples * 2);
 		std::vector< float > buf(data.size());
 
-		BufRefConst in(reinterpret_cast< const std::byte * >(data.data()), data.size() * sizeof(float));
-		BufRef out(reinterpret_cast< std::byte * >(buf.data()), buf.size() * sizeof(float));
+		BufViewConst in(reinterpret_cast< const std::byte * >(data.data()), data.size() * sizeof(float));
+		BufView out(reinterpret_cast< std::byte * >(buf.data()), buf.size() * sizeof(float));
 
 		for (size_t i = 0; i < iterations; ++i) {
 			if (boost::this_thread::interruption_requested()) {

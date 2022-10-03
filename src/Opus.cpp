@@ -64,7 +64,7 @@ Decoder::operator bool() const {
 	return m_p && *m_p;
 }
 
-size_t Decoder::operator()(const BufRef out, const BufRefConst in, const bool decodeFEC) {
+size_t Decoder::operator()(const BufView out, const BufViewConst in, const bool decodeFEC) {
 	const auto samples = static_cast< int >(out.size() / sizeof(float) / m_p->m_channels);
 
 	const auto written = opus_decode_float(m_p->m_ctx.get(), CAST_BUF_CONST(in.data()), CAST_SIZE(in.size()),
@@ -110,7 +110,7 @@ bool Decoder::togglePhaseInversion(const bool enable) {
 	return m_p->set(OPUS_SET_PHASE_INVERSION_DISABLED(!enable));
 }
 
-uint32_t Decoder::packetSamples(const BufRefConst packet) {
+uint32_t Decoder::packetSamples(const BufViewConst packet) {
 	const auto ret =
 		opus_decoder_get_nb_samples(m_p->m_ctx.get(), CAST_BUF_CONST(packet.data()), CAST_SIZE(packet.size()));
 	return ret >= 0 ? ret : 0;
@@ -131,7 +131,7 @@ Encoder::operator bool() const {
 	return m_p && *m_p;
 }
 
-size_t Encoder::operator()(const BufRef out, const BufRefConst in) {
+size_t Encoder::operator()(const BufView out, const BufViewConst in) {
 	const auto samples = static_cast< int >(in.size() / sizeof(float) / m_p->m_channels);
 
 	const auto written = opus_encode_float(m_p->m_ctx.get(), CAST_FPTR_CONST(in.data()), samples, CAST_BUF(out.data()),

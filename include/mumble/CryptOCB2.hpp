@@ -26,16 +26,16 @@ public:
 	virtual uint32_t keySize() const;
 	virtual uint32_t nonceSize() const;
 
-	virtual BufRefConst key() const;
+	virtual BufViewConst key() const;
 	virtual Buf genKey() const;
-	virtual bool setKey(const BufRefConst key);
+	virtual bool setKey(const BufViewConst key);
 
-	virtual BufRefConst nonce() const;
+	virtual BufViewConst nonce() const;
 	virtual Buf genNonce() const;
-	virtual bool setNonce(const BufRefConst nonce);
+	virtual bool setNonce(const BufViewConst nonce);
 
-	virtual size_t decrypt(BufRef out, BufRefConst in, const BufRefConst tag = {});
-	virtual size_t encrypt(BufRef out, BufRefConst in, const BufRef tag = {});
+	virtual size_t decrypt(BufView out, BufViewConst in, const BufViewConst tag = {});
+	virtual size_t encrypt(BufView out, BufViewConst in, const BufView tag = {});
 
 private:
 	std::unique_ptr< P > m_p;

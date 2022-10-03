@@ -37,7 +37,7 @@ public:
 	};
 
 	struct FeedbackUDP : Feedback {
-		std::function< void(Endpoint &endpoint, BufRef buf) > encrypted;
+		std::function< void(Endpoint &endpoint, BufView buf) > encrypted;
 		std::function< void(Endpoint &endpoint, udp::Message::Ping &ping) > ping;
 		std::function< void(Endpoint &endpoint, legacy::udp::Ping &ping) > legacyPing;
 	};
@@ -67,7 +67,7 @@ public:
 	virtual Code addTCP(const SharedConnection &connection);
 	virtual Code delTCP(const SharedConnection &connection);
 
-	virtual Code sendUDP(const Endpoint &endpoint, const BufRefConst data);
+	virtual Code sendUDP(const Endpoint &endpoint, const BufViewConst data);
 
 private:
 	std::unique_ptr< P > m_p;

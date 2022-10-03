@@ -31,15 +31,15 @@ namespace tcp {
 
 class User {
 public:
-	using BufRef      = mumble::BufRef;
-	using BufRefConst = mumble::BufRefConst;
-	using Cert        = mumble::Cert;
-	using Code        = mumble::Code;
-	using Connection  = mumble::Connection;
-	using CryptOCB2   = mumble::CryptOCB2;
-	using Key         = mumble::Key;
-	using Message     = mumble::tcp::Message;
-	using Pack        = mumble::tcp::Pack;
+	using BufView      = mumble::BufView;
+	using BufViewConst = mumble::BufViewConst;
+	using Cert         = mumble::Cert;
+	using Code         = mumble::Code;
+	using Connection   = mumble::Connection;
+	using CryptOCB2    = mumble::CryptOCB2;
+	using Key          = mumble::Key;
+	using Message      = mumble::tcp::Message;
+	using Pack         = mumble::tcp::Pack;
 
 	struct Packet {
 		mumble::Endpoint endpoint;
@@ -49,7 +49,7 @@ public:
 
 		Packet(const Packet &packet) noexcept : endpoint(packet.endpoint), buf(packet.buf) {}
 
-		Packet(const mumble::Endpoint &endpoint, const BufRefConst buf) noexcept
+		Packet(const mumble::Endpoint &endpoint, const BufViewConst buf) noexcept
 			: endpoint(endpoint), buf(buf.begin(), buf.end()) {}
 
 		Packet &operator=(const Packet &&packet) noexcept {
@@ -73,13 +73,13 @@ public:
 	uint32_t late() const;
 	uint32_t lost() const;
 
-	BufRefConst key() const;
+	BufViewConst key() const;
 
-	BufRefConst decryptNonce() const;
-	BufRefConst encryptNonce() const;
+	BufViewConst decryptNonce() const;
+	BufViewConst encryptNonce() const;
 
-	size_t decrypt(const BufRef out, const BufRefConst in);
-	size_t encrypt(const BufRef out, const BufRefConst in);
+	size_t decrypt(const BufView out, const BufViewConst in);
+	size_t encrypt(const BufView out, const BufViewConst in);
 
 	const Endpoints &endpoints() const;
 	void addEndpoint(const Endpoint &endpoint);

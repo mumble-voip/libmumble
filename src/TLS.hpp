@@ -40,8 +40,8 @@ public:
 	Code connect();
 	Code disconnect();
 
-	Code read(BufRef &buf);
-	Code write(BufRefConst &buf);
+	Code read(BufView &buf);
+	Code write(BufViewConst &buf);
 
 private:
 	Code interpretLibCode(const int code, const bool processed = true, const bool remaining = false);

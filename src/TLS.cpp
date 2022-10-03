@@ -145,7 +145,7 @@ uint32_t SocketTLS::pending() const {
 	return interpretLibCode(SSL_shutdown(m_ssl));
 }
 
-::Code SocketTLS::read(BufRef &buf) {
+::Code SocketTLS::read(BufView &buf) {
 	ERR_clear_error();
 
 	size_t read   = 0;
@@ -156,7 +156,7 @@ uint32_t SocketTLS::pending() const {
 	return interpretLibCode(ret, read, buf.size());
 }
 
-::Code SocketTLS::write(BufRefConst &buf) {
+::Code SocketTLS::write(BufViewConst &buf) {
 	ERR_clear_error();
 
 	size_t written = 0;

@@ -51,7 +51,7 @@ Cert::Cert(Cert &&cert) : m_p(std::exchange(cert.m_p, nullptr)) {
 Cert::Cert(void *handle) : m_p(new P(static_cast< X509 * >(handle))) {
 }
 
-Cert::Cert(const DerRefConst der) : m_p(new P(der)) {
+Cert::Cert(const DerViewConst der) : m_p(new P(der)) {
 }
 
 Cert::Cert(const std::string_view pem, std::string_view password) : m_p(new P(pem, password)) {
@@ -181,7 +181,7 @@ Attributes Cert::issuerAttributes() const {
 P::P(X509 *x509) : m_x509(x509) {
 }
 
-P::P(const DerRefConst der) {
+P::P(const DerViewConst der) {
 	auto bytes = gsl::as_bytes(der);
 	d2i_X509(&m_x509, reinterpret_cast< const unsigned char ** >(&bytes), static_cast< long >(bytes.size()));
 }

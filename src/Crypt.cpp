@@ -78,7 +78,7 @@ uint32_t Crypt::nonceSize() const {
 	return static_cast< uint32_t >(m_p->m_nonce.size());
 }
 
-BufRefConst Crypt::key() const {
+BufViewConst Crypt::key() const {
 	CHECK
 
 	return m_p->m_key;
@@ -98,7 +98,7 @@ Buf Crypt::genKey() const {
 	return key;
 }
 
-bool Crypt::setKey(const BufRefConst key) {
+bool Crypt::setKey(const BufViewConst key) {
 	CHECK
 
 	if (m_p->m_key.size() != key.size()) {
@@ -114,7 +114,7 @@ bool Crypt::setKey(const BufRefConst key) {
 	return EVP_CipherInit_ex(m_p->m_ctx, nullptr, nullptr, CAST_BUF_CONST(key.data()), nullptr, -1) > 0;
 }
 
-BufRefConst Crypt::nonce() const {
+BufViewConst Crypt::nonce() const {
 	CHECK
 
 	return m_p->m_nonce;
@@ -134,7 +134,7 @@ Buf Crypt::genNonce() const {
 	return nonce;
 }
 
-bool Crypt::setNonce(const BufRefConst nonce) {
+bool Crypt::setNonce(const BufViewConst nonce) {
 	CHECK
 
 	if (m_p->m_nonce.size() != nonce.size()) {
@@ -168,13 +168,13 @@ bool Crypt::reset() {
 	return EVP_CIPHER_CTX_reset(m_p->m_ctx) > 0;
 }
 
-size_t Crypt::decrypt(const BufRef out, const BufRefConst in, const BufRefConst tag, const BufRefConst aad) {
+size_t Crypt::decrypt(const BufView out, const BufViewConst in, const BufViewConst tag, const BufViewConst aad) {
 	CHECK
 
 	return m_p->process(false, out, in, { const_cast< std::byte * >(tag.data()), tag.size() }, aad);
 }
 
-size_t Crypt::encrypt(const BufRef out, const BufRefConst in, const BufRef tag, const BufRefConst aad) {
+size_t Crypt::encrypt(const BufView out, const BufViewConst in, const BufView tag, const BufViewConst aad) {
 	CHECK
 
 	return m_p->process(true, out, in, tag, aad);
@@ -229,7 +229,8 @@ bool P::setCipher(const std::string_view name) {
 	return true;
 }
 
-size_t P::process(const bool encrypt, const BufRef out, const BufRefConst in, const BufRef tag, const BufRefConst aad) {
+size_t P::process(const bool encrypt, const BufView out, const BufViewConst in, const BufView tag,
+				  const BufViewConst aad) {
 	if (!out.size()) {
 		if (m_padding) {
 			const auto size = blockSize();

@@ -45,7 +45,7 @@ public:
 
 	static constexpr auto timeoutMax = std::numeric_limits< uint32_t >::max();
 
-	using EventsRef = gsl::span< Event >;
+	using EventsView = gsl::span< Event >;
 
 	Monitor();
 	~Monitor();
@@ -60,14 +60,14 @@ public:
 	bool trigger();
 	bool untrigger();
 
-	uint32_t wait(const EventsRef events, const uint32_t timeout);
+	uint32_t wait(const EventsView events, const uint32_t timeout);
 
 private:
 	Monitor(const Monitor &)            = delete;
 	Monitor &operator=(const Monitor &) = delete;
 #if defined(HAVE_EPOLL) || defined(HAVE_WEPOLL)
 	using Target = epoll_event;
-	uint32_t waitEpoll(const EventsRef events, const uint32_t timeout);
+	uint32_t waitEpoll(const EventsView events, const uint32_t timeout);
 #	ifdef HAVE_EPOLL
 	int m_handle;
 #	else
@@ -75,7 +75,7 @@ private:
 #	endif
 #else
 	using Target = pollfd;
-	uint32_t waitPoll(const EventsRef events, const uint32_t timeout);
+	uint32_t waitPoll(const EventsView events, const uint32_t timeout);
 #endif
 	Socket::Pair m_trigger;
 	std::vector< Target > m_targets;

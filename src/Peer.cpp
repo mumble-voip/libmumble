@@ -130,7 +130,7 @@ Code Peer::delTCP(const SharedConnection &connection) {
 	return Code::Success;
 }
 
-Code Peer::sendUDP(const Endpoint &endpoint, const BufRefConst data) {
+Code Peer::sendUDP(const Endpoint &endpoint, const BufViewConst data) {
 	if (!m_p->m_udp.m_socket) {
 		return Code::Init;
 	}
@@ -241,8 +241,8 @@ void P::TCP::threadFunc(const uint32_t threads) {
 	uint32_t num = 0;
 
 	while (!m_halt) {
-		gsl::span< Event > ref(events.data(), num);
-		pool->parallel_for_each(ref, [this](Event &event) {
+		gsl::span< Event > view(events.data(), num);
+		pool->parallel_for_each(view, [this](Event &event) {
 			if (m_socket && event.fd == m_socket->handle()) {
 				if (event.state & Event::Error) {
 					m_feedback.failed(Code::Failure);
@@ -340,7 +340,7 @@ void P::UDP::threadFunc(const uint32_t bufferSize) {
 
 		while (event.state & Event::InReady) {
 			Endpoint endpoint;
-			BufRef packet(pack.buf());
+			BufView packet(pack.buf());
 
 			const auto code = m_socket->read(endpoint, packet);
 			switch (code) {

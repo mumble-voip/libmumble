@@ -34,9 +34,9 @@ public:
 	static constexpr uint8_t subBlocks = 4;
 	static constexpr uint8_t shiftBits = 31;
 #endif
-	using KeyBlock         = std::array< SubBlock, subBlocks >;
-	using KeyBlockRef      = gsl::span< SubBlock, subBlocks >;
-	using KeyBlockRefConst = gsl::span< const SubBlock, subBlocks >;
+	using KeyBlock          = std::array< SubBlock, subBlocks >;
+	using KeyBlockView      = gsl::span< SubBlock, subBlocks >;
+	using KeyBlockViewConst = gsl::span< const SubBlock, subBlocks >;
 
 	static constexpr uint8_t blockSize = 128 / 8;
 	static constexpr uint8_t keySize   = 128 / 8;
@@ -46,15 +46,15 @@ public:
 	~P();
 
 private:
-	size_t process(const bool encrypt, const BufRef out, const BufRefConst in);
+	size_t process(const bool encrypt, const BufView out, const BufViewConst in);
 
-	static void xorBlock(const KeyBlockRef dst, const KeyBlockRefConst a, const KeyBlockRefConst b);
+	static void xorBlock(const KeyBlockView dst, const KeyBlockViewConst a, const KeyBlockViewConst b);
 
-	static void s2(const KeyBlockRef block);
-	static void s3(const KeyBlockRef block);
+	static void s2(const KeyBlockView block);
+	static void s3(const KeyBlockView block);
 
-	static KeyBlockRef toBlockRef(const BufRef buf);
-	static KeyBlockRefConst toBlockRef(const BufRefConst buf);
+	static KeyBlockView toBlockView(const BufView buf);
+	static KeyBlockViewConst toBlockView(const BufViewConst buf);
 
 	bool m_ok;
 	FixedBuf< keySize > m_key;

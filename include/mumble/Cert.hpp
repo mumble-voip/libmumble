@@ -20,18 +20,18 @@ class MUMBLE_EXPORT Cert {
 public:
 	class P;
 
-	using Attributes  = std::map< std::string_view, std::string >;
-	using Chain       = std::vector< Cert >;
-	using Der         = std::vector< std::byte >;
-	using DerRef      = gsl::span< std::byte >;
-	using DerRefConst = gsl::span< const std::byte >;
-	using TimePoint   = std::chrono::system_clock::time_point;
+	using Attributes   = std::map< std::string_view, std::string >;
+	using Chain        = std::vector< Cert >;
+	using Der          = std::vector< std::byte >;
+	using DerView      = gsl::span< std::byte >;
+	using DerViewConst = gsl::span< const std::byte >;
+	using TimePoint    = std::chrono::system_clock::time_point;
 
 	Cert();
 	Cert(const Cert &cert);
 	Cert(Cert &&cert);
 	Cert(void *handle);
-	Cert(const DerRefConst der);
+	Cert(const DerViewConst der);
 	Cert(const std::string_view pem, std::string_view password = {});
 	virtual ~Cert();
 

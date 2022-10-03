@@ -31,7 +31,8 @@ public:
 	std::string_view cipher();
 	bool setCipher(const std::string_view name = {});
 
-	size_t process(const bool encrypt, const BufRef out, const BufRefConst in, const BufRef tag, const BufRefConst aad);
+	size_t process(const bool encrypt, const BufView out, const BufViewConst in, const BufView tag,
+				   const BufViewConst aad);
 
 private:
 	Buf m_key;

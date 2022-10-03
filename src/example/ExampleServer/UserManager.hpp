@@ -23,9 +23,9 @@ public:
 	UserManager(const uint32_t max);
 	~UserManager();
 
-	using BufRef      = mumble::BufRef;
-	using BufRefConst = mumble::BufRefConst;
-	using UserPtr     = std::shared_ptr< User >;
+	using BufView      = mumble::BufView;
+	using BufViewConst = mumble::BufViewConst;
+	using UserPtr      = std::shared_ptr< User >;
 
 	UserPtr operator[](const uint32_t id);
 	UserPtr operator[](const Endpoint &endpoint);
@@ -40,7 +40,7 @@ public:
 	void add(const UserPtr &user);
 	void del(const uint32_t id);
 
-	UserPtr tryDecrypt(const BufRef out, const BufRefConst in, const Endpoint &endpoint);
+	UserPtr tryDecrypt(const BufView out, const BufViewConst in, const Endpoint &endpoint);
 
 private:
 	void thread();
