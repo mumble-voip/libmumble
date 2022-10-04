@@ -101,7 +101,7 @@ bool Decoder::inDTX() const {
 	return m_p->get(OPUS_GET_IN_DTX(&ret)) ? ret : 0;
 }
 
-bool Decoder::phaseInversion() const {
+bool Decoder::usesPhaseInversion() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_PHASE_INVERSION_DISABLED(&ret)) ? !ret : 0;
 }
@@ -209,7 +209,7 @@ bool Encoder::inDTX() const {
 	return m_p->get(OPUS_GET_IN_DTX(&ret)) ? ret : 0;
 }
 
-bool Encoder::phaseInversion() const {
+bool Encoder::usesPhaseInversion() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_PHASE_INVERSION_DISABLED(&ret)) ? !ret : 0;
 }
@@ -218,7 +218,7 @@ bool Encoder::togglePhaseInversion(const bool enable) {
 	return m_p->set(OPUS_SET_PHASE_INVERSION_DISABLED(!enable));
 }
 
-bool Encoder::vbr() const {
+bool Encoder::usesVBR() const {
 	opus_int32 ret;
 	return m_p->get(OPUS_GET_VBR(&ret)) ? ret : 0;
 }
