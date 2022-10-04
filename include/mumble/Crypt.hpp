@@ -42,7 +42,7 @@ public:
 	virtual Buf genNonce() const;
 	virtual bool setNonce(const BufViewConst nonce);
 
-	virtual bool padding() const;
+	virtual bool usesPadding() const;
 	virtual bool togglePadding(const bool enable);
 
 	virtual bool reset();

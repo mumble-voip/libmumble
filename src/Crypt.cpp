@@ -150,7 +150,7 @@ bool Crypt::setNonce(const BufViewConst nonce) {
 	return EVP_CipherInit_ex(m_p->m_ctx, nullptr, nullptr, nullptr, CAST_BUF_CONST(nonce.data()), -1) > 0;
 }
 
-bool Crypt::padding() const {
+bool Crypt::usesPadding() const {
 	return m_p->m_padding;
 }
 

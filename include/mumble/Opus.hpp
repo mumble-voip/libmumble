@@ -33,7 +33,7 @@ public:
 
 	virtual bool inDTX() const;
 
-	virtual bool phaseInversion() const;
+	virtual bool usesPhaseInversion() const;
 	virtual bool togglePhaseInversion(const bool enable);
 
 	virtual uint32_t packetSamples(const BufViewConst packet);
@@ -70,7 +70,7 @@ public:
 
 	virtual bool inDTX() const;
 
-	virtual bool phaseInversion() const;
+	virtual bool usesPhaseInversion() const;
 	virtual bool togglePhaseInversion(const bool enable);
 
 	virtual bool vbr() const;
