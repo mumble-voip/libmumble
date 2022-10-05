@@ -73,8 +73,8 @@ TCP::Pack(const Message &message) {
 			auto &msg = static_cast< const Message::Version & >(message);
 
 			MumbleTCP::Version proto;
-			proto.set_version_v1(msg.versionV1);
-			proto.set_version_v2(msg.versionV2);
+			proto.set_version_v1(msg.version.blob32());
+			proto.set_version_v2(msg.version.blob64());
 			proto.set_release(msg.release);
 			proto.set_os(msg.os);
 			proto.set_os_version(msg.osVersion);
@@ -461,8 +461,8 @@ TCP::Pack(const Message &message) {
 			proto.set_tcp_ping_var(msg.tcpPingVar);
 
 			auto version = proto.mutable_version();
-			version->set_version_v1(msg.version.versionV1);
-			version->set_version_v2(msg.version.versionV2);
+			version->set_version_v1(msg.version.version.blob32());
+			version->set_version_v2(msg.version.version.blob64());
 			version->set_release(msg.version.release);
 			version->set_os(msg.version.os);
 			version->set_os_version(msg.version.osVersion);
@@ -514,11 +514,9 @@ TCP::Pack(const Message &message) {
 			auto &msg = static_cast< const Message::SuggestConfig & >(message);
 
 			MumbleTCP::SuggestConfig proto;
-			if (msg.versionV1) {
-				proto.set_version_v1(msg.versionV1.value());
-			}
-			if (msg.versionV2) {
-				proto.set_version_v2(msg.versionV2.value());
+			if (msg.version && msg.version.value().isValid()) {
+				proto.set_version_v1(msg.version.value().blob32());
+				proto.set_version_v2(msg.version.value().blob64());
 			}
 			if (msg.positional) {
 				proto.set_positional(msg.positional.value());
@@ -590,8 +588,8 @@ UDP::Pack(const Message &message) {
 
 			proto.set_request_extended_information(msg.requestExtendedInformation);
 
-			if (msg.serverVersionV2) {
-				proto.set_server_version_v2(msg.serverVersionV2.value());
+			if (msg.version && msg.version.value().isValid()) {
+				proto.set_server_version_v2(msg.version.value().blob64());
 			}
 			if (msg.userCount) {
 				proto.set_user_count(msg.userCount.value());
@@ -630,8 +628,11 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			PARSE_RET
 
 			auto &msg     = static_cast< Message::Version     &>(message);
-			msg.versionV1 = proto.version_v1();
-			msg.versionV2 = proto.version_v2();
+			if (proto.has_version_v2()) {
+				msg.version = mumble::Version(proto.version_v2());
+			} else {
+				msg.version = mumble::Version(proto.version_v1());
+			}
 			msg.release   = proto.release();
 			msg.os        = proto.os();
 			msg.osVersion = proto.os_version();
@@ -1027,8 +1028,12 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			msg.tcpPingAvg = proto.tcp_ping_avg();
 			msg.tcpPingVar = proto.tcp_ping_var();
 
-			msg.version.versionV1 = proto.version().version_v1();
-			msg.version.versionV2 = proto.version().version_v2();
+
+			if (proto.version().has_version_v2()) {
+				msg.version.version = mumble::Version(proto.version().version_v2());
+			} else {
+				msg.version.version = mumble::Version(proto.version().version_v1());
+			}
 			msg.version.release   = proto.version().release();
 			msg.version.os        = proto.version().os();
 			msg.version.osVersion = proto.version().os_version();
@@ -1084,11 +1089,10 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			PARSE_RET
 
 			auto &msg = static_cast< Message::SuggestConfig & >(message);
-			if (proto.has_version_v1()) {
-				msg.versionV1 = proto.version_v1();
-			}
 			if (proto.has_version_v2()) {
-				msg.versionV2 = proto.version_v2();
+				msg.version = mumble::Version(proto.version_v2());
+			} else if (proto.has_version_v1()) {
+				msg.version = mumble::Version(proto.version_v1());
 			}
 			if (proto.has_positional()) {
 				msg.positional = proto.positional();
@@ -1173,7 +1177,7 @@ bool UDP::operator()(Message &message, uint32_t dataSize) const {
 			msg.requestExtendedInformation = proto.request_extended_information();
 
 			// FIXME: Check if fields are set once "optional" is in .proto file.
-			msg.serverVersionV2     = proto.server_version_v2();
+			msg.version             = mumble::Version(proto.server_version_v2());
 			msg.userCount           = proto.user_count();
 			msg.maxUserCount        = proto.max_user_count();
 			msg.maxBandwidthPerUser = proto.max_bandwidth_per_user();

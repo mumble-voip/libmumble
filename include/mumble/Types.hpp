@@ -87,6 +87,10 @@ struct Version {
 			   | (std::min< uint32_t >(patch, std::numeric_limits< uint8_t >::max()) << offsetPatch32);
 	}
 
+	constexpr bool isValid() const {
+		return (major | minor | patch | extra) != 0;
+	}
+
 	static constexpr auto maskMajor64 = 0xFFFF000000000000;
 	static constexpr auto maskMinor64 = 0xFFFF00000000;
 	static constexpr auto maskPatch64 = 0xFFFF0000;

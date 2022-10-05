@@ -290,11 +290,10 @@ namespace udp {
 
 namespace tcp {
 	MUMBLE_MESSAGE_DECL(Version) {
-		uint32_t versionV1    = 0;
-		uint64_t versionV2    = 0;
-		std::string release   = {};
-		std::string os        = {};
-		std::string osVersion = {};
+		mumble::Version version = {};
+		std::string release     = {};
+		std::string os          = {};
+		std::string osVersion   = {};
 
 		MUMBLE_MESSAGE_COMMON(Version)
 	};
@@ -610,14 +609,14 @@ namespace tcp {
 		float tcpPingAvg    = 0;
 		float tcpPingVar    = 0;
 
-		Version version                     = {};
-		std::vector< int32_t > celtVersions = {};
-		IP address                          = {};
-		uint32_t bandwidth                  = 0;
-		uint32_t onlinesecs                 = 0;
-		uint32_t idlesecs                   = 0;
-		bool strongCertificate              = false;
-		bool opus                           = false;
+		mumble::tcp::Message::Version version = {};
+		std::vector< int32_t > celtVersions   = {};
+		IP address                            = {};
+		uint32_t bandwidth                    = 0;
+		uint32_t onlinesecs                   = 0;
+		uint32_t idlesecs                     = 0;
+		bool strongCertificate                = false;
+		bool opus                             = false;
 
 		MUMBLE_MESSAGE_COMMON(UserStats)
 	};
@@ -643,10 +642,9 @@ namespace tcp {
 	};
 
 	MUMBLE_MESSAGE_DECL(SuggestConfig) {
-		std::optional< uint32_t > versionV1 = {};
-		std::optional< uint64_t > versionV2 = {};
-		std::optional< bool > positional    = {};
-		std::optional< bool > pushToTalk    = {};
+		std::optional< mumble::Version > version = {};
+		std::optional< bool > positional         = {};
+		std::optional< bool > pushToTalk         = {};
 
 		MUMBLE_MESSAGE_COMMON(SuggestConfig)
 	};
@@ -690,7 +688,7 @@ namespace udp {
 
 		bool requestExtendedInformation = false;
 
-		std::optional< uint64_t > serverVersionV2     = {};
+		std::optional< mumble::Version > version      = {};
 		std::optional< uint32_t > userCount           = {};
 		std::optional< uint32_t > maxUserCount        = {};
 		std::optional< uint32_t > maxBandwidthPerUser = {};

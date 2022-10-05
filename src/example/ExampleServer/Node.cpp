@@ -164,9 +164,8 @@ bool Node::startTCP() {
 			switch (pack.type()) {
 				case Type::Version: {
 					Message::Version ver;
-					ver.versionV1 = lib::version().blob32();
-					ver.versionV2 = lib::version().blob64();
-					ver.release   = "Custom server";
+					ver.version = lib::version();
+					ver.release = "Custom server";
 					user->send(ver);
 
 					break;
@@ -436,7 +435,7 @@ bool Node::fillPing(udp::Message::Ping &ping) {
 		return false;
 	}
 
-	ping.serverVersion       = lib::version().blob64();
+	ping.version             = lib::version();
 	ping.userCount           = m_userManager->num();
 	ping.maxUserCount        = m_userManager->max();
 	ping.maxBandwidthPerUser = m_bandwidth;
