@@ -164,9 +164,9 @@ bool Node::startTCP() {
 			switch (pack.type()) {
 				case Type::Version: {
 					Message::Version ver;
-					ver.v1      = lib::version().blob32();
-					ver.v2      = lib::version().blob64();
-					ver.release = "Custom server";
+					ver.versionV1 = lib::version().blob32();
+					ver.versionV2 = lib::version().blob64();
+					ver.release   = "Custom server";
 					user->send(ver);
 
 					break;

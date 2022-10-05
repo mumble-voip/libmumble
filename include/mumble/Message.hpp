@@ -290,8 +290,8 @@ namespace udp {
 
 namespace tcp {
 	MUMBLE_MESSAGE_DECL(Version) {
-		uint32_t v1           = 0;
-		uint64_t v2           = 0;
+		uint32_t versionV1    = 0;
+		uint64_t versionV2    = 0;
 		std::string release   = {};
 		std::string os        = {};
 		std::string osVersion = {};
@@ -690,7 +690,7 @@ namespace udp {
 
 		bool requestExtendedInformation = false;
 
-		std::optional< uint64_t > serverVersion       = {};
+		std::optional< uint64_t > serverVersionV2     = {};
 		std::optional< uint32_t > userCount           = {};
 		std::optional< uint32_t > maxUserCount        = {};
 		std::optional< uint32_t > maxBandwidthPerUser = {};

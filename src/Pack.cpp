@@ -73,8 +73,8 @@ TCP::Pack(const Message &message) {
 			auto &msg = static_cast< const Message::Version & >(message);
 
 			MumbleTCP::Version proto;
-			proto.set_version_v1(msg.v1);
-			proto.set_version_v2(msg.v2);
+			proto.set_version_v1(msg.versionV1);
+			proto.set_version_v2(msg.versionV2);
 			proto.set_release(msg.release);
 			proto.set_os(msg.os);
 			proto.set_os_version(msg.osVersion);
@@ -461,8 +461,8 @@ TCP::Pack(const Message &message) {
 			proto.set_tcp_ping_var(msg.tcpPingVar);
 
 			auto version = proto.mutable_version();
-			version->set_version_v1(msg.version.v1);
-			version->set_version_v2(msg.version.v2);
+			version->set_version_v1(msg.version.versionV1);
+			version->set_version_v2(msg.version.versionV2);
 			version->set_release(msg.version.release);
 			version->set_os(msg.version.os);
 			version->set_os_version(msg.version.osVersion);
@@ -590,8 +590,8 @@ UDP::Pack(const Message &message) {
 
 			proto.set_request_extended_information(msg.requestExtendedInformation);
 
-			if (msg.serverVersion) {
-				proto.set_server_version(msg.serverVersion.value());
+			if (msg.serverVersionV2) {
+				proto.set_server_version_v2(msg.serverVersionV2.value());
 			}
 			if (msg.userCount) {
 				proto.set_user_count(msg.userCount.value());
@@ -630,8 +630,8 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			PARSE_RET
 
 			auto &msg     = static_cast< Message::Version     &>(message);
-			msg.v1        = proto.version_v1();
-			msg.v2        = proto.version_v2();
+			msg.versionV1 = proto.version_v1();
+			msg.versionV2 = proto.version_v2();
 			msg.release   = proto.release();
 			msg.os        = proto.os();
 			msg.osVersion = proto.os_version();
@@ -1027,8 +1027,8 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			msg.tcpPingAvg = proto.tcp_ping_avg();
 			msg.tcpPingVar = proto.tcp_ping_var();
 
-			msg.version.v1        = proto.version().version_v1();
-			msg.version.v2        = proto.version().version_v2();
+			msg.version.versionV1 = proto.version().version_v1();
+			msg.version.versionV2 = proto.version().version_v2();
 			msg.version.release   = proto.version().release();
 			msg.version.os        = proto.version().os();
 			msg.version.osVersion = proto.version().os_version();
@@ -1173,7 +1173,7 @@ bool UDP::operator()(Message &message, uint32_t dataSize) const {
 			msg.requestExtendedInformation = proto.request_extended_information();
 
 			// FIXME: Check if fields are set once "optional" is in .proto file.
-			msg.serverVersion       = proto.server_version();
+			msg.serverVersionV2     = proto.server_version_v2();
 			msg.userCount           = proto.user_count();
 			msg.maxUserCount        = proto.max_user_count();
 			msg.maxBandwidthPerUser = proto.max_bandwidth_per_user();
