@@ -21,6 +21,9 @@ jobs:
           - os: macos-latest
             triplet: x64-osx
 
+    env:
+      VCPKG_DEFAULT_TRIPLET: ${{matrix.triplet}}
+
     steps:
       - uses: actions/checkout@v2
         with:
