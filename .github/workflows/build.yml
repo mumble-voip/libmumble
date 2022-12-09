@@ -16,6 +16,8 @@ jobs:
             triplet: x64-windows-static-md
           - os: windows-latest
             triplet: x86-windows-static-md
+          - os: windows-latest
+            triplet: arm64-windows-static-md
           - os: macos-latest
             triplet: x64-osx
 
