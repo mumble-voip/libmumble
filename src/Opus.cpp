@@ -92,17 +92,17 @@ uint8_t Decoder::channels() const {
 }
 
 uint32_t Decoder::sampleRate() const {
-	opus_int32 ret;
+	opus_int32 ret = 0;
 	return m_p->get(OPUS_GET_SAMPLE_RATE(&ret)) ? ret : 0;
 }
 
 bool Decoder::inDTX() const {
-	opus_int32 ret;
+	opus_int32 ret = 0;
 	return m_p->get(OPUS_GET_IN_DTX(&ret)) ? ret : 0;
 }
 
 bool Decoder::usesPhaseInversion() const {
-	opus_int32 ret;
+	opus_int32 ret = 0;
 	return m_p->get(OPUS_GET_PHASE_INVERSION_DISABLED(&ret)) ? !ret : 0;
 }
 
@@ -164,12 +164,12 @@ uint8_t Encoder::channels() const {
 }
 
 uint32_t Encoder::sampleRate() const {
-	opus_int32 ret;
+	opus_int32 ret = 0;
 	return m_p->get(OPUS_GET_SAMPLE_RATE(&ret)) ? ret : 0;
 }
 
 Preset Encoder::preset() const {
-	opus_int32 ret;
+	opus_int32 ret = 0;
 	if (!m_p->get(OPUS_GET_APPLICATION(&ret))) {
 		return Preset::Unknown;
 	}
@@ -187,7 +187,7 @@ bool Encoder::setPreset(const Preset preset) {
 }
 
 uint32_t Encoder::bitrate() const {
-	opus_int32 ret;
+	opus_int32 ret = 0;
 	return m_p->get(OPUS_GET_BITRATE(&ret)) ? ret : 0;
 }
 
@@ -205,12 +205,12 @@ bool Encoder::setBitrate(const uint32_t bitrate) {
 }
 
 bool Encoder::inDTX() const {
-	opus_int32 ret;
+	opus_int32 ret = 0;
 	return m_p->get(OPUS_GET_IN_DTX(&ret)) ? ret : 0;
 }
 
 bool Encoder::usesPhaseInversion() const {
-	opus_int32 ret;
+	opus_int32 ret = 0;
 	return m_p->get(OPUS_GET_PHASE_INVERSION_DISABLED(&ret)) ? !ret : 0;
 }
 
@@ -219,7 +219,7 @@ bool Encoder::togglePhaseInversion(const bool enable) {
 }
 
 bool Encoder::usesVBR() const {
-	opus_int32 ret;
+	opus_int32 ret = 0;
 	return m_p->get(OPUS_GET_VBR(&ret)) ? ret : 0;
 }
 
