@@ -4,16 +4,18 @@ on: [push, pull_request]
 
 jobs:
   build:
+    name: ${{matrix.triplet}}
     runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         include:
           - os: ubuntu-latest
             triplet: x64-linux
           - os: windows-latest
             triplet: x64-windows-static-md
+          - os: windows-latest
+            triplet: x86-windows-static-md
           - os: macos-latest
             triplet: x64-osx
 
