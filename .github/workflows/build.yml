@@ -23,9 +23,9 @@ jobs:
       VCPKG_DEFAULT_TRIPLET: ${{matrix.triplet}}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          submodules: true
+          submodules: recursive
 
       - uses: lukka/get-cmake@latest
 
