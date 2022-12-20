@@ -10,7 +10,7 @@ find_package(Boost REQUIRED
 		thread
 )
 
-if(NOT bundled-gsl)
+if(NOT LIBMUMBLE_BUNDLED_GSL)
 	find_package(Microsoft.GSL REQUIRED)
 else()
 	add_subdirectory("${3RDPARTY_DIR}/gsl" "${CMAKE_CURRENT_BINARY_DIR}/gsl" EXCLUDE_FROM_ALL)
@@ -137,10 +137,10 @@ target_link_libraries(mumble
 		Microsoft.GSL::GSL
 )
 
-if(build-examples)
+if(LIBMUMBLE_BUILD_EXAMPLES)
 	add_subdirectory(example)
 endif()
 
-if(build-tests)
+if(LIBMUMBLE_BUILD_TESTS)
 	add_subdirectory(test)
 endif()

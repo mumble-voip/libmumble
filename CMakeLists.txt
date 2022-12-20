@@ -16,10 +16,10 @@ project(libmumble
 	LANGUAGES "C" "CXX"
 )
 
-option(build-examples "Build example client and server" OFF)
-option(build-tests "Build tests" ON)
+option(LIBMUMBLE_BUILD_EXAMPLES "Build example client and server" OFF)
+option(LIBMUMBLE_BUILD_TESTS "Build tests" ON)
 
-option(bundled-gsl "Use the bundled GSL version instead of looking for one on the system" ON)
+option(LIBMUMBLE_BUNDLED_GSL "Use the bundled GSL version instead of looking for one on the system" ON)
 
 include(CTest)
 

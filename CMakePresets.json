@@ -22,7 +22,7 @@
           "type": "FILEPATH",
           "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
         },
-        "bundled-gsl": {
+        "LIBMUMBLE_BUNDLED_GSL": {
           "type": "BOOL",
           "value": "OFF"
         }
