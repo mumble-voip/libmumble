@@ -21,6 +21,8 @@ option(LIBMUMBLE_BUILD_TESTS "Build tests" ON)
 
 option(LIBMUMBLE_BUNDLED_GSL "Use the bundled GSL version instead of looking for one on the system" ON)
 
+option(LIBMUMBLE_STATIC "Build the library as static instead of shared" OFF)
+
 include(CTest)
 
 set(CMAKE_CXX_EXTENSIONS OFF)

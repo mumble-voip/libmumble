@@ -28,7 +28,11 @@ endif()
 
 add_subdirectory(proto)
 
-add_library(mumble SHARED)
+if(NOT LIBMUMBLE_STATIC)
+	add_library(mumble SHARED)
+else()
+	add_library(mumble STATIC)
+endif()
 
 target_pedantic_warnings(mumble)
 target_pimpl_warning_fix(mumble)
