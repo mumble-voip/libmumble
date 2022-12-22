@@ -146,6 +146,7 @@ template< typename Feedback, typename Socket > Code P::Proto< Feedback, Socket >
 	m_halt = true;
 	m_monitor.trigger();
 	m_thread->join();
+	m_thread.reset();
 
 	return Code::Success;
 }
