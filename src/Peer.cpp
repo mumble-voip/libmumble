@@ -191,6 +191,7 @@ Code P::TCP::start(const FeedbackTCP &feedback, const uint32_t threads) {
 		return Code::Busy;
 	}
 
+	m_halt     = false;
 	m_feedback = feedback;
 	m_thread   = std::make_unique< boost::thread >(&TCP::threadFunc, this, threads);
 
@@ -206,6 +207,7 @@ Code P::UDP::start(const FeedbackUDP &feedback, const uint32_t bufferSize) {
 		return Code::Init;
 	}
 
+	m_halt     = false;
 	m_feedback = feedback;
 	m_thread   = std::make_unique< boost::thread >(&UDP::threadFunc, this, bufferSize);
 
