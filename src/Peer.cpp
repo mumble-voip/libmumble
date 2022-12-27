@@ -332,7 +332,7 @@ void P::UDP::threadFunc(const uint32_t bufferSize) {
 		m_feedback.started();
 	}
 
-	Pack pack(bufferSize ? bufferSize : 1024);
+	Pack pack(NetHeader(), bufferSize ? bufferSize : 1024);
 	Event event(m_socket->handle());
 
 	while (!m_halt) {

@@ -28,7 +28,7 @@ template< typename NetHeader > class Pack {
 public:
 	Pack(const Pack &pack) = default;
 	Pack(Pack &&pack)      = default;
-	Pack(const uint32_t dataSize = 0) : m_buf(sizeof(NetHeader) + dataSize) {}
+	Pack(const size_t dataSize = 0) : m_buf(sizeof(NetHeader) + dataSize) {}
 	virtual ~Pack() = default;
 
 	virtual Pack &operator=(const Pack &pack) = default;
@@ -62,9 +62,9 @@ namespace tcp {
 	public:
 		using Type = Message::Type;
 
-		Pack(const Message &message);
-		Pack(const NetHeader &header = {});
-		Pack(const google::protobuf::Message &proto);
+		Pack(const Message &message, const uint32_t extraDataSize = 0);
+		Pack(const NetHeader &header = {}, const uint32_t extraDataSize = 0);
+		Pack(const google::protobuf::Message &proto, const uint32_t extraDataSize = 0);
 		virtual ~Pack();
 
 		virtual bool operator()(Message &message, uint32_t dataSize = std::numeric_limits< uint32_t >::max()) const;
@@ -80,9 +80,9 @@ namespace udp {
 	public:
 		using Type = Message::Type;
 
-		Pack(const Message &message);
-		Pack(const uint32_t dataSize = 0, const NetHeader &header = {});
-		Pack(const google::protobuf::Message &proto);
+		Pack(const Message &message, const uint32_t extraDataSize = 0);
+		Pack(const NetHeader &header = {}, const uint32_t dataSize = 0);
+		Pack(const google::protobuf::Message &proto, const uint32_t extraDataSize = 0);
 		virtual ~Pack();
 
 		virtual bool operator()(Message &message, uint32_t dataSize = std::numeric_limits< uint32_t >::max()) const;

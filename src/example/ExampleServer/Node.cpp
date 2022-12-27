@@ -389,7 +389,7 @@ bool Node::startUDP() {
 		auto header = reinterpret_cast< const NetHeader * >(packet.data());
 		packet      = packet.subspan(sizeof(*header));
 
-		Pack pack(packet.size(), *header);
+		Pack pack(*header, packet.size());
 
 		if (pack.type() != Type::Audio) {
 			printf("[#%u] (UDP) %s received!\n", user->id(), Message::text(pack.type()).data());

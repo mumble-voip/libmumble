@@ -26,8 +26,8 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 
-#define SET_BUF_AND_BREAK           \
-	*this = std::move(Pack(proto)); \
+#define SET_BUF_AND_BREAK                          \
+	*this = std::move(Pack(proto, extraDataSize)); \
 	break;
 
 #define PARSE_RET                                         \
@@ -40,32 +40,33 @@ using namespace mumble;
 using TCP = tcp::Pack;
 using UDP = udp::Pack;
 
-TCP::Pack(const NetHeader &header) : mumble::Pack< NetHeader >(Endian::toHost(header.size)) {
+TCP::Pack(const NetHeader &header, const uint32_t extraDataSize)
+	: mumble::Pack< NetHeader >(Endian::toHost(header.size) + extraDataSize) {
 	memcpy(m_buf.data(), &header, sizeof(header));
 }
 
-UDP::Pack(const uint32_t dataSize, const NetHeader &header) : mumble::Pack< NetHeader >(dataSize) {
+UDP::Pack(const NetHeader &header, const uint32_t dataSize) : mumble::Pack< NetHeader >(dataSize) {
 	memcpy(m_buf.data(), &header, sizeof(header));
 }
 
-TCP::Pack(const google::protobuf::Message &proto)
-	: mumble::Pack< NetHeader >(static_cast< uint32_t >(proto.ByteSizeLong())) {
+TCP::Pack(const google::protobuf::Message &proto, const uint32_t extraDataSize)
+	: mumble::Pack< NetHeader >(proto.ByteSizeLong() + extraDataSize) {
 	auto buf = data();
-	if (proto.SerializeToArray(buf.data(), static_cast< int >(buf.size()))) {
+	if (proto.SerializeToArray(buf.data(), static_cast< int >(buf.size() - extraDataSize))) {
 		header().type = Endian::toNetwork(static_cast< uint16_t >(proto.GetDescriptor()->index()));
-		header().size = Endian::toNetwork(static_cast< uint32_t >(buf.size()));
+		header().size = Endian::toNetwork(static_cast< uint32_t >(buf.size() - extraDataSize));
 	}
 }
 
-UDP::Pack(const google::protobuf::Message &proto)
-	: mumble::Pack< NetHeader >(static_cast< uint32_t >(proto.ByteSizeLong())) {
+UDP::Pack(const google::protobuf::Message &proto, const uint32_t extraDataSize)
+	: mumble::Pack< NetHeader >(proto.ByteSizeLong() + extraDataSize) {
 	auto buf = data();
-	if (proto.SerializeToArray(buf.data(), static_cast< int >(buf.size()))) {
+	if (proto.SerializeToArray(buf.data(), static_cast< int >(buf.size() - extraDataSize))) {
 		header().type = static_cast< uint8_t >(proto.GetDescriptor()->index());
 	}
 }
 
-TCP::Pack(const Message &message) {
+TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 	using Type = Message::Type;
 
 	switch (message.type()) {
@@ -547,7 +548,7 @@ TCP::Pack(const Message &message) {
 	}
 }
 
-UDP::Pack(const Message &message) {
+UDP::Pack(const Message &message, const uint32_t extraDataSize) {
 	using Type = Message::Type;
 
 	switch (message.type()) {
