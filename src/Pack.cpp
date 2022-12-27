@@ -115,7 +115,9 @@ TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 			auto &msg = static_cast< const Message::Ping & >(message);
 
 			MumbleTCP::Ping proto;
-			proto.set_timestamp(msg.timestamp);
+			proto.set_timestamp(
+				std::chrono::duration_cast< std::chrono::nanoseconds >(msg.timestamp.time_since_epoch()).count());
+
 			proto.set_good(msg.good);
 			proto.set_late(msg.late);
 			proto.set_lost(msg.lost);
@@ -587,7 +589,8 @@ UDP::Pack(const Message &message, const uint32_t extraDataSize) {
 			auto &msg = static_cast< const Message::Ping & >(message);
 
 			MumbleUDP::Ping proto;
-			proto.set_timestamp(msg.timestamp);
+			proto.set_timestamp(
+				std::chrono::duration_cast< std::chrono::nanoseconds >(msg.timestamp.time_since_epoch()).count());
 
 			proto.set_request_extended_information(msg.requestExtendedInformation);
 
@@ -667,7 +670,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			PARSE_RET
 
 			auto &msg      = static_cast< Message::Ping      &>(message);
-			msg.timestamp  = proto.timestamp();
+			msg.timestamp  = Message::Timestamp(std::chrono::nanoseconds(proto.timestamp()));
 			msg.good       = proto.good();
 			msg.late       = proto.late();
 			msg.lost       = proto.lost();
@@ -1169,7 +1172,7 @@ bool UDP::operator()(Message &message, uint32_t dataSize) const {
 			PARSE_RET
 
 			auto &msg     = static_cast< Message::Ping     &>(message);
-			msg.timestamp = proto.timestamp();
+			msg.timestamp = Message::Timestamp(std::chrono::nanoseconds(proto.timestamp()));
 
 			msg.requestExtendedInformation = proto.request_extended_information();
 

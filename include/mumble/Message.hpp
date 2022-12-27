@@ -316,7 +316,6 @@ namespace tcp {
 	};
 
 	MUMBLE_MESSAGE_DECL(Ping) {
-		uint64_t timestamp  = 0;
 		uint32_t good       = 0;
 		uint32_t late       = 0;
 		uint32_t lost       = 0;
@@ -686,8 +685,6 @@ namespace udp {
 	};
 
 	MUMBLE_MESSAGE_DECL(Ping) {
-		uint64_t timestamp = 0;
-
 		bool requestExtendedInformation = false;
 
 		std::optional< uint64_t > serverVersion       = {};
