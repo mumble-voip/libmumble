@@ -26,8 +26,8 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 
-#define SET_BUF_AND_BREAK \
-	*this = Pack(proto);  \
+#define SET_BUF_AND_BREAK           \
+	*this = std::move(Pack(proto)); \
 	break;
 
 #define PARSE_RET                                         \
@@ -88,7 +88,7 @@ TCP::Pack(const Message &message) {
 			header.type = Endian::toNetwork(static_cast< uint16_t >(message.type()));
 			header.size = Endian::toNetwork(static_cast< uint32_t >(msg.packet.size()));
 
-			*this = Pack(header);
+			*this = std::move(Pack(header));
 
 			std::copy(msg.packet.cbegin(), msg.packet.cend(), data().begin());
 
