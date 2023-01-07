@@ -72,7 +72,7 @@ message Ping {
 	// The new protobuf Ping packet introduced with 1.5 drops support for the legacy version format
 	// since both server and client have to support this new format.
 	// (See https://github.com/mumble-voip/mumble/issues/5827)
-	uint64 server_version = 3;
+	uint64 server_version_v2 = 3;
 
 	// The amount of users currently connected to the server
 	uint32 user_count = 4;

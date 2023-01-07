@@ -40,8 +40,7 @@ static Connection::Feedback connectionFeedback(Connection &connection, std::cond
 		printf("Connection opened!\n");
 
 		Message::Version ver;
-		ver.v1      = lib::version().blob32();
-		ver.v2      = lib::version().blob64();
+		ver.version = lib::version();
 		ver.release = "Custom client";
 		connection.write(Pack(ver).buf());
 	};
