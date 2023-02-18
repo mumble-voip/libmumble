@@ -34,7 +34,7 @@ template< typename T > static bool initOpus(T &opus) {
 	return true;
 }
 
-template< typename T > static constexpr T toView(const BufView buf, const uint16_t samples) {
+template< typename T > static constexpr T toView(const BufView buf, const uint32_t samples) {
 	return { reinterpret_cast< typename T::value_type * >(buf.data()), samples };
 }
 
@@ -61,7 +61,7 @@ static uint8_t thread(const uint8_t channels) {
 		Buf out(in.size());
 
 		for (const auto frames : bufferSamples) {
-			const auto samples = frames * channels;
+			const uint32_t samples = frames * channels;
 
 			auto encoded = encoder(out, toView< FView >(in, samples));
 			if (!encoded.size()) {
@@ -91,7 +91,7 @@ int32_t main() {
 
 	ThreadManager manager;
 
-	for (uint32_t i = 0; i < 2; ++i) {
+	for (uint8_t i = 0; i < 2; ++i) {
 		const ThreadManager::ThreadFunc func = [&ret, &manager, i]() {
 			const auto threadRet = thread(i + 1);
 			if (threadRet != 0) {
