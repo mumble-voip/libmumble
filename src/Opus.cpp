@@ -30,6 +30,8 @@ using namespace mumble;
 using Decoder = mumble::OpusDecoder;
 using Encoder = mumble::OpusEncoder;
 
+using FloatView = Opus::FloatView;
+
 using Preset = Encoder::Preset;
 
 static constexpr Code interpretLibCode(const int code) {
@@ -64,13 +66,13 @@ Decoder::operator bool() const {
 	return m_p && *m_p;
 }
 
-size_t Decoder::operator()(const BufView out, const BufViewConst in, const bool decodeFEC) {
-	const auto samples = static_cast< int >(out.size() / sizeof(float) / m_p->m_channels);
+FloatView Decoder::operator()(const FloatView out, const BufViewConst in, const bool decodeFEC) {
+	const auto samples = static_cast< int >(out.size() / m_p->m_channels);
 
 	const auto written = opus_decode_float(m_p->m_ctx.get(), CAST_BUF_CONST(in.data()), CAST_SIZE(in.size()),
 										   CAST_FPTR(out.data()), samples, decodeFEC);
 
-	return written >= 0 ? written : 0;
+	return written >= 0 ? FloatView(out.data(), written * m_p->m_channels) : FloatView();
 }
 
 Code Decoder::init(const uint32_t sampleRate) {
@@ -131,13 +133,13 @@ Encoder::operator bool() const {
 	return m_p && *m_p;
 }
 
-size_t Encoder::operator()(const BufView out, const BufViewConst in) {
-	const auto samples = static_cast< int >(in.size() / sizeof(float) / m_p->m_channels);
+BufView Encoder::operator()(const BufView out, const FloatViewConst in) {
+	const auto samples = static_cast< int >(in.size() / m_p->m_channels);
 
 	const auto written = opus_encode_float(m_p->m_ctx.get(), CAST_FPTR_CONST(in.data()), samples, CAST_BUF(out.data()),
 										   CAST_SIZE(out.size()));
 
-	return written >= 0 ? written : 0;
+	return written >= 0 ? BufView(out.data(), written) : BufView();
 }
 
 Code Encoder::init(const uint32_t sampleRate, const Preset preset) {

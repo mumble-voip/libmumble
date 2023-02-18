@@ -13,7 +13,13 @@
 #include <memory>
 
 namespace mumble {
-class MUMBLE_EXPORT OpusDecoder : NonCopyable {
+class Opus : NonCopyable {
+public:
+	using FloatView      = gsl::span< float >;
+	using FloatViewConst = gsl::span< const float >;
+};
+
+class MUMBLE_EXPORT OpusDecoder : public Opus {
 public:
 	class P;
 
@@ -23,7 +29,7 @@ public:
 
 	virtual explicit operator bool() const;
 
-	virtual size_t operator()(const BufView out, const BufViewConst in, const bool decodeFEC = false);
+	virtual FloatView operator()(const FloatView out, const BufViewConst in, const bool decodeFEC = false);
 
 	virtual Code init(const uint32_t sampleRate = 48000);
 	virtual Code reset();
@@ -42,7 +48,7 @@ private:
 	std::unique_ptr< P > m_p;
 };
 
-class MUMBLE_EXPORT OpusEncoder : NonCopyable {
+class MUMBLE_EXPORT OpusEncoder : public Opus {
 public:
 	enum class Preset : uint8_t { Unknown, VoIP, Audio, LowDelay };
 
@@ -54,7 +60,7 @@ public:
 
 	virtual explicit operator bool() const;
 
-	virtual size_t operator()(const BufView out, const BufViewConst in);
+	virtual BufView operator()(const BufView out, const FloatViewConst in);
 
 	virtual Code init(const uint32_t sampleRate = 48000, const Preset preset = Preset::VoIP);
 	virtual Code reset();

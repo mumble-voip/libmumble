@@ -24,19 +24,7 @@ static constexpr std::array< uint16_t, 6 > bufferSamples = { 120, 240, 480, 960,
 
 using namespace mumble;
 
-static uint8_t test(OpusDecoder &decoder, OpusEncoder &encoder, const BufViewConst in, const BufView out) {
-	if (!encoder(out, in)) {
-		return 10;
-	}
-
-	if (!decoder(out, out)) {
-		return 11;
-	}
-
-	return 0;
-}
-
-template< typename T > bool initOpus(T &opus) {
+template< typename T > static bool initOpus(T &opus) {
 	const auto code = opus.init(sampleRate);
 	if (code != Code::Success) {
 		printf("Failed to init Opus with error \"%s\"!\n", text(code).data());
@@ -46,41 +34,42 @@ template< typename T > bool initOpus(T &opus) {
 	return true;
 }
 
-static uint8_t thread() {
-	OpusDecoder monoDecoder(1);
-	if (!initOpus(monoDecoder)) {
+template< typename T > static constexpr T toView(const BufView buf, const uint16_t samples) {
+	return { reinterpret_cast< typename T::value_type * >(buf.data()), samples };
+}
+
+static uint8_t thread(const uint8_t channels) {
+	using FView = Opus::FloatView;
+
+	OpusDecoder decoder(channels);
+	if (!initOpus(decoder)) {
 		return 1;
 	}
 
-	OpusEncoder monoEncoder(1);
-	if (!initOpus(monoEncoder)) {
+	OpusEncoder encoder(channels);
+	if (!initOpus(encoder)) {
 		return 2;
 	}
 
-	OpusDecoder stereoDecoder(2);
-	if (!initOpus(stereoDecoder)) {
-		return 3;
-	}
+	for (size_t i = 0; i < iterations; ++i) {
+		if (boost::this_thread::interruption_requested()) {
+			return 0;
+		}
 
-	OpusEncoder stereoEncoder(2);
-	if (!initOpus(stereoEncoder)) {
-		return 4;
-	}
+		Buf in(sizeof(float) * bufferSamples.back() * channels);
+		Buf out(in.size());
 
-	for (const auto samples : bufferSamples) {
-		std::vector< float > data(samples * 2);
-		std::vector< float > buf(data.size());
+		for (const auto frames : bufferSamples) {
+			const auto samples = frames * channels;
 
-		BufViewConst in(reinterpret_cast< const std::byte * >(data.data()), data.size() * sizeof(float));
-		BufView out(reinterpret_cast< std::byte * >(buf.data()), buf.size() * sizeof(float));
-
-		for (size_t i = 0; i < iterations; ++i) {
-			if (boost::this_thread::interruption_requested()) {
-				return 0;
+			const auto encoded = encoder(out, toView< FView >(in, samples));
+			if (!encoded.size()) {
+				return 3;
 			}
 
-			test(monoDecoder, monoEncoder, in.first(in.size() / 2), out.first(out.size() / 2));
-			test(stereoDecoder, stereoEncoder, in, out);
+			if (!decoder(toView< FView >(out, samples), encoded).size()) {
+				return 4;
+			}
 		}
 	}
 
@@ -92,9 +81,9 @@ int32_t main() {
 
 	ThreadManager manager;
 
-	for (uint32_t i = 0; i < manager.physicalNum(); ++i) {
-		const ThreadManager::ThreadFunc func = [&ret, &manager]() {
-			const auto threadRet = thread();
+	for (uint32_t i = 0; i < 2; ++i) {
+		const ThreadManager::ThreadFunc func = [&ret, &manager, i]() {
+			const auto threadRet = thread(i + 1);
 			if (threadRet != 0) {
 				ret = threadRet;
 				manager.requestStop();
