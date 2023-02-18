@@ -23,6 +23,8 @@
 #define CAST_BUF_CONST(var) (reinterpret_cast< const unsigned char * >(var))
 #define CAST_FPTR(var) (reinterpret_cast< float * >(var))
 #define CAST_FPTR_CONST(var) (reinterpret_cast< const float * >(var))
+#define CAST_IPTR(var) (reinterpret_cast< opus_int16 * >(var))
+#define CAST_IPTR_CONST(var) (reinterpret_cast< const opus_int16 * >(var))
 #define CAST_SIZE(var) (static_cast< opus_int32 >(var))
 
 using namespace mumble;
@@ -30,7 +32,8 @@ using namespace mumble;
 using Decoder = mumble::OpusDecoder;
 using Encoder = mumble::OpusEncoder;
 
-using FloatView = Opus::FloatView;
+using FloatView   = Opus::FloatView;
+using IntegerView = Opus::IntegerView;
 
 using Preset = Encoder::Preset;
 
@@ -73,6 +76,15 @@ FloatView Decoder::operator()(const FloatView out, const BufViewConst in, const 
 										   CAST_FPTR(out.data()), samples, decodeFEC);
 
 	return written >= 0 ? FloatView(out.data(), written * m_p->m_channels) : FloatView();
+}
+
+IntegerView Decoder::operator()(const IntegerView out, const BufViewConst in, const bool decodeFEC) {
+	const auto samples = static_cast< int >(out.size() / m_p->m_channels);
+
+	const auto written = opus_decode(m_p->m_ctx.get(), CAST_BUF_CONST(in.data()), CAST_SIZE(in.size()),
+									 CAST_IPTR(out.data()), samples, decodeFEC);
+
+	return written >= 0 ? IntegerView(out.data(), written * m_p->m_channels) : IntegerView();
 }
 
 Code Decoder::init(const uint32_t sampleRate) {
@@ -138,6 +150,15 @@ BufView Encoder::operator()(const BufView out, const FloatViewConst in) {
 
 	const auto written = opus_encode_float(m_p->m_ctx.get(), CAST_FPTR_CONST(in.data()), samples, CAST_BUF(out.data()),
 										   CAST_SIZE(out.size()));
+
+	return written >= 0 ? BufView(out.data(), written) : BufView();
+}
+
+BufView Encoder::operator()(const BufView out, const IntegerViewConst in) {
+	const auto samples = static_cast< int >(in.size() / m_p->m_channels);
+
+	const auto written =
+		opus_encode(m_p->m_ctx.get(), CAST_IPTR_CONST(in.data()), samples, CAST_BUF(out.data()), CAST_SIZE(out.size()));
 
 	return written >= 0 ? BufView(out.data(), written) : BufView();
 }

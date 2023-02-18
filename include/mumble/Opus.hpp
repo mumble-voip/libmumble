@@ -15,8 +15,10 @@
 namespace mumble {
 class Opus : NonCopyable {
 public:
-	using FloatView      = gsl::span< float >;
-	using FloatViewConst = gsl::span< const float >;
+	using FloatView        = gsl::span< float >;
+	using FloatViewConst   = gsl::span< const float >;
+	using IntegerView      = gsl::span< int16_t >;
+	using IntegerViewConst = gsl::span< const int16_t >;
 };
 
 class MUMBLE_EXPORT OpusDecoder : public Opus {
@@ -30,6 +32,7 @@ public:
 	virtual explicit operator bool() const;
 
 	virtual FloatView operator()(const FloatView out, const BufViewConst in, const bool decodeFEC = false);
+	virtual IntegerView operator()(const IntegerView out, const BufViewConst in, const bool decodeFEC = false);
 
 	virtual Code init(const uint32_t sampleRate = 48000);
 	virtual Code reset();
@@ -61,6 +64,7 @@ public:
 	virtual explicit operator bool() const;
 
 	virtual BufView operator()(const BufView out, const FloatViewConst in);
+	virtual BufView operator()(const BufView out, const IntegerViewConst in);
 
 	virtual Code init(const uint32_t sampleRate = 48000, const Preset preset = Preset::VoIP);
 	virtual Code reset();

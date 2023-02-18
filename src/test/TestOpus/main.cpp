@@ -40,6 +40,7 @@ template< typename T > static constexpr T toView(const BufView buf, const uint16
 
 static uint8_t thread(const uint8_t channels) {
 	using FView = Opus::FloatView;
+	using IView = Opus::IntegerView;
 
 	OpusDecoder decoder(channels);
 	if (!initOpus(decoder)) {
@@ -62,13 +63,22 @@ static uint8_t thread(const uint8_t channels) {
 		for (const auto frames : bufferSamples) {
 			const auto samples = frames * channels;
 
-			const auto encoded = encoder(out, toView< FView >(in, samples));
+			auto encoded = encoder(out, toView< FView >(in, samples));
 			if (!encoded.size()) {
 				return 3;
 			}
 
 			if (!decoder(toView< FView >(out, samples), encoded).size()) {
 				return 4;
+			}
+
+			encoded = encoder(out, toView< IView >(in, samples));
+			if (!encoded.size()) {
+				return 5;
+			}
+
+			if (!decoder(toView< IView >(out, samples), encoded).size()) {
+				return 6;
 			}
 		}
 	}
