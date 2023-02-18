@@ -13,23 +13,36 @@
 #include <memory>
 
 namespace mumble {
-class Opus : NonCopyable {
+class MUMBLE_EXPORT Opus : NonCopyable {
 public:
+	class Decoder;
+	class Encoder;
+
 	using FloatView        = gsl::span< float >;
 	using FloatViewConst   = gsl::span< const float >;
 	using IntegerView      = gsl::span< int16_t >;
 	using IntegerViewConst = gsl::span< const int16_t >;
+
+	virtual explicit operator bool() const = 0;
+
+	virtual uint8_t channels() const    = 0;
+	virtual uint32_t sampleRate() const = 0;
+
+	virtual bool inDTX() const = 0;
+
+	virtual bool usesPhaseInversion() const              = 0;
+	virtual bool togglePhaseInversion(const bool enable) = 0;
 };
 
-class MUMBLE_EXPORT OpusDecoder : public Opus {
+class MUMBLE_EXPORT Opus::Decoder : public Opus {
 public:
 	class P;
 
-	OpusDecoder(OpusDecoder &&decoder);
-	OpusDecoder(const uint8_t channels);
-	virtual ~OpusDecoder();
+	Decoder(Decoder &&decoder);
+	Decoder(const uint8_t channels);
+	virtual ~Decoder();
 
-	virtual explicit operator bool() const;
+	virtual explicit operator bool() const override;
 
 	virtual FloatView operator()(const FloatView out, const BufViewConst in, const bool decodeFEC = false);
 	virtual IntegerView operator()(const IntegerView out, const BufViewConst in, const bool decodeFEC = false);
@@ -37,13 +50,13 @@ public:
 	virtual Code init(const uint32_t sampleRate = 48000);
 	virtual Code reset();
 
-	virtual uint8_t channels() const;
-	virtual uint32_t sampleRate() const;
+	virtual uint8_t channels() const override;
+	virtual uint32_t sampleRate() const override;
 
-	virtual bool inDTX() const;
+	virtual bool inDTX() const override;
 
-	virtual bool usesPhaseInversion() const;
-	virtual bool togglePhaseInversion(const bool enable);
+	virtual bool usesPhaseInversion() const override;
+	virtual bool togglePhaseInversion(const bool enable) override;
 
 	virtual uint32_t packetSamples(const BufViewConst packet);
 
@@ -51,17 +64,17 @@ private:
 	std::unique_ptr< P > m_p;
 };
 
-class MUMBLE_EXPORT OpusEncoder : public Opus {
+class MUMBLE_EXPORT Opus::Encoder : public Opus {
 public:
 	enum class Preset : uint8_t { Unknown, VoIP, Audio, LowDelay };
 
 	class P;
 
-	OpusEncoder(OpusEncoder &&encoder);
-	OpusEncoder(const uint8_t channels);
-	virtual ~OpusEncoder();
+	Encoder(Encoder &&encoder);
+	Encoder(const uint8_t channels);
+	virtual ~Encoder();
 
-	virtual explicit operator bool() const;
+	virtual explicit operator bool() const override;
 
 	virtual BufView operator()(const BufView out, const FloatViewConst in);
 	virtual BufView operator()(const BufView out, const IntegerViewConst in);
@@ -69,8 +82,8 @@ public:
 	virtual Code init(const uint32_t sampleRate = 48000, const Preset preset = Preset::VoIP);
 	virtual Code reset();
 
-	virtual uint8_t channels() const;
-	virtual uint32_t sampleRate() const;
+	virtual uint8_t channels() const override;
+	virtual uint32_t sampleRate() const override;
 
 	virtual Preset preset() const;
 	virtual bool setPreset(const Preset preset);
@@ -78,10 +91,10 @@ public:
 	virtual uint32_t bitrate() const;
 	virtual bool setBitrate(const uint32_t bitrate);
 
-	virtual bool inDTX() const;
+	virtual bool inDTX() const override;
 
-	virtual bool usesPhaseInversion() const;
-	virtual bool togglePhaseInversion(const bool enable);
+	virtual bool usesPhaseInversion() const override;
+	virtual bool togglePhaseInversion(const bool enable) override;
 
 	virtual bool usesVBR() const;
 	virtual bool toggleVBR(const bool enable);

@@ -42,12 +42,12 @@ static uint8_t thread(const uint8_t channels) {
 	using FView = Opus::FloatView;
 	using IView = Opus::IntegerView;
 
-	OpusDecoder decoder(channels);
+	Opus::Decoder decoder(channels);
 	if (!initOpus(decoder)) {
 		return 1;
 	}
 
-	OpusEncoder encoder(channels);
+	Opus::Encoder encoder(channels);
 	if (!initOpus(encoder)) {
 		return 2;
 	}

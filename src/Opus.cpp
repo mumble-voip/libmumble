@@ -29,9 +29,8 @@
 
 using namespace mumble;
 
-using Decoder = mumble::OpusDecoder;
-using Encoder = mumble::OpusEncoder;
-
+using Decoder     = Opus::Decoder;
+using Encoder     = Opus::Encoder;
 using FloatView   = Opus::FloatView;
 using IntegerView = Opus::IntegerView;
 
@@ -57,13 +56,13 @@ static constexpr Code interpretLibCode(const int code) {
 	return Code::Unknown;
 }
 
-Decoder::OpusDecoder(OpusDecoder &&decoder) : m_p(std::exchange(decoder.m_p, nullptr)) {
+Decoder::Decoder(Decoder &&decoder) : m_p(std::exchange(decoder.m_p, nullptr)) {
 }
 
-Decoder::OpusDecoder(const uint8_t channels) : m_p(new P(channels)) {
+Decoder::Decoder(const uint8_t channels) : m_p(new P(channels)) {
 }
 
-Decoder::~OpusDecoder() = default;
+Decoder::~Decoder() = default;
 
 Decoder::operator bool() const {
 	return m_p && *m_p;
@@ -133,13 +132,13 @@ uint32_t Decoder::packetSamples(const BufViewConst packet) {
 Decoder::P::P(const uint8_t channels) : OpusBase(channels) {
 }
 
-Encoder::OpusEncoder(OpusEncoder &&encoder) : m_p(std::exchange(encoder.m_p, nullptr)) {
+Encoder::Encoder(Encoder &&encoder) : m_p(std::exchange(encoder.m_p, nullptr)) {
 }
 
-Encoder::OpusEncoder(const uint8_t channels) : m_p(new P(channels)) {
+Encoder::Encoder(const uint8_t channels) : m_p(new P(channels)) {
 }
 
-Encoder::~OpusEncoder() = default;
+Encoder::~Encoder() = default;
 
 Encoder::operator bool() const {
 	return m_p && *m_p;

@@ -38,16 +38,16 @@ protected:
 	std::unique_ptr< T, Destructor > m_ctx;
 };
 
-class OpusDecoder::P : public OpusBase< ::OpusDecoder > {
-	friend OpusDecoder;
+class Opus::Decoder::P : public OpusBase< ::OpusDecoder > {
+	friend Opus::Decoder;
 
 public:
 	P(const uint8_t channels);
 	~P() = default;
 };
 
-class OpusEncoder::P : public OpusBase< ::OpusEncoder > {
-	friend OpusEncoder;
+class Opus::Encoder::P : public OpusBase< ::OpusEncoder > {
+	friend Opus::Encoder;
 
 public:
 	P(const uint8_t channels);
