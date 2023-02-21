@@ -10,6 +10,7 @@ list(APPEND TESTS
 	"TestCrypt"
 	"TestHash"
 	"TestOpus"
+	"TestPacketDataStream"
 )
 
 add_library(Test OBJECT)
