@@ -56,6 +56,26 @@ static constexpr Code interpretLibCode(const int code) {
 	return Code::Unknown;
 }
 
+uint8_t Opus::packetChannels(const BufViewConst packet) {
+	const auto ret = opus_packet_get_nb_channels(CAST_BUF_CONST(packet.data()));
+	return ret >= 0 ? static_cast< uint8_t >(ret) : 0;
+}
+
+uint32_t Opus::packetFrames(const BufViewConst packet) {
+	const auto ret = opus_packet_get_nb_frames(CAST_BUF_CONST(packet.data()), CAST_SIZE(packet.size()));
+	return ret >= 0 ? ret : 0;
+}
+
+uint32_t Opus::packetSamples(const BufViewConst packet, const uint32_t sampleRate) {
+	const auto ret = opus_packet_get_nb_samples(CAST_BUF_CONST(packet.data()), CAST_SIZE(packet.size()), sampleRate);
+	return ret >= 0 ? ret : 0;
+}
+
+uint32_t Opus::packetSamplesPerFrame(const BufViewConst packet, const uint32_t sampleRate) {
+	const auto ret = opus_packet_get_samples_per_frame(CAST_BUF_CONST(packet.data()), sampleRate);
+	return ret >= 0 ? ret : 0;
+}
+
 Decoder::Decoder(Decoder &&decoder) : m_p(std::exchange(decoder.m_p, nullptr)) {
 }
 

@@ -32,6 +32,11 @@ public:
 
 	virtual bool usesPhaseInversion() const              = 0;
 	virtual bool togglePhaseInversion(const bool enable) = 0;
+
+	static uint8_t packetChannels(const BufViewConst packet);
+	static uint32_t packetFrames(const BufViewConst packet);
+	static uint32_t packetSamples(const BufViewConst packet, const uint32_t sampleRate);
+	static uint32_t packetSamplesPerFrame(const BufViewConst packet, const uint32_t sampleRate);
 };
 
 class MUMBLE_EXPORT Opus::Decoder : public Opus {
