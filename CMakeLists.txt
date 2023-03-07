@@ -53,7 +53,7 @@ if(MSVC)
 	)
 endif()
 
-set(QUICKPOOL_TEST OFF)
+set(QUICKPOOL_TEST ${LIBMUMBLE_BUILD_TESTS} CACHE INTERNAL "")
 
 add_subdirectory("${3RDPARTY_DIR}/quickpool")
 add_subdirectory("${3RDPARTY_DIR}/toml11")
