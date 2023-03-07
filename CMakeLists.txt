@@ -29,8 +29,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+
 set(3RDPARTY_DIR "${PROJECT_SOURCE_DIR}/3rdparty")
 set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
+
+
+# Dependencies
+set(QUICKPOOL_TEST ${LIBMUMBLE_BUILD_TESTS} CACHE INTERNAL "")
+
+add_subdirectory("${3RDPARTY_DIR}/quickpool")
+add_subdirectory("${3RDPARTY_DIR}/toml11")
 
 if(WIN32)
 	add_definitions(
@@ -51,11 +59,6 @@ if(MSVC)
 		"/Zc:__cplusplus"
 	)
 endif()
-
-set(QUICKPOOL_TEST ${LIBMUMBLE_BUILD_TESTS} CACHE INTERNAL "")
-
-add_subdirectory("${3RDPARTY_DIR}/quickpool")
-add_subdirectory("${3RDPARTY_DIR}/toml11")
 
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
