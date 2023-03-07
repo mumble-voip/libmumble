@@ -3,7 +3,7 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-cmake_minimum_required(VERSION 3.18.4)
+cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
