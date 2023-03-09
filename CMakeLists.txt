@@ -21,6 +21,10 @@ option(LIBMUMBLE_BUNDLED_GSL "Use the bundled GSL version instead of looking for
 
 option(LIBMUMBLE_STATIC "Build the library as static instead of shared" OFF)
 
+
+include(setup_dependencies)
+
+
 include(CTest)
 
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -28,17 +32,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-
-set(3RDPARTY_DIR "${PROJECT_SOURCE_DIR}/3rdparty")
-set(INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
-
-
-# Dependencies
-set(QUICKPOOL_TEST ${LIBMUMBLE_BUILD_TESTS} CACHE INTERNAL "")
-
-add_subdirectory("${3RDPARTY_DIR}/quickpool")
-add_subdirectory("${3RDPARTY_DIR}/toml11")
 
 if(WIN32)
 	add_definitions(
@@ -59,7 +54,5 @@ if(MSVC)
 		"/Zc:__cplusplus"
 	)
 endif()
-
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 add_subdirectory(src)

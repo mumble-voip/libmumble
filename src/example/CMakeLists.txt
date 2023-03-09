@@ -3,7 +3,16 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-include(MumbleCompiler)
+include(FetchContent)
+
+FetchContent_Declare(
+	toml11
+	GIT_REPOSITORY https://github.com/ToruNiina/toml11
+	GIT_TAG        v3.7.1
+	GIT_SHALLOW    ON
+)
+FetchContent_MakeAvailable(toml11)
+
 
 list(APPEND EXAMPLES
 	"ExampleClient"
@@ -27,6 +36,7 @@ target_sources(Example
 target_link_libraries(Example
 	PRIVATE
 		mumble
+		toml11::toml11
 )
 
 # All examples follow the convention of naming their subdirectory the same as their target.
