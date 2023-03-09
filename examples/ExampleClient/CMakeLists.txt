@@ -6,8 +6,3 @@
 add_executable(ExampleClient
 	"main.cpp"
 )
-
-target_link_libraries(ExampleClient
-	PRIVATE
-		toml11
-)

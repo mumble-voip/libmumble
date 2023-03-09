@@ -117,10 +117,3 @@ target_link_libraries(mumble_library
 		Microsoft.GSL::GSL
 )
 
-if(LIBMUMBLE_BUILD_EXAMPLES)
-	add_subdirectory(example)
-endif()
-
-if(LIBMUMBLE_BUILD_TESTS)
-	add_subdirectory(test)
-endif()

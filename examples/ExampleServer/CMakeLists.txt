@@ -14,9 +14,3 @@ add_executable(ExampleServer
 	"UserManager.cpp"
 	"UserManager.hpp"
 )
-
-target_link_libraries(ExampleServer
-	PRIVATE
-		Boost::thread
-		toml11
-)

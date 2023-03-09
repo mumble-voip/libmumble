@@ -57,6 +57,10 @@ endif()
 add_subdirectory(src)
 
 
+if (LIBMUMBLE_BUILD_EXAMPLES)
+	add_subdirectory(examples)
+endif()
+
 if (LIBMUMBLE_BUILD_TESTS)
 	include(CTest)
 	add_subdirectory(tests)

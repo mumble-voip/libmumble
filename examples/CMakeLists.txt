@@ -19,21 +19,19 @@ list(APPEND EXAMPLES
 	"ExampleServer"
 )
 
-add_library(Example OBJECT)
+add_library(libmumble_example_base OBJECT)
 
-target_include_directories(Example
+target_include_directories(libmumble_example_base
 	PUBLIC
 		${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_sources(Example
+target_sources(libmumble_example_base
 	PRIVATE
 		"MumbleInit.cpp"
-	PUBLIC
-		"MumbleInit.hpp"
 )
 
-target_link_libraries(Example
+target_link_libraries(libmumble_example_base
 	PUBLIC
 		Mumble::libmumble
 		toml11::toml11
@@ -53,6 +51,6 @@ foreach(TARGET IN LISTS EXAMPLES)
 
 	target_link_libraries(${TARGET}
 		PRIVATE
-			Example
+			libmumble_example_base
 	)
 endforeach()
