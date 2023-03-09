@@ -30,6 +30,8 @@ else()
 	add_library(mumble STATIC)
 endif()
 
+add_library(Mumble::libmumble ALIAS mumble)
+
 target_pedantic_warnings(mumble)
 target_pimpl_warning_fix(mumble)
 

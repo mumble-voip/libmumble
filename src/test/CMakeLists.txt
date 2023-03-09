@@ -51,7 +51,7 @@ foreach(TARGET IN LISTS TESTS)
 
 	target_link_libraries(${TARGET}
 		PRIVATE
-			mumble
+			Mumble::libmumble
 
 			Test
 	)

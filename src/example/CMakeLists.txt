@@ -34,8 +34,8 @@ target_sources(Example
 )
 
 target_link_libraries(Example
-	PRIVATE
-		mumble
+	PUBLIC
+		Mumble::libmumble
 		toml11::toml11
 )
 
@@ -53,8 +53,6 @@ foreach(TARGET IN LISTS EXAMPLES)
 
 	target_link_libraries(${TARGET}
 		PRIVATE
-			mumble
-
 			Example
 	)
 endforeach()
