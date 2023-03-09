@@ -213,7 +213,7 @@ public:
 	}
 
 	PacketDataStream &operator<<(const BufViewConst buf) {
-		*this << buf.size();
+		*this << static_cast< uint64_t >(buf.size());
 		append(buf);
 		return *this;
 	}
