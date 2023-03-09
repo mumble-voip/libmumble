@@ -25,17 +25,17 @@ endif()
 add_subdirectory(proto)
 
 if(NOT LIBMUMBLE_STATIC)
-	add_library(mumble SHARED)
+	add_library(mumble_library SHARED)
 else()
-	add_library(mumble STATIC)
+	add_library(mumble_library STATIC)
 endif()
 
-add_library(Mumble::libmumble ALIAS mumble)
+add_library(Mumble::libmumble ALIAS mumble_library)
 
-target_pedantic_warnings(mumble)
-target_pimpl_warning_fix(mumble)
+target_pedantic_warnings(mumble_library)
+target_pimpl_warning_fix(mumble_library)
 
-set_target_properties(mumble
+set_target_properties(mumble_library
 	PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 		LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -51,21 +51,21 @@ else()
 	check_symbol_exists("epoll_create" "sys/epoll.h" HAVE_EPOLL)
 endif()
 
-target_compile_definitions(mumble
+target_compile_definitions(mumble_library
 	PRIVATE
 		"MUMBLE_SRC"
 
 		$<$<BOOL:${HAVE_EPOLL}>:$<IF:$<PLATFORM_ID:Windows>,HAVE_WEPOLL,HAVE_EPOLL>>
 )
 
-target_include_directories(mumble
+target_include_directories(mumble_library
 	PRIVATE
 		${Opus_INCLUDE_DIRS}
 	PUBLIC
 		"${PROJECT_SOURCE_DIR}/include"
 )
 
-target_sources(mumble
+target_sources(mumble_library
 	PRIVATE
 		"Base64.cpp"
 		"Base64.hpp"
@@ -100,7 +100,7 @@ target_sources(mumble
 		"UDP.hpp"
 )
 
-target_link_libraries(mumble
+target_link_libraries(mumble_library
 	PRIVATE
 		Proto
 
