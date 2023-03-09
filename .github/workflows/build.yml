@@ -32,7 +32,6 @@ jobs:
 
       - uses: lukka/run-vcpkg@main
         with:
-          buildDirectory: ${{github.workspace}}/build
           vcpkgGitCommitId: 1323f4b83d6a91e415e9ce06a45c9d0a6473aaf2
           runVcpkgInstall: true
           appendedCacheKey: vcpkg
