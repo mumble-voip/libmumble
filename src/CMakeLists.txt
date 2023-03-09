@@ -13,14 +13,7 @@ find_package(Boost REQUIRED
 find_package(Microsoft.GSL REQUIRED)
 
 find_package(OpenSSL REQUIRED)
-find_package(Opus)
-
-if(NOT Opus_FOUND)
-	find_package(PkgConfig REQUIRED)
-	if(PkgConfig_FOUND)
-		pkg_check_modules(Opus REQUIRED opus)
-	endif()
-endif()
+find_package(Opus REQUIRED)
 
 add_subdirectory(proto)
 
@@ -59,8 +52,6 @@ target_compile_definitions(mumble_library
 )
 
 target_include_directories(mumble_library
-	PRIVATE
-		${Opus_INCLUDE_DIRS}
 	PUBLIC
 		"${PROJECT_SOURCE_DIR}/include"
 )
@@ -109,8 +100,7 @@ target_link_libraries(mumble_library
 		OpenSSL::SSL
 		quickpool
 
-		${Opus_LINK_LIBRARIES}
-		$<TARGET_NAME_IF_EXISTS:Opus::opus>
+		Opus::opus
 
 		$<$<PLATFORM_ID:Windows>:wepoll::wepoll>
 	PUBLIC
