@@ -25,8 +25,6 @@ option(LIBMUMBLE_STATIC "Build the library as static instead of shared" OFF)
 include(setup_dependencies)
 
 
-include(CTest)
-
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -55,4 +53,11 @@ if(MSVC)
 	)
 endif()
 
+
 add_subdirectory(src)
+
+
+if (LIBMUMBLE_BUILD_TESTS)
+	include(CTest)
+	add_subdirectory(tests)
+endif()

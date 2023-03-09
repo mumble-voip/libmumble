@@ -3,8 +3,6 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-include(MumbleCompiler)
-
 list(APPEND TESTS
 	"TestBase64"
 	"TestCrypt"
@@ -13,23 +11,24 @@ list(APPEND TESTS
 	"TestPacketDataStream"
 )
 
-add_library(Test OBJECT)
+add_library(libmumble_test_base OBJECT
+	"ThreadManager.cpp"
+)
 
-target_include_directories(Test
+target_include_directories(libmumble_test_base
 	PUBLIC
 		${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_sources(Test
-	PRIVATE
-		"ThreadManager.cpp"
-	PUBLIC
-		"ThreadManager.hpp"
+find_package(Boost REQUIRED
+	COMPONENTS
+		thread
 )
 
-target_link_libraries(Test
+target_link_libraries(libmumble_test_base
 	PUBLIC
-		Boost::thread
+	Mumble::libmumble
+	Boost::thread
 )
 
 # All tests follow the convention of naming their subdirectory the same as their target.
@@ -51,8 +50,6 @@ foreach(TARGET IN LISTS TESTS)
 
 	target_link_libraries(${TARGET}
 		PRIVATE
-			Mumble::libmumble
-
-			Test
+			libmumble_test_base
 	)
 endforeach()
