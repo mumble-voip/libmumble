@@ -1,6 +1,6 @@
 BSD 3-Clause License
 
-Copyright (C) 2005-2022 The Mumble Developers
+Copyright (C) 2022 The Mumble Developers
 
 All rights reserved.
 
@@ -29,5 +29,5 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-For questions and inquiries about Mumble's license,
+For questions and inquiries about libmumble's license,
 please contact <license@mumble.info>.
