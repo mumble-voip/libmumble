@@ -3,7 +3,22 @@ name: Build
 on: [push, pull_request]
 
 jobs:
+  skip_test:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: same_content_newer
+          skip_after_successful_duplicate: 'true'
+
   build:
+    needs: skip_test
+
+    if: needs.skip_test.outputs.should_skip != 'true'
+
     strategy:
       fail-fast: false
       matrix:
