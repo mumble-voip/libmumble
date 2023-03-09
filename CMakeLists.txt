@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 project(libmumble
-	VERSION "0.0.0.0"
+	VERSION "0.1.0"
 	DESCRIPTION "The official Mumble library."
 	HOMEPAGE_URL "https://www.mumble.info"
 	LANGUAGES "C" "CXX"
