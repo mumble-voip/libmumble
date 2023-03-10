@@ -63,17 +63,19 @@ uint8_t Opus::packetChannels(const BufViewConst packet) {
 
 uint32_t Opus::packetFrames(const BufViewConst packet) {
 	const int ret = opus_packet_get_nb_frames(CAST_BUF_CONST(packet.data()), CAST_SIZE(packet.size()));
-	return ret >= 0 ? static_cast<uint32_t>(ret) : 0;
+	return ret >= 0 ? static_cast< uint32_t >(ret) : 0;
 }
 
 uint32_t Opus::packetSamples(const BufViewConst packet, const uint32_t sampleRate) {
-	const int ret = opus_packet_get_nb_samples(CAST_BUF_CONST(packet.data()), CAST_SIZE(packet.size()), static_cast<int32_t>(sampleRate));
-	return ret >= 0 ? static_cast<uint32_t>(ret) : 0;
+	const int ret = opus_packet_get_nb_samples(CAST_BUF_CONST(packet.data()), CAST_SIZE(packet.size()),
+											   static_cast< int32_t >(sampleRate));
+	return ret >= 0 ? static_cast< uint32_t >(ret) : 0;
 }
 
 uint32_t Opus::packetSamplesPerFrame(const BufViewConst packet, const uint32_t sampleRate) {
-	const int ret = opus_packet_get_samples_per_frame(CAST_BUF_CONST(packet.data()), static_cast<int32_t>(sampleRate));
-	return ret >= 0 ? static_cast<uint32_t>(ret) : 0;
+	const int ret =
+		opus_packet_get_samples_per_frame(CAST_BUF_CONST(packet.data()), static_cast< int32_t >(sampleRate));
+	return ret >= 0 ? static_cast< uint32_t >(ret) : 0;
 }
 
 Decoder::Decoder(Decoder &&decoder) : m_p(std::exchange(decoder.m_p, nullptr)) {
@@ -92,22 +94,24 @@ FloatView Decoder::operator()(const FloatView out, const BufViewConst in, const 
 	const auto samples = static_cast< int >(out.size() / m_p->m_channels);
 
 	const int written = opus_decode_float(m_p->m_ctx.get(), CAST_BUF_CONST(in.data()), CAST_SIZE(in.size()),
-										   CAST_FPTR(out.data()), samples, decodeFEC);
+										  CAST_FPTR(out.data()), samples, decodeFEC);
 
-	return written >= 0 ? FloatView(out.data(), static_cast<std::size_t>(written) * m_p->m_channels) : FloatView();
+	return written >= 0 ? FloatView(out.data(), static_cast< std::size_t >(written) * m_p->m_channels) : FloatView();
 }
 
 IntegerView Decoder::operator()(const IntegerView out, const BufViewConst in, const bool decodeFEC) {
 	const auto samples = static_cast< int >(out.size() / m_p->m_channels);
 
 	const int written = opus_decode(m_p->m_ctx.get(), CAST_BUF_CONST(in.data()), CAST_SIZE(in.size()),
-									 CAST_IPTR(out.data()), samples, decodeFEC);
+									CAST_IPTR(out.data()), samples, decodeFEC);
 
-	return written >= 0 ? IntegerView(out.data(), static_cast<std::size_t>(written) * m_p->m_channels) : IntegerView();
+	return written >= 0 ? IntegerView(out.data(), static_cast< std::size_t >(written) * m_p->m_channels)
+						: IntegerView();
 }
 
 Code Decoder::init(const uint32_t sampleRate) {
-	const Code ret = interpretLibCode(opus_decoder_init(m_p->m_ctx.get(), static_cast<int32_t>(sampleRate), m_p->m_channels));
+	const Code ret =
+		interpretLibCode(opus_decoder_init(m_p->m_ctx.get(), static_cast< int32_t >(sampleRate), m_p->m_channels));
 
 	if (ret == Code::Success) {
 		m_p->m_inited = true;
@@ -126,7 +130,7 @@ uint8_t Decoder::channels() const {
 
 uint32_t Decoder::sampleRate() const {
 	opus_int32 ret = 0;
-	return m_p->get(OPUS_GET_SAMPLE_RATE(&ret)) ? static_cast<uint32_t>(ret) : 0;
+	return m_p->get(OPUS_GET_SAMPLE_RATE(&ret)) ? static_cast< uint32_t >(ret) : 0;
 }
 
 bool Decoder::inDTX() const {
@@ -146,7 +150,7 @@ bool Decoder::togglePhaseInversion(const bool enable) {
 uint32_t Decoder::packetSamples(const BufViewConst packet) {
 	const int ret =
 		opus_decoder_get_nb_samples(m_p->m_ctx.get(), CAST_BUF_CONST(packet.data()), CAST_SIZE(packet.size()));
-	return ret >= 0 ? static_cast<uint32_t>(ret) : 0;
+	return ret >= 0 ? static_cast< uint32_t >(ret) : 0;
 }
 
 Decoder::P::P(const uint8_t channels) : OpusBase(channels) {
@@ -168,9 +172,9 @@ BufView Encoder::operator()(const BufView out, const FloatViewConst in) {
 	const auto samples = static_cast< int >(in.size() / m_p->m_channels);
 
 	const int written = opus_encode_float(m_p->m_ctx.get(), CAST_FPTR_CONST(in.data()), samples, CAST_BUF(out.data()),
-										   CAST_SIZE(out.size()));
+										  CAST_SIZE(out.size()));
 
-	return written >= 0 ? BufView(out.data(), static_cast<std::size_t>(written)) : BufView();
+	return written >= 0 ? BufView(out.data(), static_cast< std::size_t >(written)) : BufView();
 }
 
 BufView Encoder::operator()(const BufView out, const IntegerViewConst in) {
@@ -179,7 +183,7 @@ BufView Encoder::operator()(const BufView out, const IntegerViewConst in) {
 	const int written =
 		opus_encode(m_p->m_ctx.get(), CAST_IPTR_CONST(in.data()), samples, CAST_BUF(out.data()), CAST_SIZE(out.size()));
 
-	return written >= 0 ? BufView(out.data(), static_cast<std::size_t>(written)) : BufView();
+	return written >= 0 ? BufView(out.data(), static_cast< std::size_t >(written)) : BufView();
 }
 
 Code Encoder::init(const uint32_t sampleRate, const Preset preset) {
@@ -188,7 +192,8 @@ Code Encoder::init(const uint32_t sampleRate, const Preset preset) {
 		return Code::Invalid;
 	}
 
-	const Code ret = interpretLibCode(opus_encoder_init(m_p->m_ctx.get(), static_cast<int32_t>(sampleRate), m_p->m_channels, application));
+	const Code ret = interpretLibCode(
+		opus_encoder_init(m_p->m_ctx.get(), static_cast< int32_t >(sampleRate), m_p->m_channels, application));
 
 	if (ret == Code::Success) {
 		m_p->m_inited = true;
@@ -207,7 +212,7 @@ uint8_t Encoder::channels() const {
 
 uint32_t Encoder::sampleRate() const {
 	opus_int32 ret = 0;
-	return m_p->get(OPUS_GET_SAMPLE_RATE(&ret)) ? static_cast<uint32_t>(ret) : 0;
+	return m_p->get(OPUS_GET_SAMPLE_RATE(&ret)) ? static_cast< uint32_t >(ret) : 0;
 }
 
 Preset Encoder::preset() const {
@@ -230,7 +235,7 @@ bool Encoder::setPreset(const Preset preset) {
 
 uint32_t Encoder::bitrate() const {
 	opus_int32 ret = 0;
-	return m_p->get(OPUS_GET_BITRATE(&ret)) ? static_cast<uint32_t>(ret) : 0;
+	return m_p->get(OPUS_GET_BITRATE(&ret)) ? static_cast< uint32_t >(ret) : 0;
 }
 
 bool Encoder::setBitrate(const uint32_t bitrate) {
@@ -240,7 +245,7 @@ bool Encoder::setBitrate(const uint32_t bitrate) {
 	} else if (!bitrate) {
 		value = OPUS_AUTO;
 	} else {
-		value = static_cast<int32_t>(bitrate);
+		value = static_cast< int32_t >(bitrate);
 	}
 
 	return m_p->set(OPUS_SET_BITRATE(value));
@@ -302,11 +307,13 @@ Preset Encoder::P::toPreset(const int32_t application) {
 
 template< typename T > OpusBase< T >::OpusBase(const uint8_t channels) : m_inited(false), m_channels(channels) {
 	if constexpr (std::is_same_v< T, ::OpusDecoder >) {
-		m_ctx.reset(reinterpret_cast< T * >(new std::byte[static_cast<std::size_t>(opus_decoder_get_size(channels))]));
+		m_ctx.reset(
+			reinterpret_cast< T * >(new std::byte[static_cast< std::size_t >(opus_decoder_get_size(channels))]));
 	} else if constexpr (std::is_same_v< T, ::OpusEncoder >) {
-		m_ctx.reset(reinterpret_cast< T * >(new std::byte[static_cast<std::size_t>(opus_encoder_get_size(channels))]));
+		m_ctx.reset(
+			reinterpret_cast< T * >(new std::byte[static_cast< std::size_t >(opus_encoder_get_size(channels))]));
 	} else {
-		static_assert(std::is_same_v<T, ::OpusEncoder> && "Invalid template type!");
+		static_assert(std::is_same_v< T, ::OpusEncoder > && "Invalid template type!");
 	}
 }
 

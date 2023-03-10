@@ -5,10 +5,10 @@
 
 #include "Crypt.hpp"
 
+#include <cassert>
 #include <cstddef>
 #include <memory>
 #include <utility>
-#include <cassert>
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -199,7 +199,7 @@ P::operator bool() {
 
 uint32_t P::blockSize() const {
 	const int size = EVP_CIPHER_CTX_block_size(m_ctx);
-	return size >= 0 ? static_cast<uint32_t>(size) : 0;
+	return size >= 0 ? static_cast< uint32_t >(size) : 0;
 }
 
 std::string_view P::cipher() {
@@ -221,8 +221,8 @@ bool P::setCipher(const std::string_view name) {
 		return false;
 	}
 
-	m_key.resize(static_cast<std::size_t>(EVP_CIPHER_CTX_key_length(m_ctx)));
-	m_nonce.resize(static_cast<std::size_t>(EVP_CIPHER_CTX_iv_length(m_ctx)));
+	m_key.resize(static_cast< std::size_t >(EVP_CIPHER_CTX_key_length(m_ctx)));
+	m_nonce.resize(static_cast< std::size_t >(EVP_CIPHER_CTX_iv_length(m_ctx)));
 
 	m_key   = {};
 	m_nonce = {};
@@ -292,5 +292,5 @@ size_t P::process(const bool encrypt, const BufView out, const BufViewConst in, 
 
 	assert(written1 >= 0);
 	assert(written2 >= 0);
-	return static_cast<std::size_t>(written1 + written2);
+	return static_cast< std::size_t >(written1 + written2);
 }

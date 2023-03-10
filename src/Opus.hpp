@@ -38,7 +38,7 @@ protected:
 	std::unique_ptr< T, Destructor > m_ctx;
 };
 
-class Opus::Decoder::P : public OpusBase< ::OpusDecoder > {
+class Opus::Decoder::P : public OpusBase<::OpusDecoder > {
 	friend Opus::Decoder;
 
 public:
@@ -46,7 +46,7 @@ public:
 	~P() = default;
 };
 
-class Opus::Encoder::P : public OpusBase< ::OpusEncoder > {
+class Opus::Encoder::P : public OpusBase<::OpusEncoder > {
 	friend Opus::Encoder;
 
 public:
