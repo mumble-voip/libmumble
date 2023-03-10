@@ -3,8 +3,6 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-include(MumbleCompiler)
-
 find_package(Boost REQUIRED
 	COMPONENTS
 		thread
@@ -25,8 +23,7 @@ endif()
 
 add_library(Mumble::libmumble ALIAS mumble_library)
 
-target_pedantic_warnings(mumble_library)
-target_pimpl_warning_fix(mumble_library)
+target_setup_default_flags(mumble_library)
 
 set_target_properties(mumble_library
 	PROPERTIES

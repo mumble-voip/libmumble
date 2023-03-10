@@ -41,7 +41,7 @@ foreach(TARGET IN LISTS TESTS)
 		WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 	)
 
-	target_pedantic_warnings(${TARGET})
+	target_setup_default_flags(${TARGET})
 
 	set_target_properties(${TARGET}
 		PROPERTIES
