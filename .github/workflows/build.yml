@@ -51,7 +51,7 @@ jobs:
           runVcpkgInstall: true
           appendedCacheKey: vcpkg
 
-      - uses: lukka/run-cmake@v10
+      - uses: lukka/run-cmake@v10.3
         with:
           configurePreset: 'ninja-vcpkg'
           buildPreset: 'ninja-vcpkg'
