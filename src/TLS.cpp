@@ -182,6 +182,9 @@ uint32_t SocketTLS::pending() const {
 		case SSL_ERROR_WANT_WRITE:
 			return WaitOut;
 		case SSL_ERROR_SYSCALL:
+			if (ERR_get_error() == 0 && osErrorToCode(osError()) == mumble::Code::Retry) {
+				return Retry;
+			}
 			m_closed = true;
 
 			if (!processed) {

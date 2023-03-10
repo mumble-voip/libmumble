@@ -113,11 +113,11 @@ public:
 				return Code::Memory;
 			case ETIMEDOUT:
 				return Code::Timeout;
+			case ECONNABORTED:
+				return Code::Cancel;
 #	if EAGAIN != EWOULDBLOCK
 			case EAGAIN:
 #	endif
-			case ECONNABORTED:
-				return Code::Cancel;
 			case EWOULDBLOCK:
 			case EINTR:
 				return Code::Retry;
