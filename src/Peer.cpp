@@ -350,7 +350,7 @@ void P::UDP::threadFunc(const uint32_t bufferSize) {
 				case Code::Success: {
 					if (pack.type() == Type::Ping) {
 						Message::Ping ping;
-						if (pack(ping, static_cast< uint32_t >(packet.size()) - sizeof(NetHeader))) {
+						if (pack(ping, static_cast< uint32_t >(packet.size() - sizeof(NetHeader)))) {
 							if (m_feedback.ping) {
 								m_feedback.ping(endpoint, ping);
 							}

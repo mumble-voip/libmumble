@@ -209,12 +209,12 @@ std::string P::parseASN1String(const ASN1_STRING *string) {
 	}
 
 	unsigned char *buf;
-	const auto size = ASN1_STRING_to_UTF8(&buf, string);
+	const int size = ASN1_STRING_to_UTF8(&buf, string);
 	if (size < 0) {
 		return {};
 	}
 
-	std::string ret(reinterpret_cast< char * >(buf), size);
+	std::string ret(reinterpret_cast< char * >(buf), static_cast<std::size_t>(size));
 
 	OPENSSL_free(buf);
 
@@ -271,12 +271,12 @@ Attributes P::parseX509Name(const X509_NAME *name) {
 int P::passwordCallback(char *buf, const int size, int, void *userdata) {
 	auto password = static_cast< const std::string_view * >(userdata);
 
-	auto length = CAST_SIZE(password->size());
+	int length = CAST_SIZE(password->size());
 	if (length > size) {
 		length = size;
 	}
 
-	memcpy(buf, password->data(), length);
+	memcpy(buf, password->data(), static_cast<std::size_t>(length));
 
 	return length;
 }

@@ -8,6 +8,9 @@
 #include "mumble/Endian.hpp"
 #include "mumble/IP.hpp"
 
+#include <cassert>
+#include <cstdint>
+
 #ifdef OS_WINDOWS
 #	include <WS2tcpip.h>
 
@@ -44,7 +47,8 @@ Code SocketUDP::read(Endpoint &endpoint, BufView &buf) {
 	endpoint.ip   = IP(addr);
 	endpoint.port = Endian::toHost(addr.sin6_port);
 
-	buf = buf.first(ret);
+	assert(ret >= 0);
+	buf = buf.first(static_cast<std::size_t>(ret));
 
 	return Code::Success;
 }
