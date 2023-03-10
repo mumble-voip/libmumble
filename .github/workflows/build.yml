@@ -56,3 +56,4 @@ jobs:
           configurePreset: 'ninja-vcpkg'
           buildPreset: 'ninja-vcpkg'
           testPreset: 'ninja-vcpkg'
+          configurePresetAdditionalArgs: "[ '-DLIBMUMBLE_WARNINGS_AS_ERRORS=ON' ]"
