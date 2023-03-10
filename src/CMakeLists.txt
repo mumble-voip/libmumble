@@ -1,4 +1,4 @@
-# Copyright 2022 The Mumble Developers. All rights reserved.
+# This file is part of libmumble.
 # Use of this source code is governed by a BSD-style license
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
@@ -10,34 +10,25 @@ find_package(Boost REQUIRED
 		thread
 )
 
-if(NOT LIBMUMBLE_BUNDLED_GSL)
-	find_package(Microsoft.GSL REQUIRED)
-else()
-	add_subdirectory("${3RDPARTY_DIR}/gsl" "${CMAKE_CURRENT_BINARY_DIR}/gsl" EXCLUDE_FROM_ALL)
-endif()
+find_package(Microsoft.GSL REQUIRED)
 
 find_package(OpenSSL REQUIRED)
-find_package(Opus)
-
-if(NOT Opus_FOUND)
-	find_package(PkgConfig REQUIRED)
-	if(PkgConfig_FOUND)
-		pkg_check_modules(Opus REQUIRED opus)
-	endif()
-endif()
+find_package(Opus REQUIRED)
 
 add_subdirectory(proto)
 
 if(NOT LIBMUMBLE_STATIC)
-	add_library(mumble SHARED)
+	add_library(mumble_library SHARED)
 else()
-	add_library(mumble STATIC)
+	add_library(mumble_library STATIC)
 endif()
 
-target_pedantic_warnings(mumble)
-target_pimpl_warning_fix(mumble)
+add_library(Mumble::libmumble ALIAS mumble_library)
 
-set_target_properties(mumble
+target_pedantic_warnings(mumble_library)
+target_pimpl_warning_fix(mumble_library)
+
+set_target_properties(mumble_library
 	PROPERTIES
 		ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 		LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -45,6 +36,7 @@ set_target_properties(mumble
 )
 
 if(WIN32)
+	# We use the bundled wepoll library
 	set(HAVE_EPOLL TRUE)
 else()
 	include(CheckSymbolExists)
@@ -52,23 +44,19 @@ else()
 	check_symbol_exists("epoll_create" "sys/epoll.h" HAVE_EPOLL)
 endif()
 
-target_compile_definitions(mumble
+target_compile_definitions(mumble_library
 	PRIVATE
 		"MUMBLE_SRC"
 
 		$<$<BOOL:${HAVE_EPOLL}>:$<IF:$<PLATFORM_ID:Windows>,HAVE_WEPOLL,HAVE_EPOLL>>
 )
 
-target_include_directories(mumble
-	PRIVATE
-		${Opus_INCLUDE_DIRS}
-
-		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll>
+target_include_directories(mumble_library
 	PUBLIC
-		${INCLUDE_DIR}
+		"${PROJECT_SOURCE_DIR}/include"
 )
 
-target_sources(mumble
+target_sources(mumble_library
 	PRIVATE
 		"Base64.cpp"
 		"Base64.hpp"
@@ -101,30 +89,9 @@ target_sources(mumble
 		"TLS.hpp"
 		"UDP.cpp"
 		"UDP.hpp"
-
-		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll/wepoll.c>
-		$<$<PLATFORM_ID:Windows>:${3RDPARTY_DIR}/wepoll/wepoll.h>
-	PUBLIC
-		"${INCLUDE_DIR}/mumble/Base64.hpp"
-		"${INCLUDE_DIR}/mumble/Cert.hpp"
-		"${INCLUDE_DIR}/mumble/Connection.hpp"
-		"${INCLUDE_DIR}/mumble/Crypt.hpp"
-		"${INCLUDE_DIR}/mumble/CryptOCB2.hpp"
-		"${INCLUDE_DIR}/mumble/Endian.hpp"
-		"${INCLUDE_DIR}/mumble/Hash.hpp"
-		"${INCLUDE_DIR}/mumble/IP.hpp"
-		"${INCLUDE_DIR}/mumble/Key.hpp"
-		"${INCLUDE_DIR}/mumble/Lib.hpp"
-		"${INCLUDE_DIR}/mumble/Macros.hpp"
-		"${INCLUDE_DIR}/mumble/Message.hpp"
-		"${INCLUDE_DIR}/mumble/NonCopyable.hpp"
-		"${INCLUDE_DIR}/mumble/Opus.hpp"
-		"${INCLUDE_DIR}/mumble/Pack.hpp"
-		"${INCLUDE_DIR}/mumble/Peer.hpp"
-		"${INCLUDE_DIR}/mumble/Types.hpp"
 )
 
-target_link_libraries(mumble
+target_link_libraries(mumble_library
 	PRIVATE
 		Proto
 
@@ -133,18 +100,10 @@ target_link_libraries(mumble
 		OpenSSL::SSL
 		quickpool
 
-		${Opus_LINK_LIBRARIES}
-		$<TARGET_NAME_IF_EXISTS:Opus::opus>
+		Opus::opus
 
-		$<$<PLATFORM_ID:Windows>:WS2_32>
+		$<$<PLATFORM_ID:Windows>:wepoll::wepoll>
 	PUBLIC
 		Microsoft.GSL::GSL
 )
 
-if(LIBMUMBLE_BUILD_EXAMPLES)
-	add_subdirectory(example)
-endif()
-
-if(LIBMUMBLE_BUILD_TESTS)
-	add_subdirectory(test)
-endif()
