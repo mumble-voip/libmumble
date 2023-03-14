@@ -8,7 +8,9 @@ find_package(Boost REQUIRED
 		thread
 )
 
-find_package(Microsoft.GSL REQUIRED)
+if (NOT TARGET Microsoft.GSL::GSL)
+	find_package(Microsoft.GSL REQUIRED)
+endif()
 
 find_package(OpenSSL REQUIRED)
 find_package(Opus REQUIRED)
