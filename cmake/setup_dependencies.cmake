@@ -19,7 +19,7 @@ FetchContent_Declare(
 	quickpool
 	GIT_REPOSITORY https://github.com/tnagler/quickpool.git
 	# The latest release currently still has issues that make it unusable for us
-	GIT_TAG        0a6b2430511c32a6b9ed315799f6ebce8f3b981d
+	GIT_TAG        ddc415bec1fc624e1c6b21c1b47063ca2eef84de
 	GIT_SHALLOW    ON
 )
 FetchContent_Declare(
