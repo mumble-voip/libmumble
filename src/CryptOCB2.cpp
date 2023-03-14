@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <cassert>
 
 #include <gsl/span>
 
@@ -284,7 +285,7 @@ size_t CryptOCB2::encrypt(BufView out, BufViewConst in, const BufView tag) {
 	}
 
 	std::copy(in.begin(), in.end(), tmpBytes.begin());
-	std::copy_n(padBytes.begin() + in.size(), P::blockSize - in.size(), tmpBytes.begin() + in.size());
+	std::copy_n(padBytes.begin() + static_cast<long>(in.size()), P::blockSize - in.size(), tmpBytes.begin() + static_cast<long>(in.size()));
 	m_p->xorBlock(checksum, checksum, tmp);
 	m_p->xorBlock(tmp, pad, tmp);
 
@@ -357,7 +358,9 @@ size_t P::process(const bool encrypt, const BufView out, const BufViewConst in) 
 		return {};
 	}
 
-	return written1 + written2;
+	assert(written1 >= 0);
+	assert(written2 >= 0);
+	return static_cast<std::size_t>(written1 + written2);
 }
 
 void P::xorBlock(const KeyBlockView dst, const KeyBlockViewConst a, const KeyBlockViewConst b) {

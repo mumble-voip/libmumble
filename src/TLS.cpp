@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <cassert>
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -108,7 +109,9 @@ Cert::Chain SocketTLS::peerCert() const {
 }
 
 uint32_t SocketTLS::pending() const {
-	return SSL_pending(m_ssl);
+	int pending = SSL_pending(m_ssl);
+	assert(pending >= 0);
+	return static_cast<uint32_t>(pending);
 }
 
 ::Code SocketTLS::accept() {

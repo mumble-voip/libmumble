@@ -42,7 +42,7 @@ target_link_libraries(libmumble_example_base
 foreach(TARGET IN LISTS EXAMPLES)
 	add_subdirectory(${TARGET})
 
-	target_pedantic_warnings(${TARGET})
+	target_setup_default_flags(${TARGET})
 
 	set_target_properties(${TARGET}
 		PROPERTIES

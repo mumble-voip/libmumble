@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <cassert>
 
 #include <openssl/evp.h>
 
@@ -63,7 +64,9 @@ size_t Base64::decode(const BufView out, const BufViewConst in) {
 		return {};
 	}
 
-	return written_1 + written_2;
+	assert(written_1 >= 0);
+	assert(written_2 >= 0);
+	return static_cast<std::size_t>(written_1 + written_2);
 }
 
 size_t Base64::encode(const BufView out, const BufViewConst in) {
@@ -72,7 +75,8 @@ size_t Base64::encode(const BufView out, const BufViewConst in) {
 		// +1 for the NUL terminator.
 		//
 		// EVP_EncodeBlock() adds padding when the input is not divisible by 3.
-		return static_cast< size_t >(ceilf(in.size() / 3.f) * 4 + 1);
+		// Note: n + 2 / 3 == ceil(n / 3.0f)
+		return static_cast< size_t >(4 * (in.size() + 2) / 3 + 1);
 	}
 
 	// EVP_EncodeBlock() returns the length of the string without the NUL terminator.
@@ -81,7 +85,7 @@ size_t Base64::encode(const BufView out, const BufViewConst in) {
 		return {};
 	}
 
-	return written + 1;
+	return static_cast<std::size_t>(written + 1);
 }
 
 P::P() : m_ctx(EVP_ENCODE_CTX_new()) {

@@ -6,6 +6,7 @@
 #include "Key.hpp"
 
 #include <cstring>
+#include <cassert>
 #include <memory>
 #include <string>
 #include <utility>
@@ -141,12 +142,13 @@ P::~P() {
 int P::passwordCallback(char *buf, const int size, int, void *userdata) {
 	auto password = static_cast< const std::string_view * >(userdata);
 
-	auto length = CAST_SIZE(password->size());
+	int length = CAST_SIZE(password->size());
 	if (length > size) {
 		length = size;
 	}
 
-	memcpy(buf, password->data(), length);
+	assert(length >= 0);
+	memcpy(buf, password->data(), static_cast<std::size_t>(length));
 
 	return length;
 }

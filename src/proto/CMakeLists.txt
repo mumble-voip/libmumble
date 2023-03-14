@@ -3,8 +3,6 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-include(MumbleCompiler)
-
 find_package(Protobuf REQUIRED)
 
 protobuf_generate_cpp(TCP_CPP TCP_HPP "MumbleTCP.proto")

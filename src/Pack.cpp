@@ -20,6 +20,8 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <cassert>
+#include <limits>
 
 #include <gsl/span>
 
@@ -30,8 +32,9 @@
 	*this = std::move(Pack(proto, extraDataSize)); \
 	break;
 
-#define PARSE_RET                                         \
-	if (!proto.ParseFromArray(data().data(), dataSize)) { \
+#define PARSE_PROTO_MESSAGE(msg, data, size)                                         \
+	assert(static_cast< int >(size) <= std::numeric_limits<int>::max());  \
+	if (!msg.ParseFromArray(data, static_cast< int >(size))) { \
 		return false;                                     \
 	}
 
@@ -115,8 +118,9 @@ TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 			auto &msg = static_cast< const Message::Ping & >(message);
 
 			MumbleTCP::Ping proto;
-			proto.set_timestamp(
-				std::chrono::duration_cast< std::chrono::nanoseconds >(msg.timestamp.time_since_epoch()).count());
+			std::int64_t timestamp = std::chrono::duration_cast< std::chrono::nanoseconds >(msg.timestamp.time_since_epoch()).count();
+			assert(timestamp >= 0);
+			proto.set_timestamp(static_cast< std::uint64_t >(timestamp));
 
 			proto.set_good(msg.good);
 			proto.set_late(msg.late);
@@ -587,8 +591,9 @@ UDP::Pack(const Message &message, const uint32_t extraDataSize) {
 			auto &msg = static_cast< const Message::Ping & >(message);
 
 			MumbleUDP::Ping proto;
-			proto.set_timestamp(
-				std::chrono::duration_cast< std::chrono::nanoseconds >(msg.timestamp.time_since_epoch()).count());
+			std::int64_t timestamp = std::chrono::duration_cast< std::chrono::nanoseconds >(msg.timestamp.time_since_epoch()).count();
+			assert(timestamp >= 0);
+			proto.set_timestamp(static_cast< std::uint64_t >(timestamp));
 
 			proto.set_request_extended_information(msg.requestExtendedInformation);
 
@@ -629,7 +634,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 	switch (message.type()) {
 		case Type::Version: {
 			MumbleTCP::Version proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg     = static_cast< Message::Version     &>(message);
 			if (proto.has_version_v2()) {
@@ -651,7 +656,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::Authenticate: {
 			MumbleTCP::Authenticate proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg    = static_cast< Message::Authenticate    &>(message);
 			msg.username = proto.username();
@@ -668,7 +673,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::Ping: {
 			MumbleTCP::Ping proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg      = static_cast< Message::Ping      &>(message);
 			msg.timestamp  = Message::Timestamp(std::chrono::nanoseconds(proto.timestamp()));
@@ -687,7 +692,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::Reject: {
 			MumbleTCP::Reject proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg      = static_cast< Message::Reject      &>(message);
 			msg.rejectType = static_cast< Message::Reject::RejectType >(proto.type());
@@ -697,7 +702,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::ServerSync: {
 			MumbleTCP::ServerSync proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg        = static_cast< Message::ServerSync        &>(message);
 			msg.session      = proto.session();
@@ -709,7 +714,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::ChannelRemove: {
 			MumbleTCP::ChannelRemove proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg     = static_cast< Message::ChannelRemove     &>(message);
 			msg.channelID = proto.channel_id();
@@ -718,7 +723,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::ChannelState: {
 			MumbleTCP::ChannelState proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg     = static_cast< Message::ChannelState     &>(message);
 			msg.channelID = proto.channel_id();
@@ -747,7 +752,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::UserRemove: {
 			MumbleTCP::UserRemove proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg   = static_cast< Message::UserRemove   &>(message);
 			msg.session = proto.session();
@@ -759,7 +764,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::UserState: {
 			MumbleTCP::UserState proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg     = static_cast< Message::UserState     &>(message);
 			msg.session   = proto.session();
@@ -795,7 +800,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::BanList: {
 			MumbleTCP::BanList proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::BanList & >(message);
 			for (const auto &ban : proto.bans()) {
@@ -817,7 +822,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::TextMessage: {
 			MumbleTCP::TextMessage proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::TextMessage & >(message);
 			msg.actor = proto.actor();
@@ -836,7 +841,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::PermissionDenied: {
 			MumbleTCP::PermissionDenied proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::PermissionDenied & >(message);
 			if (proto.has_permission()) {
@@ -856,7 +861,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::ACL: {
 			MumbleTCP::ACL proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg       = static_cast< Message::ACL       &>(message);
 			msg.channelID   = proto.channel_id();
@@ -895,7 +900,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::QueryUsers: {
 			MumbleTCP::QueryUsers proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::QueryUsers & >(message);
 			for (const auto id : proto.ids()) {
@@ -909,7 +914,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::CryptSetup: {
 			MumbleTCP::CryptSetup proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::CryptSetup & >(message);
 			toBuf(msg.key, proto.key());
@@ -920,7 +925,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::ContextActionModify: {
 			MumbleTCP::ContextActionModify proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg     = static_cast< Message::ContextActionModify     &>(message);
 			msg.action    = proto.action();
@@ -932,7 +937,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::ContextAction: {
 			MumbleTCP::ContextAction proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::ContextAction & >(message);
 			if (proto.has_session()) {
@@ -947,7 +952,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::UserList: {
 			MumbleTCP::UserList proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::UserList & >(message);
 			for (const auto &user : proto.users()) {
@@ -962,7 +967,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::VoiceTarget: {
 			MumbleTCP::VoiceTarget proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::VoiceTarget & >(message);
 			msg.id    = proto.id();
@@ -983,7 +988,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::PermissionQuery: {
 			MumbleTCP::PermissionQuery proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg       = static_cast< Message::PermissionQuery       &>(message);
 			msg.channelID   = proto.channel_id();
@@ -994,7 +999,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::CodecVersion: {
 			MumbleTCP::CodecVersion proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg       = static_cast< Message::CodecVersion       &>(message);
 			msg.alpha       = proto.alpha();
@@ -1006,7 +1011,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::UserStats: {
 			MumbleTCP::UserStats proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg     = static_cast< Message::UserStats     &>(message);
 			msg.session   = proto.session();
@@ -1058,7 +1063,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::RequestBlob: {
 			MumbleTCP::RequestBlob proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::RequestBlob & >(message);
 			for (const auto texture : proto.session_texture()) {
@@ -1075,7 +1080,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::ServerConfig: {
 			MumbleTCP::ServerConfig proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg              = static_cast< Message::ServerConfig              &>(message);
 			msg.maxBandwidth       = proto.max_bandwidth();
@@ -1090,7 +1095,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::SuggestConfig: {
 			MumbleTCP::SuggestConfig proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::SuggestConfig & >(message);
 			if (proto.has_version_v2()) {
@@ -1109,7 +1114,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::PluginDataTransmission: {
 			MumbleTCP::PluginDataTransmission proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg         = static_cast< Message::PluginDataTransmission         &>(message);
 			msg.senderSession = proto.sendersession();
@@ -1142,7 +1147,7 @@ bool UDP::operator()(Message &message, uint32_t dataSize) const {
 	switch (message.type()) {
 		case Type::Audio: {
 			MumbleUDP::Audio proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::Audio & >(message);
 			switch (proto.Header_case()) {
@@ -1173,7 +1178,7 @@ bool UDP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::Ping: {
 			MumbleUDP::Ping proto;
-			PARSE_RET
+			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg     = static_cast< Message::Ping     &>(message);
 			msg.timestamp = Message::Timestamp(std::chrono::nanoseconds(proto.timestamp()));
