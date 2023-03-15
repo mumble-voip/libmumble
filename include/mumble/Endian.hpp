@@ -44,25 +44,13 @@ public:
 #endif
 	}
 
-	static constexpr uint16_t toNetwork(const uint16_t value) {
-		return isBig() ? value : swap(value);
-	}
-	static constexpr uint32_t toNetwork(const uint32_t value) {
-		return isBig() ? value : swap(value);
-	}
-	static constexpr uint64_t toNetwork(const uint64_t value) {
-		return isBig() ? value : swap(value);
-	}
+	static constexpr uint16_t toNetwork(const uint16_t value) { return isBig() ? value : swap(value); }
+	static constexpr uint32_t toNetwork(const uint32_t value) { return isBig() ? value : swap(value); }
+	static constexpr uint64_t toNetwork(const uint64_t value) { return isBig() ? value : swap(value); }
 
-	static constexpr uint16_t toHost(const uint16_t value) {
-		return isBig() ? value : swap(value);
-	}
-	static constexpr uint32_t toHost(const uint32_t value) {
-		return isBig() ? value : swap(value);
-	}
-	static constexpr uint64_t toHost(const uint64_t value) {
-		return isBig() ? value : swap(value);
-	}
+	static constexpr uint16_t toHost(const uint16_t value) { return isBig() ? value : swap(value); }
+	static constexpr uint32_t toHost(const uint32_t value) { return isBig() ? value : swap(value); }
+	static constexpr uint64_t toHost(const uint64_t value) { return isBig() ? value : swap(value); }
 
 private:
 	union SingleSplit64 {

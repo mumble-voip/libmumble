@@ -48,7 +48,7 @@ Code SocketUDP::read(Endpoint &endpoint, BufView &buf) {
 	endpoint.port = Endian::toHost(addr.sin6_port);
 
 	assert(ret >= 0);
-	buf = buf.first(static_cast<std::size_t>(ret));
+	buf = buf.first(static_cast< std::size_t >(ret));
 
 	return Code::Success;
 }

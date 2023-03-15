@@ -7,10 +7,10 @@
 
 #include "mumble/Types.hpp"
 
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <memory>
-#include <cassert>
 
 #include <openssl/evp.h>
 
@@ -66,7 +66,7 @@ size_t Base64::decode(const BufView out, const BufViewConst in) {
 
 	assert(written_1 >= 0);
 	assert(written_2 >= 0);
-	return static_cast<std::size_t>(written_1 + written_2);
+	return static_cast< std::size_t >(written_1 + written_2);
 }
 
 size_t Base64::encode(const BufView out, const BufViewConst in) {
@@ -85,7 +85,7 @@ size_t Base64::encode(const BufView out, const BufViewConst in) {
 		return {};
 	}
 
-	return static_cast<std::size_t>(written + 1);
+	return static_cast< std::size_t >(written + 1);
 }
 
 P::P() : m_ctx(EVP_ENCODE_CTX_new()) {

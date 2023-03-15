@@ -135,15 +135,13 @@ public:
 		return *this;
 	}
 
-#define INTMAPOPERATOR(type)                                   \
-	constexpr PacketDataStream &operator<<(const type value) { \
-		return *this << static_cast< uint64_t >(value);        \
-	}                                                          \
-	constexpr PacketDataStream &operator>>(type &value) {      \
-		uint64_t tmp = 0;                                      \
-		*this >> tmp;                                          \
-		value = static_cast< type >(tmp);                      \
-		return *this;                                          \
+#define INTMAPOPERATOR(type)                                                                                     \
+	constexpr PacketDataStream &operator<<(const type value) { return *this << static_cast< uint64_t >(value); } \
+	constexpr PacketDataStream &operator>>(type &value) {                                                        \
+		uint64_t tmp = 0;                                                                                        \
+		*this >> tmp;                                                                                            \
+		value = static_cast< type >(tmp);                                                                        \
+		return *this;                                                                                            \
 	}
 
 	INTMAPOPERATOR(int32_t);
@@ -248,7 +246,7 @@ public:
 			m_ok = false;
 		}
 
-		str    = { reinterpret_cast< const char    *>(m_seek.data()), size };
+		str    = { reinterpret_cast< const char * >(m_seek.data()), size };
 		m_seek = m_seek.subspan(size);
 
 		return *this;

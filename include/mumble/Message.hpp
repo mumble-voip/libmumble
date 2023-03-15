@@ -18,9 +18,7 @@
 #define MUMBLE_MESSAGE_COMMON(name) \
 	name()          = default;      \
 	virtual ~name() = default;      \
-	Type type() const override {    \
-		return Type::name;          \
-	}
+	Type type() const override { return Type::name; }
 
 namespace mumble {
 namespace legacy {

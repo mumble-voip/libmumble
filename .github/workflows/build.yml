@@ -3,9 +3,22 @@ name: Build
 on: [push, pull_request]
 
 jobs:
+  skip_test:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          concurrent_skipping: same_content_newer
+          skip_after_successful_duplicate: 'true'
+
   build:
-    name: ${{matrix.triplet}}
-    runs-on: ${{matrix.os}}
+    needs: skip_test
+
+    if: needs.skip_test.outputs.should_skip != 'true'
+
     strategy:
       fail-fast: false
       matrix:
@@ -19,25 +32,28 @@ jobs:
           - os: macos-latest
             triplet: x64-osx
 
+    name: ${{matrix.triplet}}
+    runs-on: ${{matrix.os}}
+
     env:
       VCPKG_DEFAULT_TRIPLET: ${{matrix.triplet}}
 
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: recursive
+          fetch-depth: 1
 
       - uses: lukka/get-cmake@latest
 
       - uses: lukka/run-vcpkg@main
         with:
-          buildDirectory: ${{github.workspace}}/build
           vcpkgGitCommitId: 1323f4b83d6a91e415e9ce06a45c9d0a6473aaf2
           runVcpkgInstall: true
           appendedCacheKey: vcpkg
 
-      - uses: lukka/run-cmake@v10
+      - uses: lukka/run-cmake@v10.3
         with:
           configurePreset: 'ninja-vcpkg'
           buildPreset: 'ninja-vcpkg'
           testPreset: 'ninja-vcpkg'
+          configurePresetAdditionalArgs: "[ '-DLIBMUMBLE_WARNINGS_AS_ERRORS=ON', '-DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}' ]"

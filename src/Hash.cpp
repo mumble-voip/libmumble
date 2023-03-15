@@ -7,9 +7,9 @@
 
 #include "mumble/Types.hpp"
 
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cassert>
 #include <memory>
 #include <utility>
 
@@ -48,9 +48,9 @@ size_t Hash::operator()(const BufView out, const BufViewConst in) {
 	CHECK
 
 	if (!out.size()) {
-		int size =  EVP_MD_CTX_size(m_p->m_ctx);
+		int size = EVP_MD_CTX_size(m_p->m_ctx);
 		assert(size >= 0);
-		return static_cast<std::size_t>(size);
+		return static_cast< std::size_t >(size);
 	}
 
 	if (EVP_DigestInit_ex(m_p->m_ctx, nullptr, nullptr) <= 0) {
@@ -92,7 +92,7 @@ uint32_t Hash::blockSize() const {
 
 	int size = EVP_MD_CTX_block_size(m_p->m_ctx);
 	assert(size >= 0);
-	return static_cast<std::uint32_t>(size);
+	return static_cast< std::uint32_t >(size);
 }
 
 bool Hash::reset() {

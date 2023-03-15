@@ -5,8 +5,8 @@
 
 #include "Key.hpp"
 
-#include <cstring>
 #include <cassert>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
@@ -148,7 +148,7 @@ int P::passwordCallback(char *buf, const int size, int, void *userdata) {
 	}
 
 	assert(length >= 0);
-	memcpy(buf, password->data(), static_cast<std::size_t>(length));
+	memcpy(buf, password->data(), static_cast< std::size_t >(length));
 
 	return length;
 }

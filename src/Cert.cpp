@@ -214,7 +214,7 @@ std::string P::parseASN1String(const ASN1_STRING *string) {
 		return {};
 	}
 
-	std::string ret(reinterpret_cast< char * >(buf), static_cast<std::size_t>(size));
+	std::string ret(reinterpret_cast< char * >(buf), static_cast< std::size_t >(size));
 
 	OPENSSL_free(buf);
 
@@ -276,7 +276,7 @@ int P::passwordCallback(char *buf, const int size, int, void *userdata) {
 		length = size;
 	}
 
-	memcpy(buf, password->data(), static_cast<std::size_t>(length));
+	memcpy(buf, password->data(), static_cast< std::size_t >(length));
 
 	return length;
 }

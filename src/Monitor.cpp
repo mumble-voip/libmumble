@@ -161,14 +161,14 @@ uint32_t Monitor::wait(const EventsView events, const uint32_t timeout) {
 
 uint32_t Monitor::waitEpoll(const EventsView events, const uint32_t timeout) {
 	const int32_t ret = epoll_wait(m_handle, m_targets.data(), static_cast< int >(m_targets.size()),
-								   timeout == timeoutMax ? -1 : static_cast<int>(timeout));
+								   timeout == timeoutMax ? -1 : static_cast< int >(timeout));
 	if (ret < 1) {
 		return {};
 	}
 
 	uint32_t num = 0;
 
-	for (const auto &target : gsl::span< Target >(m_targets.data(), static_cast<std::size_t>(ret))) {
+	for (const auto &target : gsl::span< Target >(m_targets.data(), static_cast< std::size_t >(ret))) {
 		if (num >= events.size()) {
 			break;
 		}
@@ -205,7 +205,8 @@ uint32_t Monitor::waitEpoll(const EventsView events, const uint32_t timeout) {
 }
 #else
 uint32_t Monitor::waitPoll(const EventsView events, const uint32_t timeout) {
-	const int32_t ret = poll(m_targets.data(), static_cast< nfds_t >(m_targets.size()), timeout == timeoutMax ? -1 : static_cast< int >(timeout));
+	const int32_t ret = poll(m_targets.data(), static_cast< nfds_t >(m_targets.size()),
+							 timeout == timeoutMax ? -1 : static_cast< int >(timeout));
 	if (ret < 1) {
 		return {};
 	}

@@ -9,12 +9,12 @@
 #include "mumble/Key.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <memory>
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include <cassert>
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -111,7 +111,7 @@ Cert::Chain SocketTLS::peerCert() const {
 uint32_t SocketTLS::pending() const {
 	int pending = SSL_pending(m_ssl);
 	assert(pending >= 0);
-	return static_cast<uint32_t>(pending);
+	return static_cast< uint32_t >(pending);
 }
 
 ::Code SocketTLS::accept() {
