@@ -17,6 +17,8 @@ target_include_directories(Proto
 		${CMAKE_CURRENT_BINARY_DIR}
 )
 
+set_target_properties(Proto PROPERTIES UNITY_BUILD OFF)
+
 target_sources(Proto
 	PRIVATE
 		${TCP_CPP}
