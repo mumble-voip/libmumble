@@ -35,9 +35,18 @@ FetchContent_Declare(
 	GIT_TAG        v2.0.0
 	GIT_SHALLOW    ON
 )
+FetchContent_Declare(
+	googletest
+	GIT_REPOSITORY https://github.com/google/googletest
+	GIT_TAG        v1.13.0
+	GIT_SHALLOW    ON
+)
 
 # Set some options for the dependencies
 set(QUICKPOOL_TEST ${LIBMUMBLE_BUILD_TESTS} CACHE INTERNAL "")
+
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE INTERNAL "" FORCE)
 
 
 message(STATUS ">>> Configuring dependencies (potentially includes downloading)")

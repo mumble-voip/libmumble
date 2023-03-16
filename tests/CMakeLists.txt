@@ -3,6 +3,23 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
+include(FetchContent)
+
+FetchContent_MakeAvailable(googletest)
+
+include(GoogleTest)
+
+add_executable(libmumbleTests
+	"Base64.cpp"
+)
+
+target_link_libraries(libmumbleTests PRIVATE Mumble::libmumble GTest::gmock GTest::gtest_main)
+
+gtest_discover_tests(libmumbleTests)
+
+
+
+
 list(APPEND TESTS
 	"TestBase64"
 	"TestCrypt"
