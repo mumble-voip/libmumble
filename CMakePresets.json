@@ -44,11 +44,17 @@
   "testPresets": [
     {
       "name": "ninja",
-      "configurePreset": "ninja"
+      "configurePreset": "ninja",
+	  "output":{
+		  "outputOnFailure": true
+	  }
     },
     {
       "name": "ninja-vcpkg",
-      "configurePreset": "ninja-vcpkg"
+      "configurePreset": "ninja-vcpkg",
+	  "output":{
+		  "outputOnFailure": true
+	  }
     }
   ]
 }
