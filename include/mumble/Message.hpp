@@ -67,6 +67,72 @@ struct Message {
 	Timestamp timestamp;
 };
 
+namespace udp {
+	struct Message : public mumble::Message {
+		struct Audio;
+		struct Ping;
+
+		enum class Type : uint8_t { Audio, Ping, Unknown = std::numeric_limits< uint8_t >::max() };
+
+		Message()          = default;
+		virtual ~Message() = default;
+
+		Protocol protocol() const { return Protocol::UDP; }
+
+		virtual Type type() const { return Type::Unknown; }
+
+		static constexpr std::string_view text(const Type type) {
+			switch (type) {
+				case Type::Audio: {
+					return "Audio";
+				}
+				case Type::Ping: {
+					return "Ping";
+				}
+				case Type::Unknown: {
+					break;
+				}
+			}
+
+			return "Unknown";
+		}
+	};
+
+	MUMBLE_MESSAGE_DECL(Audio) {
+		enum : uint8_t { Unknown, ClientToServer, ServerToClient } direction;
+
+		union {
+			// Client to server.
+			uint32_t target = UINT32_MAX;
+			// Server to client.
+			uint32_t context;
+		};
+
+		std::optional< uint32_t > senderSession = {};
+
+		uint64_t frameNumber                = 0;
+		std::vector< std::byte > opusData   = {};
+		std::vector< float > positionalData = {};
+
+		float volumeAdjustment = 0.f;
+
+		bool isTerminator = false;
+
+		MUMBLE_MESSAGE_COMMON(Audio)
+	};
+
+	MUMBLE_MESSAGE_DECL(Ping) {
+		bool requestExtendedInformation = false;
+
+		std::optional< mumble::Version > version      = {};
+		std::optional< uint32_t > userCount           = {};
+		std::optional< uint32_t > maxUserCount        = {};
+		std::optional< uint32_t > maxBandwidthPerUser = {};
+
+		MUMBLE_MESSAGE_COMMON(Ping)
+	};
+} // namespace udp
+
 namespace tcp {
 	struct Message : public mumble::Message {
 		struct Version;
@@ -252,41 +318,7 @@ namespace tcp {
 			return "Unknown";
 		}
 	};
-} // namespace tcp
 
-namespace udp {
-	struct Message : public mumble::Message {
-		struct Audio;
-		struct Ping;
-
-		enum class Type : uint8_t { Audio, Ping, Unknown = std::numeric_limits< uint8_t >::max() };
-
-		Message()          = default;
-		virtual ~Message() = default;
-
-		Protocol protocol() const { return Protocol::UDP; }
-
-		virtual Type type() const { return Type::Unknown; }
-
-		static constexpr std::string_view text(const Type type) {
-			switch (type) {
-				case Type::Audio: {
-					return "Audio";
-				}
-				case Type::Ping: {
-					return "Ping";
-				}
-				case Type::Unknown: {
-					break;
-				}
-			}
-
-			return "Unknown";
-		}
-	};
-} // namespace udp
-
-namespace tcp {
 	MUMBLE_MESSAGE_DECL(Version) {
 		mumble::Version version = {};
 		std::string release     = {};
@@ -655,42 +687,6 @@ namespace tcp {
 		MUMBLE_MESSAGE_COMMON(PluginDataTransmission)
 	};
 } // namespace tcp
-
-namespace udp {
-	MUMBLE_MESSAGE_DECL(Audio) {
-		enum : uint8_t { Unknown, ClientToServer, ServerToClient } direction;
-
-		union {
-			// Client to server.
-			uint32_t target = UINT32_MAX;
-			// Server to client.
-			uint32_t context;
-		};
-
-		std::optional< uint32_t > senderSession = {};
-
-		uint64_t frameNumber                = 0;
-		std::vector< std::byte > opusData   = {};
-		std::vector< float > positionalData = {};
-
-		float volumeAdjustment = 0.f;
-
-		bool isTerminator = false;
-
-		MUMBLE_MESSAGE_COMMON(Audio)
-	};
-
-	MUMBLE_MESSAGE_DECL(Ping) {
-		bool requestExtendedInformation = false;
-
-		std::optional< mumble::Version > version      = {};
-		std::optional< uint32_t > userCount           = {};
-		std::optional< uint32_t > maxUserCount        = {};
-		std::optional< uint32_t > maxBandwidthPerUser = {};
-
-		MUMBLE_MESSAGE_COMMON(Ping)
-	};
-} // namespace udp
 } // namespace mumble
 
 MUMBLE_ENUM_OPERATORS(mumble::tcp::Message::Perm)
