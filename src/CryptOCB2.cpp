@@ -43,6 +43,14 @@ CryptOCB2::operator bool() const {
 	return m_p && m_p->m_ok;
 }
 
+std::string_view CryptOCB2::cipher() const {
+	return "OCB2";
+}
+
+bool CryptOCB2::setCipher(std::string_view name) {
+	return name == "OCB2";
+}
+
 uint32_t CryptOCB2::blockSize() const {
 	CHECK
 
@@ -119,7 +127,7 @@ bool CryptOCB2::setNonce(const BufViewConst nonce) {
 	return true;
 }
 
-size_t CryptOCB2::decrypt(BufView out, BufViewConst in, const BufViewConst tag) {
+size_t CryptOCB2::decrypt(BufView out, BufViewConst in, const BufViewConst tag, BufViewConst) {
 	CHECK
 
 	if (!out.size()) {
@@ -204,7 +212,7 @@ size_t CryptOCB2::decrypt(BufView out, BufViewConst in, const BufViewConst tag) 
 	return written;
 }
 
-size_t CryptOCB2::encrypt(BufView out, BufViewConst in, const BufView tag) {
+size_t CryptOCB2::encrypt(BufView out, BufViewConst in, const BufView tag, BufViewConst) {
 	CHECK
 
 	if (!out.size()) {
