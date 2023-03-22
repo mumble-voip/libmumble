@@ -548,8 +548,6 @@ TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 
 			SET_BUF_AND_BREAK
 		}
-		case Type::Unknown:
-			break;
 	}
 }
 
@@ -614,8 +612,6 @@ UDP::Pack(const Message &message, const uint32_t extraDataSize) {
 
 			SET_BUF_AND_BREAK
 		}
-		case Type::Unknown:
-			break;
 	}
 }
 
@@ -625,7 +621,7 @@ UDP::~Pack() = default;
 bool TCP::operator()(Message &message, uint32_t dataSize) const {
 	using Type = Message::Type;
 
-	if (message.type() != type()) {
+	if (message.type() != Message::type(*this)) {
 		return false;
 	}
 
@@ -1128,8 +1124,6 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 
 			return true;
 		}
-		case Type::Unknown:
-			break;
 	}
 
 	return false;
@@ -1138,7 +1132,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 bool UDP::operator()(Message &message, uint32_t dataSize) const {
 	using Type = Message::Type;
 
-	if (message.type() != type()) {
+	if (message.type() != Message::type(*this)) {
 		return false;
 	}
 
@@ -1195,8 +1189,6 @@ bool UDP::operator()(Message &message, uint32_t dataSize) const {
 
 			return true;
 		}
-		case Type::Unknown:
-			break;
 	}
 
 	return false;

@@ -91,10 +91,8 @@ bool Connection::setCert(const Cert::Chain &cert, const Key &key) {
 }
 
 Code Connection::process(const bool wait, const std::function< bool() > halt) {
-	using Message   = tcp::Message;
 	using NetHeader = tcp::NetHeader;
 	using Pack      = tcp::Pack;
-	using Type      = Message::Type;
 
 	do {
 		NetHeader header;
@@ -112,13 +110,6 @@ Code Connection::process(const bool wait, const std::function< bool() > halt) {
 		}
 
 		Pack pack(header);
-		if (pack.type() == Type::Unknown) {
-			if (!m_p->m_closed.test_and_set()) {
-				m_p->m_feedback.failed(Code::Invalid);
-			}
-
-			return Code::Invalid;
-		}
 
 		code = m_p->read(pack.data(), wait, halt);
 		if (code != Code::Success) {
