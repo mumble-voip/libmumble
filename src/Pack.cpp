@@ -954,7 +954,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 
 			auto &msg = static_cast< Message::UserList & >(message);
 			for (const auto &user : proto.users()) {
-				auto entry        = msg.users.emplace_back();
+				auto &entry       = msg.users.emplace_back();
 				entry.userID      = user.user_id();
 				entry.name        = user.name();
 				entry.lastSeen    = user.last_seen();
@@ -970,7 +970,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			auto &msg = static_cast< Message::VoiceTarget & >(message);
 			msg.id    = proto.id();
 			for (const auto &target : proto.targets()) {
-				auto entry = msg.targets.emplace_back();
+				auto &entry = msg.targets.emplace_back();
 				for (const auto session : target.session()) {
 					entry.session.push_back(session);
 				}
