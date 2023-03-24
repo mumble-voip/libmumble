@@ -58,8 +58,9 @@ static Connection::Feedback connectionFeedback(Connection &connection, std::cond
 	};
 
 	feedback.pack = [](Pack &pack) {
-		if (pack.type() != Type::UDPTunnel) {
-			printf("%s received!\n", Message::text(pack.type()).data());
+		const auto type = Message::type(pack);
+		if (type != Type::UDPTunnel) {
+			printf("%s received!\n", Message::text(type).data());
 		}
 	};
 

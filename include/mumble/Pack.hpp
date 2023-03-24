@@ -8,7 +8,6 @@
 
 #include "Endian.hpp"
 #include "Macros.hpp"
-#include "Message.hpp"
 #include "Types.hpp"
 
 #include <algorithm>
@@ -53,41 +52,37 @@ protected:
 };
 
 namespace tcp {
+	struct Message;
+
 	MUMBLE_PACK(struct NetHeader {
-		uint16_t type = Endian::toNetwork(static_cast< uint16_t >(Message::Type::Unknown));
+		uint16_t type = Endian::toNetwork(std::numeric_limits< decltype(type) >::max());
 		uint32_t size = 0;
 	});
 
 	class MUMBLE_EXPORT Pack : public mumble::Pack< NetHeader > {
 	public:
-		using Type = Message::Type;
-
 		Pack(const Message &message, const uint32_t extraDataSize = 0);
 		Pack(const NetHeader &header = {}, const uint32_t extraDataSize = 0);
 		Pack(const google::protobuf::Message &proto, const uint32_t extraDataSize = 0);
 		virtual ~Pack();
 
 		virtual bool operator()(Message &message, uint32_t dataSize = std::numeric_limits< uint32_t >::max()) const;
-
-		virtual Type type() const { return static_cast< Type >(Endian::toHost(header().type)); }
 	};
 } // namespace tcp
 
 namespace udp {
-	MUMBLE_PACK(struct NetHeader { uint8_t type = static_cast< uint8_t >(Message::Type::Unknown); });
+	struct Message;
+
+	MUMBLE_PACK(struct NetHeader { uint8_t type = std::numeric_limits< decltype(type) >::max(); });
 
 	class MUMBLE_EXPORT Pack : public mumble::Pack< NetHeader > {
 	public:
-		using Type = Message::Type;
-
 		Pack(const Message &message, const uint32_t extraDataSize = 0);
 		Pack(const NetHeader &header = {}, const uint32_t dataSize = 0);
 		Pack(const google::protobuf::Message &proto, const uint32_t extraDataSize = 0);
 		virtual ~Pack();
 
 		virtual bool operator()(Message &message, uint32_t dataSize = std::numeric_limits< uint32_t >::max()) const;
-
-		virtual Type type() const { return static_cast< Type >(header().type); }
 	};
 } // namespace udp
 } // namespace mumble

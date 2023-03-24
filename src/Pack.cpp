@@ -88,13 +88,14 @@ TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 		case Type::UDPTunnel: {
 			auto &msg = static_cast< const Message::UDPTunnel & >(message);
 
-			NetHeader header;
-			header.type = Endian::toNetwork(static_cast< uint16_t >(message.type()));
-			header.size = Endian::toNetwork(static_cast< uint32_t >(msg.packet.size()));
+			auto &pack = msg.pack;
 
-			*this = std::move(Pack(header));
+			const NetHeader header = { Endian::toNetwork(static_cast< uint16_t >(Type::UDPTunnel)),
+									   Endian::toNetwork(static_cast< uint32_t >(pack.buf().size())) };
 
-			std::copy(msg.packet.cbegin(), msg.packet.cend(), data().begin());
+			*this = Pack(header, extraDataSize);
+
+			std::copy(pack.buf().begin(), pack.buf().end(), data().begin());
 
 			break;
 		}
@@ -548,8 +549,6 @@ TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 
 			SET_BUF_AND_BREAK
 		}
-		case Type::Unknown:
-			break;
 	}
 }
 
@@ -614,8 +613,6 @@ UDP::Pack(const Message &message, const uint32_t extraDataSize) {
 
 			SET_BUF_AND_BREAK
 		}
-		case Type::Unknown:
-			break;
 	}
 }
 
@@ -625,7 +622,7 @@ UDP::~Pack() = default;
 bool TCP::operator()(Message &message, uint32_t dataSize) const {
 	using Type = Message::Type;
 
-	if (message.type() != type()) {
+	if (message.type() != Message::type(*this)) {
 		return false;
 	}
 
@@ -652,7 +649,20 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 		}
 		case Type::UDPTunnel: {
 			auto &msg = static_cast< Message::UDPTunnel & >(message);
-			msg.packet.assign(m_buf.cbegin() + sizeof(NetHeader), m_buf.cend());
+
+			if (dataSize < sizeof(udp::NetHeader)) {
+				msg.pack = std::move(udp::Pack());
+				break;
+			}
+
+			auto packet = data();
+
+			auto &header = *reinterpret_cast< const udp::NetHeader * >(packet.data());
+			msg.pack     = std::move(udp::Pack(header, dataSize - static_cast< decltype(dataSize) >(sizeof(header))));
+
+			packet = packet.subspan(sizeof(header));
+
+			std::copy(packet.begin(), packet.end(), msg.pack.data().begin());
 
 			return true;
 		}
@@ -958,7 +968,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 
 			auto &msg = static_cast< Message::UserList & >(message);
 			for (const auto &user : proto.users()) {
-				auto entry        = msg.users.emplace_back();
+				auto &entry       = msg.users.emplace_back();
 				entry.userID      = user.user_id();
 				entry.name        = user.name();
 				entry.lastSeen    = user.last_seen();
@@ -974,7 +984,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			auto &msg = static_cast< Message::VoiceTarget & >(message);
 			msg.id    = proto.id();
 			for (const auto &target : proto.targets()) {
-				auto entry = msg.targets.emplace_back();
+				auto &entry = msg.targets.emplace_back();
 				for (const auto session : target.session()) {
 					entry.session.push_back(session);
 				}
@@ -1128,8 +1138,6 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 
 			return true;
 		}
-		case Type::Unknown:
-			break;
 	}
 
 	return false;
@@ -1138,7 +1146,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 bool UDP::operator()(Message &message, uint32_t dataSize) const {
 	using Type = Message::Type;
 
-	if (message.type() != type()) {
+	if (message.type() != Message::type(*this)) {
 		return false;
 	}
 
@@ -1195,8 +1203,6 @@ bool UDP::operator()(Message &message, uint32_t dataSize) const {
 
 			return true;
 		}
-		case Type::Unknown:
-			break;
 	}
 
 	return false;

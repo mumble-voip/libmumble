@@ -348,7 +348,7 @@ void P::UDP::threadFunc(const uint32_t bufferSize) {
 			const auto code = m_socket->read(endpoint, packet);
 			switch (code) {
 				case Code::Success: {
-					if (pack.type() == Type::Ping) {
+					if (Message::type(pack) == Type::Ping) {
 						Message::Ping ping;
 						if (pack(ping, static_cast< uint32_t >(packet.size() - sizeof(NetHeader)))) {
 							if (m_feedback.ping) {

@@ -155,13 +155,14 @@ bool Node::startTCP() {
 				return;
 			}
 
-			if (pack.type() != Type::UDPTunnel) {
-				printf("[#%u] (TCP) %s received!\n", user->id(), Message::text(pack.type()).data());
+			const auto type = Message::type(pack);
+			if (type != Type::UDPTunnel) {
+				printf("[#%u] (TCP) %s received!\n", user->id(), Message::text(type).data());
 			}
 
 			using Perm = Message::Perm;
 
-			switch (pack.type()) {
+			switch (type) {
 				case Type::Version: {
 					Message::Version ver;
 					ver.version = lib::version();
@@ -299,8 +300,6 @@ bool Node::startTCP() {
 					break;
 				case Type::PluginDataTransmission:
 					break;
-				case Type::Unknown:
-					break;
 			}
 		};
 
@@ -390,11 +389,12 @@ bool Node::startUDP() {
 
 		Pack pack(*header, packet.size());
 
-		if (pack.type() != Type::Audio) {
-			printf("[#%u] (UDP) %s received!\n", user->id(), Message::text(pack.type()).data());
+		const auto type = Message::type(pack);
+		if (type != Type::Audio) {
+			printf("[#%u] (UDP) %s received!\n", user->id(), Message::text(type).data());
 		}
 
-		switch (pack.type()) {
+		switch (type) {
 			case Type::Audio:
 				break;
 			case Type::Ping: {
@@ -416,8 +416,6 @@ bool Node::startUDP() {
 
 				break;
 			}
-			case Type::Unknown:
-				break;
 		}
 	};
 
