@@ -328,7 +328,7 @@ namespace tcp {
 	};
 
 	MUMBLE_MESSAGE_DECL(UDPTunnel) {
-		std::vector< std::byte > packet = {};
+		udp::Pack pack = {};
 
 		MUMBLE_MESSAGE_COMMON(UDPTunnel)
 	};
