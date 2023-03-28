@@ -13,6 +13,7 @@ add_executable(libmumbleTests
 	"Base64.cpp"
 	"Crypt.cpp"
 	"Hash.cpp"
+	"Opus.cpp"
 )
 
 target_link_libraries(libmumbleTests PRIVATE Mumble::libmumble GTest::gmock GTest::gtest_main)
