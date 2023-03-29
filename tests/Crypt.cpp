@@ -42,7 +42,9 @@ TEST_P(TestCrypt, encryption_roundtrip) {
 
 	std::random_device device;
 	std::mt19937 algo(device());
-	std::uniform_int_distribution< std::uint8_t > dataDist(0, std::numeric_limits< std::uint8_t >::max());
+	// Note: For some reason the standard doesn't allow distributions to be templated on uint8_t, so we resort to using
+	// a short instead
+	std::uniform_int_distribution< short > dataDist(0, std::numeric_limits< std::uint8_t >::max());
 
 	std::vector< std::byte > data(bufferSize);
 	std::generate(data.begin(), data.end(), [&]() { return static_cast< std::byte >(dataDist(algo)); });
