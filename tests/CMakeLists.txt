@@ -14,6 +14,7 @@ add_executable(libmumbleTests
 	"Crypt.cpp"
 	"Hash.cpp"
 	"Opus.cpp"
+	"PacketDataStream.cpp"
 )
 
 target_link_libraries(libmumbleTests PRIVATE Mumble::libmumble GTest::gmock GTest::gtest_main)
