@@ -17,6 +17,14 @@ add_executable(libmumbleTests
 	"PacketDataStream.cpp"
 )
 
+# We have to make sure the test binary is located in the same directory as the built library
+# as otherwise the corresponding DLL (if built as shared lib) will not be found, if the exec_program
+# is started from a different directory
+set_target_properties(libmumbleTests
+	PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+)
+
 target_link_libraries(libmumbleTests PRIVATE Mumble::libmumble GTest::gmock GTest::gtest_main)
 
 gtest_discover_tests(libmumbleTests)
