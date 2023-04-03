@@ -45,11 +45,10 @@ jobs:
 
       - uses: lukka/get-cmake@latest
 
-      - uses: lukka/run-vcpkg@main
+      - uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: 1323f4b83d6a91e415e9ce06a45c9d0a6473aaf2
+          vcpkgGitCommitId: 19af97cba8ca48474e4ad15a24ed50271a9ecdac
           runVcpkgInstall: true
-          appendedCacheKey: vcpkg
 
       - uses: lukka/run-cmake@v10.3
         with:
