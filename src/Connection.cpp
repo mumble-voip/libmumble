@@ -35,6 +35,8 @@ Connection::operator bool() const {
 }
 
 Code Connection::operator()(const Feedback &feedback, const std::function< bool() > halt) {
+	const auto guard = m_p->lock();
+
 	if (!m_p->m_monitorIn.add(m_p->m_handle, true, false) || !m_p->m_monitorOut.add(m_p->m_handle, false, true)) {
 		return Code::Failure;
 	}
@@ -87,6 +89,8 @@ Cert::Chain Connection::peerCert() const {
 }
 
 bool Connection::setCert(const Cert::Chain &cert, const Key &key) {
+	const auto guard = m_p->lock();
+
 	return m_p->setCert(cert, key);
 }
 
@@ -94,6 +98,7 @@ Code Connection::process(const bool wait, const std::function< bool() > halt) {
 	using NetHeader = tcp::NetHeader;
 	using Pack      = tcp::Pack;
 
+	const auto guard = m_p->lock();
 	do {
 		NetHeader header;
 		auto code = m_p->read({ reinterpret_cast< std::byte * >(&header), sizeof(header) }, wait, halt);
@@ -123,6 +128,8 @@ Code Connection::process(const bool wait, const std::function< bool() > halt) {
 }
 
 Code Connection::write(const BufViewConst data, const bool wait, const std::function< bool() > halt) {
+	const auto guard = m_p->lock();
+
 	return m_p->write(data, wait, halt);
 }
 

@@ -17,6 +17,7 @@
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <mutex>
 
 namespace mumble {
 class Connection::P : public SocketTLS {
@@ -33,6 +34,10 @@ public:
 	mumble::Code handleState(const State state);
 
 private:
+	[[nodiscard]] std::lock_guard< std::recursive_mutex > lock() {
+		return std::lock_guard< std::recursive_mutex >(m_mutex);
+	}
+
 	mumble::Code read(BufView buf, const bool wait, const std::function< bool() > halt);
 	mumble::Code write(BufViewConst buf, const bool wait, const std::function< bool() > halt);
 
@@ -49,6 +54,7 @@ private:
 	Cert::Chain m_cert;
 	uint32_t m_timeouts;
 	std::atomic_flag m_closed;
+	std::recursive_mutex m_mutex;
 };
 } // namespace mumble
 
