@@ -34,9 +34,9 @@ public:
 	virtual bool togglePhaseInversion(const bool enable) = 0;
 
 	static uint8_t packetChannels(const BufViewConst packet);
-	static uint32_t packetFrames(const BufViewConst packet);
-	static uint32_t packetSamples(const BufViewConst packet, const uint32_t sampleRate);
-	static uint32_t packetSamplesPerFrame(const BufViewConst packet, const uint32_t sampleRate);
+	static uint32_t packetEncodedFrames(const BufViewConst packet);
+	static uint32_t packetFrames(const BufViewConst packet, const uint32_t sampleRate);
+	static uint32_t packetFramesPerEncodedFrame(const BufViewConst packet, const uint32_t sampleRate);
 };
 
 class MUMBLE_EXPORT Opus::Decoder : public Opus {
@@ -63,7 +63,7 @@ public:
 	virtual bool usesPhaseInversion() const override;
 	virtual bool togglePhaseInversion(const bool enable) override;
 
-	virtual uint32_t packetSamples(const BufViewConst packet);
+	virtual uint32_t packetFrames(const BufViewConst packet);
 
 private:
 	std::unique_ptr< P > m_p;
