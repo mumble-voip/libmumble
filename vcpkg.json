@@ -2,6 +2,7 @@
 	"$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
 	"name": "libmumble",
 	"version-string": "0.1.0",
+	"builtin-baseline": "215a2535590f1f63788ac9bd2ed58ad15e6afdff",
 	"dependencies": [
 		"boost-thread",
 		"ms-gsl",
