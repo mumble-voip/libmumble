@@ -47,7 +47,6 @@ jobs:
 
       - uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: 19af97cba8ca48474e4ad15a24ed50271a9ecdac
           runVcpkgInstall: true
 
       - uses: lukka/run-cmake@v10.3
