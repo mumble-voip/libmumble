@@ -46,8 +46,6 @@ jobs:
       - uses: lukka/get-cmake@latest
 
       - uses: lukka/run-vcpkg@v11
-        with:
-          runVcpkgInstall: true
 
       - uses: lukka/run-cmake@v10.3
         with:
