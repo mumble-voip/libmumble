@@ -93,6 +93,7 @@ public:
 			case EACCES:
 			case ECONNREFUSED:
 				return Code::Refuse;
+			case EHOSTUNREACH:
 			case ENETUNREACH:
 				return Code::Reach;
 			case EADDRNOTAVAIL:
