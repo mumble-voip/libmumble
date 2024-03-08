@@ -61,18 +61,18 @@ uint8_t Opus::packetChannels(const BufViewConst packet) {
 	return ret >= 0 ? static_cast< uint8_t >(ret) : 0;
 }
 
-uint32_t Opus::packetFrames(const BufViewConst packet) {
+uint32_t Opus::packetEncodedFrames(const BufViewConst packet) {
 	const int ret = opus_packet_get_nb_frames(CAST_BUF_CONST(packet.data()), CAST_SIZE(packet.size()));
 	return ret >= 0 ? static_cast< uint32_t >(ret) : 0;
 }
 
-uint32_t Opus::packetSamples(const BufViewConst packet, const uint32_t sampleRate) {
+uint32_t Opus::packetFrames(const BufViewConst packet, const uint32_t sampleRate) {
 	const int ret = opus_packet_get_nb_samples(CAST_BUF_CONST(packet.data()), CAST_SIZE(packet.size()),
 											   static_cast< int32_t >(sampleRate));
 	return ret >= 0 ? static_cast< uint32_t >(ret) : 0;
 }
 
-uint32_t Opus::packetSamplesPerFrame(const BufViewConst packet, const uint32_t sampleRate) {
+uint32_t Opus::packetFramesPerEncodedFrame(const BufViewConst packet, const uint32_t sampleRate) {
 	const int ret =
 		opus_packet_get_samples_per_frame(CAST_BUF_CONST(packet.data()), static_cast< int32_t >(sampleRate));
 	return ret >= 0 ? static_cast< uint32_t >(ret) : 0;
@@ -147,7 +147,7 @@ bool Decoder::togglePhaseInversion(const bool enable) {
 	return m_p->set(OPUS_SET_PHASE_INVERSION_DISABLED(!enable));
 }
 
-uint32_t Decoder::packetSamples(const BufViewConst packet) {
+uint32_t Decoder::packetFrames(const BufViewConst packet) {
 	const int ret =
 		opus_decoder_get_nb_samples(m_p->m_ctx.get(), CAST_BUF_CONST(packet.data()), CAST_SIZE(packet.size()));
 	return ret >= 0 ? static_cast< uint32_t >(ret) : 0;
