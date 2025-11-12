@@ -3,6 +3,35 @@
 # that can be found in the LICENSE file at the root of the
 # Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
+include(FetchContent)
+
+FetchContent_MakeAvailable(googletest)
+
+include(GoogleTest)
+
+add_executable(libmumbleTests
+	"Base64.cpp"
+	"Crypt.cpp"
+	"Hash.cpp"
+	"Opus.cpp"
+	"PacketDataStream.cpp"
+)
+
+# We have to make sure the test binary is located in the same directory as the built library
+# as otherwise the corresponding DLL (if built as shared lib) will not be found, if the exec_program
+# is started from a different directory
+set_target_properties(libmumbleTests
+	PROPERTIES
+		RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+)
+
+target_link_libraries(libmumbleTests PRIVATE Mumble::libmumble GTest::gmock GTest::gtest_main)
+
+gtest_discover_tests(libmumbleTests)
+
+
+
+
 list(APPEND TESTS
 	"TestBase64"
 	"TestCrypt"

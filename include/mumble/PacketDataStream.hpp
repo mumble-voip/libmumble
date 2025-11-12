@@ -144,6 +144,7 @@ public:
 		return *this;                                                                                            \
 	}
 
+	INTMAPOPERATOR(int64_t);
 	INTMAPOPERATOR(int32_t);
 	INTMAPOPERATOR(uint32_t);
 	INTMAPOPERATOR(int16_t);

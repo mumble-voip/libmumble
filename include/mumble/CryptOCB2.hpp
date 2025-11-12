@@ -6,36 +6,41 @@
 #ifndef MUMBLE_CRYPTOCB2_HPP
 #define MUMBLE_CRYPTOCB2_HPP
 
+#include "Crypt.hpp"
 #include "Macros.hpp"
-#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class MUMBLE_EXPORT CryptOCB2 : NonCopyable {
+class MUMBLE_EXPORT CryptOCB2 : public Crypt {
 public:
 	class P;
 
 	CryptOCB2();
 	virtual ~CryptOCB2();
 
-	virtual explicit operator bool() const;
+	explicit operator bool() const override;
 
-	virtual uint32_t blockSize() const;
-	virtual uint32_t keySize() const;
-	virtual uint32_t nonceSize() const;
+	void *handle() const override { return nullptr; }
 
-	virtual BufViewConst key() const;
-	virtual Buf genKey() const;
-	virtual bool setKey(const BufViewConst key);
+	std::string_view cipher() const override;
+	bool setCipher(const std::string_view name) override;
 
-	virtual BufViewConst nonce() const;
-	virtual Buf genNonce() const;
-	virtual bool setNonce(const BufViewConst nonce);
+	uint32_t blockSize() const override;
+	uint32_t keySize() const override;
+	uint32_t nonceSize() const override;
 
-	virtual size_t decrypt(BufView out, BufViewConst in, const BufViewConst tag = {});
-	virtual size_t encrypt(BufView out, BufViewConst in, const BufView tag = {});
+	BufViewConst key() const override;
+	Buf genKey() const override;
+	bool setKey(const BufViewConst key) override;
+
+	BufViewConst nonce() const override;
+	Buf genNonce() const override;
+	bool setNonce(const BufViewConst nonce) override;
+
+	size_t decrypt(BufView out, BufViewConst in, const BufViewConst tag = {}, BufViewConst = {}) override;
+	size_t encrypt(BufView out, BufViewConst in, const BufView tag = {}, BufViewConst = {}) override;
 
 private:
 	std::unique_ptr< P > m_p;
