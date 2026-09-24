@@ -18,9 +18,9 @@
 #define MUMBLE_MESSAGE_DECL(name) struct Message::name : public Message
 
 #define MUMBLE_MESSAGE_COMMON(name) \
-	name()          = default;      \
-	virtual ~name() = default;      \
-	Type type() const override { return Type::name; }
+	Type type() const override {    \
+		return Type::name;          \
+	}
 
 namespace mumble {
 namespace legacy {
@@ -58,11 +58,13 @@ struct Message {
 	using Clock     = std::chrono::high_resolution_clock;
 	using Timestamp = std::chrono::time_point< Clock >;
 
+	Message(const Message &) = default;
+	Message(Message &&)      = default;
 	Message() : timestamp(Clock::now()) {}
 	virtual ~Message() = default;
 
-	virtual Message &operator=(const Message &message) = delete;
-	Message(const Message &message)                    = delete;
+	Message &operator=(const Message &) = default;
+	Message &operator=(Message &&)      = default;
 
 	virtual Protocol protocol() const = 0;
 
