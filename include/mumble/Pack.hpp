@@ -30,8 +30,8 @@ public:
 	Pack(const size_t dataSize = 0) : m_buf(sizeof(NetHeader) + dataSize) {}
 	virtual ~Pack() = default;
 
-	virtual Pack &operator=(const Pack &pack) = default;
-	virtual Pack &operator=(Pack &&pack) = default;
+	Pack &operator=(const Pack &pack) = default;
+	Pack &operator=(Pack &&pack)      = default;
 
 	virtual bool operator==(const Pack &pack) const { return pack.m_buf == m_buf; }
 
