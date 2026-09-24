@@ -224,7 +224,7 @@ uint32_t Monitor::waitPoll(const EventsView events, const uint32_t timeout) {
 
 		auto &event = events[num++];
 
-		event.fd = target.fd;
+		event.fd    = target.fd;
 		event.state = Event::None;
 
 		if (target.revents & POLLIN) {

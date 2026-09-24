@@ -61,7 +61,7 @@ Code SocketUDP::write(const Endpoint &endpoint, const BufViewConst buf) {
 	const auto ret = sendto(m_handle, CAST_BUF_CONST(buf.data()), CAST_SIZE(buf.size()), 0, CAST_SOCKADDR_CONST(&addr),
 							sizeof(addr));
 #else
-	const auto ret     = sendto(m_handle, buf.data(), buf.size(), 0, CAST_SOCKADDR_CONST(&addr), sizeof(addr));
+	const auto ret = sendto(m_handle, buf.data(), buf.size(), 0, CAST_SOCKADDR_CONST(&addr), sizeof(addr));
 #endif
 	if (ret <= 0) {
 		return osErrorToCode(osError());
