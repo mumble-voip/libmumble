@@ -9,6 +9,7 @@
 #include "Macros.hpp"
 
 #include <memory>
+#include <string>
 #include <string_view>
 
 namespace mumble {
