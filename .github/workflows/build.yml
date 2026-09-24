@@ -39,15 +39,15 @@ jobs:
       VCPKG_DEFAULT_TRIPLET: ${{matrix.triplet}}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - uses: lukka/get-cmake@latest
+      - uses: lukka/get-cmake@v4.4.2
 
       - uses: lukka/run-vcpkg@v11
 
-      - uses: lukka/run-cmake@v10.3
+      - uses: lukka/run-cmake@v10
         with:
           configurePreset: 'ninja-vcpkg'
           buildPreset: 'ninja-vcpkg'
