@@ -12,14 +12,13 @@ set(FETCHCONTENT_BASE_DIR "${LIBMUMBLE_DEPENDENCY_DIR}")
 FetchContent_Declare(
 	GSL
 	GIT_REPOSITORY https://github.com/microsoft/GSL
-	GIT_TAG        v4.0.0
+	GIT_TAG        v5.0.1
 	GIT_SHALLOW    ON
 )
 FetchContent_Declare(
 	quickpool
 	GIT_REPOSITORY https://github.com/tnagler/quickpool.git
-	# The latest release currently still has issues that make it unusable for us
-	GIT_TAG        ddc415bec1fc624e1c6b21c1b47063ca2eef84de
+	GIT_TAG        v1.8.0
 	GIT_SHALLOW    ON
 )
 FetchContent_Declare(
@@ -32,7 +31,7 @@ FetchContent_Declare(
 FetchContent_Declare(
 	cmake_compiler_flags
 	GIT_REPOSITORY https://github.com/Krzmbrzl/cmake-compiler-flags.git
-	GIT_TAG        v2.0.0
+	GIT_TAG        v2.1.0
 	GIT_SHALLOW    ON
 )
 
