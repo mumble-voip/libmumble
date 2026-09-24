@@ -352,9 +352,18 @@ TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 			auto &msg = static_cast< const Message::CryptSetup & >(message);
 
 			MumbleTCP::CryptSetup proto;
-			proto.set_key(msg.key.data(), msg.key.size());
-			proto.set_client_nonce(msg.clientNonce.data(), msg.clientNonce.size());
-			proto.set_server_nonce(msg.serverNonce.data(), msg.serverNonce.size());
+
+			if (!msg.key.empty()) {
+				proto.set_key(msg.key.data(), msg.key.size());
+			}
+
+			if (!msg.clientNonce.empty()) {
+				proto.set_client_nonce(msg.clientNonce.data(), msg.clientNonce.size());
+			}
+
+			if (!msg.serverNonce.empty()) {
+				proto.set_server_nonce(msg.serverNonce.data(), msg.serverNonce.size());
+			}
 
 			SET_BUF_AND_BREAK
 		}
@@ -929,9 +938,18 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
 			auto &msg = static_cast< Message::CryptSetup & >(message);
-			toBuf(msg.key, proto.key());
-			toBuf(msg.clientNonce, proto.client_nonce());
-			toBuf(msg.serverNonce, proto.server_nonce());
+
+			if (proto.has_key()) {
+				toBuf(msg.key, proto.key());
+			}
+
+			if (proto.has_client_nonce()) {
+				toBuf(msg.clientNonce, proto.client_nonce());
+			}
+
+			if (proto.has_server_nonce()) {
+				toBuf(msg.serverNonce, proto.server_nonce());
+			}
 
 			return true;
 		}
