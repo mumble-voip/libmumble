@@ -116,9 +116,11 @@ Code Connection::process(const bool wait, const std::function< bool() > halt) {
 
 		Pack pack(header);
 
-		code = m_p->read(pack.data(), wait, halt);
-		if (code != Code::Success) {
-			return code;
+		if (!pack.data().empty()) {
+			code = m_p->read(pack.data(), wait, halt);
+			if (code != Code::Success) {
+				return code;
+			}
 		}
 
 		m_p->m_feedback.pack(pack);
