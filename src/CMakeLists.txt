@@ -57,8 +57,6 @@ target_include_directories(mumble_library
 
 target_sources(mumble_library
 	PRIVATE
-		"Base64.cpp"
-		"Base64.hpp"
 		"Cert.cpp"
 		"Cert.hpp"
 		"Connection.cpp"
