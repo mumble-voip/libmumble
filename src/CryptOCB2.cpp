@@ -10,8 +10,7 @@
 #include <algorithm>
 #include <cassert>
 #include <memory>
-
-#include <gsl/span>
+#include <span>
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -127,7 +126,7 @@ size_t CryptOCB2::decrypt(BufView out, BufViewConst in, const BufViewConst tag) 
 	}
 
 	KeyBlock delta;
-	const auto deltaBytes = gsl::as_writable_bytes(KeyBlockView(delta));
+	const auto deltaBytes = std::as_writable_bytes(KeyBlockView(delta));
 
 	if (!m_p->process(true, deltaBytes, m_p->m_nonce)) {
 		return {};
@@ -136,7 +135,7 @@ size_t CryptOCB2::decrypt(BufView out, BufViewConst in, const BufViewConst tag) 
 	size_t written = 0;
 
 	KeyBlock checksum{}, tmp;
-	const auto tmpBytes = gsl::as_writable_bytes(KeyBlockView(tmp));
+	const auto tmpBytes = std::as_writable_bytes(KeyBlockView(tmp));
 
 	while (in.size() > P::blockSize) {
 		P::s2(delta);
@@ -162,7 +161,7 @@ size_t CryptOCB2::decrypt(BufView out, BufViewConst in, const BufViewConst tag) 
 	P::xorBlock(tmp, tmp, delta);
 
 	KeyBlock pad;
-	const auto padBytes = gsl::as_writable_bytes(KeyBlockView(pad));
+	const auto padBytes = std::as_writable_bytes(KeyBlockView(pad));
 
 	if (!m_p->process(true, padBytes, tmpBytes)) {
 		return {};
@@ -216,14 +215,14 @@ size_t CryptOCB2::encrypt(BufView out, BufViewConst in, const BufView tag) {
 	}
 
 	KeyBlock delta;
-	if (!m_p->process(true, gsl::as_writable_bytes(KeyBlockView(delta)), m_p->m_nonce)) {
+	if (!m_p->process(true, std::as_writable_bytes(KeyBlockView(delta)), m_p->m_nonce)) {
 		return {};
 	}
 
 	size_t written = 0;
 
 	KeyBlock checksum{}, tmp;
-	const auto tmpBytes = gsl::as_writable_bytes(KeyBlockView(tmp));
+	const auto tmpBytes = std::as_writable_bytes(KeyBlockView(tmp));
 
 	while (in.size() > P::blockSize) {
 		// Counter-cryptanalysis described in section 9 of https://eprint.iacr.org/2019/311
@@ -278,7 +277,7 @@ size_t CryptOCB2::encrypt(BufView out, BufViewConst in, const BufView tag) {
 	P::xorBlock(tmp, tmp, delta);
 
 	KeyBlock pad;
-	const auto padBytes = gsl::as_writable_bytes(KeyBlockView(pad));
+	const auto padBytes = std::as_writable_bytes(KeyBlockView(pad));
 
 	if (!m_p->process(true, padBytes, tmpBytes)) {
 		return {};

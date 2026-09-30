@@ -14,13 +14,12 @@
 #include <cstdint>
 #include <iomanip>
 #include <random>
+#include <span>
 #include <sstream>
 #include <string>
 #include <string_view>
 
 #include <boost/thread/interruption.hpp>
-
-#include <gsl/span>
 
 static constexpr size_t iterations = 100000;
 

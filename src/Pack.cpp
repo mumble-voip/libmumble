@@ -20,10 +20,9 @@
 #include <cstring>
 #include <limits>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
-
-#include <gsl/span>
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>

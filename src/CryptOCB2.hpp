@@ -13,8 +13,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-
-#include <gsl/span>
+#include <span>
 
 #include <openssl/ossl_typ.h>
 
@@ -35,8 +34,8 @@ public:
 	static constexpr uint8_t shiftBits = 31;
 #endif
 	using KeyBlock          = std::array< SubBlock, subBlocks >;
-	using KeyBlockView      = gsl::span< SubBlock, subBlocks >;
-	using KeyBlockViewConst = gsl::span< const SubBlock, subBlocks >;
+	using KeyBlockView      = std::span< SubBlock, subBlocks >;
+	using KeyBlockViewConst = std::span< const SubBlock, subBlocks >;
 
 	static constexpr uint8_t blockSize = 128 / 8;
 	static constexpr uint8_t keySize   = 128 / 8;

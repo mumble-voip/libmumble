@@ -19,12 +19,11 @@
 #include <algorithm>
 #include <functional>
 #include <mutex>
+#include <span>
 #include <utility>
 #include <vector>
 
 #include <boost/thread/thread_only.hpp>
-
-#include <gsl/span>
 
 #ifndef MUMBLE_COMPILER_MSVC
 #	include <quickpool.hpp>
@@ -244,7 +243,7 @@ void P::TCP::threadFunc(const uint32_t threads) {
 	uint32_t num = 0;
 
 	while (!m_halt) {
-		gsl::span< Event > view(events.data(), num);
+		std::span< Event > view(events.data(), num);
 		pool->parallel_for_each(view, [this](Event &event) {
 			if (m_socket && event.fd == m_socket->handle()) {
 				if (event.state & Event::Error) {

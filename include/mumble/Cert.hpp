@@ -23,8 +23,8 @@ public:
 	using Attributes   = std::map< std::string_view, std::string >;
 	using Chain        = std::vector< Cert >;
 	using Der          = std::vector< std::byte >;
-	using DerView      = gsl::span< std::byte >;
-	using DerViewConst = gsl::span< const std::byte >;
+	using DerView      = std::span< std::byte >;
+	using DerViewConst = std::span< const std::byte >;
 	using TimePoint    = std::chrono::system_clock::time_point;
 
 	Cert();

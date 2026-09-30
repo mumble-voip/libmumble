@@ -8,10 +8,6 @@ find_package(Boost REQUIRED
 		thread
 )
 
-if (NOT TARGET Microsoft.GSL::GSL)
-	find_package(Microsoft.GSL REQUIRED)
-endif()
-
 find_package(OpenSSL REQUIRED)
 find_package(Opus REQUIRED)
 
@@ -102,7 +98,5 @@ target_link_libraries(mumble_library
 		Opus::opus
 
 		$<$<PLATFORM_ID:Windows>:wepoll::wepoll>
-	PUBLIC
-		Microsoft.GSL::GSL
 )
 

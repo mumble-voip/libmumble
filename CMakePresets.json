@@ -21,10 +21,6 @@
         "CMAKE_TOOLCHAIN_FILE": {
           "type": "FILEPATH",
           "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-        },
-        "LIBMUMBLE_BUNDLED_GSL": {
-          "type": "BOOL",
-          "value": "OFF"
         }
       }
     }
