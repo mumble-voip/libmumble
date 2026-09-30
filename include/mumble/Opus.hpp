@@ -7,13 +7,12 @@
 #define MUMBLE_OPUS_HPP
 
 #include "Macros.hpp"
-#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class MUMBLE_EXPORT Opus : NonCopyable {
+class MUMBLE_EXPORT Opus {
 public:
 	class Decoder;
 	class Encoder;

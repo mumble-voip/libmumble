@@ -8,7 +8,6 @@
 
 #include "Macros.hpp"
 #include "Message.hpp"
-#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <functional>
@@ -17,7 +16,7 @@
 namespace mumble {
 class Connection;
 
-class MUMBLE_EXPORT Peer : NonCopyable {
+class MUMBLE_EXPORT Peer {
 public:
 	class P;
 

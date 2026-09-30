@@ -6,14 +6,13 @@
 #ifndef MUMBLE_PACKETDATASTREAM_HPP
 #define MUMBLE_PACKETDATASTREAM_HPP
 
-#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <algorithm>
 #include <string>
 
 namespace mumble {
-class PacketDataStream : NonCopyable {
+class PacketDataStream {
 public:
 	PacketDataStream(const BufView buf) : m_ok(true), m_buf(buf), m_seek(m_buf), m_overshoot(0) {}
 
