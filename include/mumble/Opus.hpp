@@ -18,10 +18,10 @@ public:
 	class Decoder;
 	class Encoder;
 
-	using FloatView        = gsl::span< float >;
-	using FloatViewConst   = gsl::span< const float >;
-	using IntegerView      = gsl::span< int16_t >;
-	using IntegerViewConst = gsl::span< const int16_t >;
+	using FloatView        = std::span< float >;
+	using FloatViewConst   = std::span< const float >;
+	using IntegerView      = std::span< int16_t >;
+	using IntegerViewConst = std::span< const int16_t >;
 
 	virtual explicit operator bool() const = 0;
 

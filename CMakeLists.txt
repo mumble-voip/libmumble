@@ -16,7 +16,6 @@ project(libmumble
 
 option(LIBMUMBLE_BUILD_EXAMPLES "Build example client and server" OFF)
 option(LIBMUMBLE_BUILD_TESTS "Build tests" ON)
-option(LIBMUMBLE_BUNDLED_GSL "Use the bundled GSL version instead of looking for one on the system" ON)
 option(LIBMUMBLE_STATIC "Build the library as static instead of shared" OFF)
 option(LIBMUMBLE_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 
@@ -26,7 +25,7 @@ include(compiler_utilities)
 
 
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)

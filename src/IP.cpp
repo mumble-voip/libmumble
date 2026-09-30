@@ -8,8 +8,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
-
-#include <gsl/span>
+#include <span>
 
 #ifdef OS_WINDOWS
 #	include <WS2tcpip.h>

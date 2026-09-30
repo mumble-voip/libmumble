@@ -10,12 +10,6 @@ set(LIBMUMBLE_DEPENDENCY_DIR "${PROJECT_SOURCE_DIR}/_dependencies" CACHE STRING 
 set(FETCHCONTENT_BASE_DIR "${LIBMUMBLE_DEPENDENCY_DIR}")
 
 FetchContent_Declare(
-	GSL
-	GIT_REPOSITORY https://github.com/microsoft/GSL
-	GIT_TAG        v5.0.1
-	GIT_SHALLOW    ON
-)
-FetchContent_Declare(
 	quickpool
 	GIT_REPOSITORY https://github.com/tnagler/quickpool.git
 	GIT_TAG        v1.8.0
@@ -42,10 +36,6 @@ set(QUICKPOOL_TEST ${LIBMUMBLE_BUILD_TESTS} CACHE INTERNAL "")
 message(STATUS ">>> Configuring dependencies (potentially includes downloading)")
 
 FetchContent_MakeAvailable(quickpool cmake_compiler_flags)
-
-if (LIBMUMBLE_BUNDLED_GSL)
-	FetchContent_MakeAvailable(GSL)
-endif()
 
 if (WIN32)
 	FetchContent_MakeAvailable(wepoll)

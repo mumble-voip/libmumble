@@ -13,11 +13,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <random>
+#include <span>
 #include <vector>
 
 #include <boost/thread/interruption.hpp>
-
-#include <gsl/byte>
 
 static constexpr size_t iterations = 100000;
 

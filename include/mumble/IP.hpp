@@ -10,10 +10,9 @@
 
 #include <array>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <string_view>
-
-#include <gsl/span>
 
 struct sockaddr_in6;
 
@@ -27,8 +26,8 @@ public:
 
 	using V6        = std::array< uint8_t, v6Size >;
 	using V4        = std::array< uint8_t, v4Size >;
-	using View      = gsl::span< uint8_t >;
-	using ViewConst = gsl::span< const uint8_t >;
+	using View      = std::span< uint8_t >;
+	using ViewConst = std::span< const uint8_t >;
 
 	IP();
 	IP(const IP &ip);
