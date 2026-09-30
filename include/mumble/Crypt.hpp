@@ -7,13 +7,12 @@
 #define MUMBLE_CRYPT_HPP
 
 #include "Macros.hpp"
-#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class MUMBLE_EXPORT Crypt : NonCopyable {
+class MUMBLE_EXPORT Crypt {
 public:
 	class P;
 

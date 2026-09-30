@@ -9,7 +9,6 @@
 #include "Cert.hpp"
 #include "Key.hpp"
 #include "Macros.hpp"
-#include "NonCopyable.hpp"
 
 #include <functional>
 
@@ -18,7 +17,7 @@ namespace tcp {
 	class Pack;
 }
 
-class MUMBLE_EXPORT Connection : NonCopyable {
+class MUMBLE_EXPORT Connection {
 public:
 	class P;
 	using UniqueP = std::unique_ptr< P >;

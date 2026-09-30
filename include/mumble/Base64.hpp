@@ -7,13 +7,12 @@
 #define MUMBLE_BASE64_HPP
 
 #include "Macros.hpp"
-#include "NonCopyable.hpp"
 #include "Types.hpp"
 
 #include <memory>
 
 namespace mumble {
-class MUMBLE_EXPORT Base64 : NonCopyable {
+class MUMBLE_EXPORT Base64 {
 public:
 	class P;
 
@@ -26,6 +25,9 @@ public:
 	static size_t encode(const BufView out, const BufViewConst in);
 
 private:
+	Base64(const Base64 &)            = delete;
+	Base64 &operator=(const Base64 &) = delete;
+
 	std::unique_ptr< P > m_p;
 };
 } // namespace mumble
