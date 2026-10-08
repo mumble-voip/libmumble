@@ -824,11 +824,8 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 
 			auto &msg = static_cast< Message::BanList & >(message);
 			for (const auto &ban : proto.bans()) {
-				auto &entry = msg.bans.emplace_back();
-				if (ban.address().size() == IP::v6Size) {
-					const auto ipv6 = entry.address.v6();
-					std::copy(ban.address().cbegin(), ban.address().cend(), ipv6.data());
-				}
+				auto &entry    = msg.bans.emplace_back();
+				entry.address  = IP(ban.address());
 				entry.mask     = ban.mask();
 				entry.name     = ban.name();
 				entry.hash     = ban.hash();
@@ -1078,10 +1075,7 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			for (const auto version : proto.celt_versions()) {
 				msg.celtVersions.push_back(version);
 			}
-			if (proto.address().size() == IP::v6Size) {
-				const auto ipv6 = msg.address.v6();
-				std::copy(proto.address().cbegin(), proto.address().cend(), ipv6.data());
-			}
+			msg.address           = IP(proto.address());
 			msg.bandwidth         = proto.bandwidth();
 			msg.onlinesecs        = proto.onlinesecs();
 			msg.idlesecs          = proto.idlesecs();

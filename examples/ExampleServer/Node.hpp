@@ -24,8 +24,8 @@ class UserManager;
 
 class Node {
 public:
-	Node(const std::shared_ptr< UserManager > &userManager, const std::string_view tcpIP, const uint32_t tcpPort,
-		 const std::string_view udpIP, const uint32_t udpPort, const uint32_t bandwidth);
+	Node(const std::shared_ptr< UserManager > &userManager, const std::string_view tcpIP, const uint16_t tcpPort,
+		 const std::string_view udpIP, const uint16_t udpPort, const uint32_t bandwidth);
 	~Node();
 
 	explicit operator bool() const;

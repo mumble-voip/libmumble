@@ -10,6 +10,12 @@ set(LIBMUMBLE_DEPENDENCY_DIR "${PROJECT_SOURCE_DIR}/_dependencies" CACHE STRING 
 set(FETCHCONTENT_BASE_DIR "${LIBMUMBLE_DEPENDENCY_DIR}")
 
 FetchContent_Declare(
+	ipxx
+	GIT_REPOSITORY https://github.com/davidebeatrici/ipxx.git
+	GIT_TAG        ab1e1195f0f43392730d3bb42e837c1591d8a6fb
+	GIT_SHALLOW    OFF
+)
+FetchContent_Declare(
 	quickpool
 	GIT_REPOSITORY https://github.com/tnagler/quickpool.git
 	GIT_TAG        v1.8.0
@@ -35,7 +41,7 @@ set(QUICKPOOL_TEST ${LIBMUMBLE_BUILD_TESTS} CACHE INTERNAL "")
 
 message(STATUS ">>> Configuring dependencies (potentially includes downloading)")
 
-FetchContent_MakeAvailable(quickpool cmake_compiler_flags)
+FetchContent_MakeAvailable(ipxx quickpool cmake_compiler_flags)
 
 if (WIN32)
 	FetchContent_MakeAvailable(wepoll)

@@ -6,6 +6,7 @@
 #ifndef MUMBLE_PEER_HPP
 #define MUMBLE_PEER_HPP
 
+#include "Endpoint.hpp"
 #include "Macros.hpp"
 #include "Message.hpp"
 #include "Types.hpp"
@@ -49,7 +50,8 @@ public:
 
 	virtual explicit operator bool() const;
 
-	static std::pair< Code, int32_t > connect(const Endpoint &peerEndpoint, const Endpoint &endpoint = {});
+	static std::pair< Code, int32_t > connect(const Endpoint &peerEndpoint,
+											  const Endpoint &endpoint = Endpoint::anyV6());
 
 	virtual Code startTCP(const FeedbackTCP &feedback, const uint32_t threads = 0);
 	virtual Code stopTCP();
