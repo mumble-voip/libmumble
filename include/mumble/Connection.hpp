@@ -7,6 +7,7 @@
 #define MUMBLE_CONNECTION_HPP
 
 #include "Cert.hpp"
+#include "Endpoint.hpp"
 #include "Key.hpp"
 #include "Macros.hpp"
 

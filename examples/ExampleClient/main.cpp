@@ -107,7 +107,7 @@ int32_t main(const int argc, const char **argv) {
 	const auto peerTcpIP   = toml::find< std::string_view >(peer, "tcpIP");
 	const auto peerTcpPort = toml::find< uint16_t >(peer, "tcpPort");
 
-	const auto ret = Peer::connect({ peerTcpIP, peerTcpPort }, { localTcpIP, localTcpPort });
+	const auto ret = Peer::connect({ IP(peerTcpIP), peerTcpPort }, { IP(localTcpIP), localTcpPort });
 	if (ret.first != Code::Success) {
 		printf("Peer::connect() failed with error \"%s\"!\n", text(ret.first).data());
 		return 3;

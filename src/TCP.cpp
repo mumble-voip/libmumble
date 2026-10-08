@@ -5,11 +5,6 @@
 
 #include "TCP.hpp"
 
-#include "mumble/Endian.hpp"
-#include "mumble/IP.hpp"
-
-#include <cstdint>
-
 #ifdef OS_WINDOWS
 #	include <WS2tcpip.h>
 #else
@@ -46,16 +41,20 @@ std::pair< int, int32_t > SocketTCP::accept(Endpoint &endpoint) {
 		return { osError(), invalidHandle };
 	}
 
-	endpoint.ip   = IP(addr);
-	endpoint.port = Endian::toHost(addr.sin6_port);
+	endpoint = Endpoint(addr);
 
 	return { 0, handle };
 }
 
 int SocketTCP::connect(const Endpoint &endpoint) {
-	sockaddr_in6 addr = {};
-	endpoint.ip.toSockAddr(addr);
-	addr.sin6_port = Endian::toNetwork(endpoint.port);
+	sockaddr_in6 addr;
+	if (!endpoint.toSockAddr(addr)) {
+#ifdef OS_WINDOWS
+		return WSAEINVAL;
+#else
+		return EINVAL;
+#endif
+	}
 
 	if (::connect(m_handle, reinterpret_cast< sockaddr * >(&addr), sizeof(addr)) != 0) {
 		return osError();
@@ -75,8 +74,7 @@ int SocketTCP::getPeerEndpoint(Endpoint &endpoint) const {
 		return osError();
 	}
 
-	endpoint.ip   = IP(addr);
-	endpoint.port = Endian::toHost(addr.sin6_port);
+	endpoint = Endpoint(addr);
 
 	return 0;
 }

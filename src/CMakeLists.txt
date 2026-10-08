@@ -65,7 +65,6 @@ target_sources(mumble_library
 		"CryptOCB2.hpp"
 		"Hash.cpp"
 		"Hash.hpp"
-		"IP.cpp"
 		"Key.cpp"
 		"Key.hpp"
 		"Lib.cpp"
@@ -87,15 +86,17 @@ target_sources(mumble_library
 )
 
 target_link_libraries(mumble_library
+	PUBLIC
+		ipxx::ipxx
 	PRIVATE
 		Proto
 
 		Boost::thread
 		OpenSSL::Crypto
 		OpenSSL::SSL
-		quickpool
-
 		Opus::opus
+
+		quickpool
 
 		$<$<PLATFORM_ID:Windows>:wepoll::wepoll>
 )

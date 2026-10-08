@@ -5,11 +5,6 @@
 
 #include "UDP.hpp"
 
-#include "mumble/Endian.hpp"
-#include "mumble/IP.hpp"
-
-#include <cstdint>
-
 #ifdef OS_WINDOWS
 #	include <WS2tcpip.h>
 
@@ -43,8 +38,7 @@ Code SocketUDP::read(Endpoint &endpoint, BufView &buf) {
 		return osErrorToCode(osError());
 	}
 
-	endpoint.ip   = IP(addr);
-	endpoint.port = Endian::toHost(addr.sin6_port);
+	endpoint = Endpoint(addr);
 
 	buf = buf.first(static_cast< std::size_t >(ret));
 
@@ -52,9 +46,10 @@ Code SocketUDP::read(Endpoint &endpoint, BufView &buf) {
 }
 
 Code SocketUDP::write(const Endpoint &endpoint, const BufViewConst buf) {
-	sockaddr_in6 addr = {};
-	endpoint.ip.toSockAddr(addr);
-	addr.sin6_port = Endian::toNetwork(endpoint.port);
+	sockaddr_in6 addr;
+	if (!endpoint.toSockAddr(addr)) {
+		return Code::Invalid;
+	}
 #ifdef OS_WINDOWS
 	const auto ret = sendto(m_handle, CAST_BUF_CONST(buf.data()), CAST_SIZE(buf.size()), 0, CAST_SOCKADDR_CONST(&addr),
 							sizeof(addr));

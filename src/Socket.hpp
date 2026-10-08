@@ -6,9 +6,9 @@
 #ifndef MUMBLE_SRC_SOCKET_HPP
 #define MUMBLE_SRC_SOCKET_HPP
 
+#include "mumble/Endpoint.hpp"
 #include "mumble/Types.hpp"
 
-#include <cstdint>
 #include <utility>
 
 #ifdef OS_WINDOWS

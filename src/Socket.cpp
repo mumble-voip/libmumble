@@ -5,9 +5,6 @@
 
 #include "Socket.hpp"
 
-#include "mumble/Endian.hpp"
-#include "mumble/IP.hpp"
-
 #include <utility>
 
 #ifdef OS_WINDOWS
@@ -83,8 +80,7 @@ int Socket::getEndpoint(Endpoint &endpoint) const {
 		return osError();
 	}
 
-	endpoint.ip   = IP(addr);
-	endpoint.port = Endian::toHost(addr.sin6_port);
+	endpoint = Endpoint(addr);
 
 	return 0;
 }
@@ -106,9 +102,14 @@ int Socket::setEndpoint(const Endpoint &endpoint, const bool ipv6Only) {
 		return osError();
 	}
 #endif
-	sockaddr_in6 addr = {};
-	endpoint.ip.toSockAddr(addr);
-	addr.sin6_port = Endian::toNetwork(endpoint.port);
+	sockaddr_in6 addr;
+	if (!endpoint.toSockAddr(addr)) {
+#ifdef OS_WINDOWS
+		return WSAEINVAL;
+#else
+		return EINVAL;
+#endif
+	}
 
 	if (bind(m_handle, reinterpret_cast< sockaddr * >(&addr), sizeof(addr)) != 0) {
 		return osError();

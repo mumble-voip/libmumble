@@ -10,11 +10,11 @@
 // https://github.com/include-what-you-use/include-what-you-use/issues/828
 namespace mumble {}
 
-#include "IP.hpp"
-
 #include <algorithm>
+#include <cstdint> // TODO: Drop and use `std::` with fixed-width integers.
 #include <limits>
 #include <span>
+#include <string_view>
 #include <vector>
 
 namespace mumble {
@@ -36,23 +36,6 @@ enum class Code : int8_t {
 	Retry,
 	Busy,
 	Disconnect
-};
-
-struct Endpoint {
-	IP ip;
-	uint16_t port;
-
-	Endpoint() : port(0) {}
-	Endpoint(const Endpoint &endpoint) = default;
-	Endpoint(const IP &ip) : ip(ip), port(0) {}
-	Endpoint(const uint16_t port) : port(port) {}
-	Endpoint(const IP &ip, const uint16_t port) : ip(ip), port(port) {}
-	virtual ~Endpoint() = default;
-
-	virtual Endpoint &operator=(const Endpoint &endpoint) = default;
-	virtual Endpoint &operator=(Endpoint &&endpoint)      = default;
-
-	virtual bool operator==(const Endpoint &endpoint) const { return endpoint.ip == ip && endpoint.port == port; }
 };
 
 struct Version {

@@ -3,13 +3,13 @@
 // that can be found in the LICENSE file at the root of the
 // Mumble source tree or at <https://www.mumble.info/LICENSE>.
 
-#ifndef MUMBLE_IP_HPP
-#define MUMBLE_IP_HPP
+#ifndef MUMBLE_ENDPOINT_HPP
+#define MUMBLE_ENDPOINT_HPP
 
-#include <ipxx/Address.hpp>
+#include <ipxx/Endpoint.hpp>
 
 namespace mumble {
-using IP = ipxx::Address;
+using Endpoint = ipxx::Endpoint;
 } // namespace mumble
 
 #endif

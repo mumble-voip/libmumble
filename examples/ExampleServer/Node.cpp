@@ -30,26 +30,26 @@
 
 using namespace mumble;
 
-Node::Node(const std::shared_ptr< UserManager > &userManager, const std::string_view tcpIP, const uint32_t tcpPort,
-		   const std::string_view udpIP, const uint32_t udpPort, const uint32_t bandwidth)
+Node::Node(const std::shared_ptr< UserManager > &userManager, const std::string_view tcpIP, const uint16_t tcpPort,
+		   const std::string_view udpIP, const uint16_t udpPort, const uint32_t bandwidth)
 	: m_ok(false), m_bandwidth(bandwidth), m_userManager(userManager) {
-	Endpoint endpoint(tcpIP, tcpPort);
+	Endpoint endpoint(IP(tcpIP), tcpPort);
 	auto code = m_server.bindTCP(endpoint);
 	if (code != Code::Success) {
 		printf("Node(): TCP bind failed with error \"%s\"!\n", text(code).data());
 		return;
 	}
 
-	printf("TCP: [%s]:%hu\n", endpoint.ip.text().data(), endpoint.port);
+	printf("TCP: %s\n", endpoint.text().data());
 
-	endpoint = Endpoint(udpIP, udpPort);
+	endpoint = Endpoint(IP(udpIP), udpPort);
 	code     = m_server.bindUDP(endpoint);
 	if (code != Code::Success) {
 		printf("Node(): UDP bind failed with error \"%s\"!\n", text(code).data());
 		return;
 	}
 
-	printf("UDP: [%s]:%hu\n", endpoint.ip.text().data(), endpoint.port);
+	printf("UDP: %s\n", endpoint.text().data());
 
 	m_ok = true;
 }
@@ -83,7 +83,7 @@ bool Node::startTCP() {
 	feedbackTCP.timeout = []() { return 10000; };
 
 	feedbackTCP.connection = [this](const Endpoint &endpoint, int32_t socketHandle) {
-		printf("Incoming connection from [%s]:%u\n", endpoint.ip.text().data(), endpoint.port);
+		printf("Incoming connection from %s\n", endpoint.text().data());
 
 		if (m_userManager->full()) {
 			return false;
@@ -285,7 +285,7 @@ bool Node::startTCP() {
 					stats.fromClient.late = target->late();
 					stats.fromClient.lost = target->lost();
 
-					stats.address      = target->connection()->peerEndpoint().ip;
+					stats.address      = target->connection()->peerEndpoint().address;
 					stats.certificates = target->connection()->peerCert();
 					stats.opus         = true;
 
@@ -358,8 +358,7 @@ bool Node::startUDP() {
 		if (!user) {
 			user = m_userManager->tryDecrypt(decrypted, buf, endpoint);
 			if (user) {
-				printf("[%s]:%u <-> #%u association added to cache!\n", endpoint.ip.text().data(), endpoint.port,
-					   user->id());
+				printf("%s <-> #%u association added to cache!\n", endpoint.text().data(), user->id());
 			} else {
 				return;
 			}
