@@ -422,28 +422,28 @@ namespace tcp {
 	};
 
 	MUMBLE_MESSAGE_DECL(UserState) {
-		uint32_t session                                 = UINT32_MAX;
-		uint32_t actor                                   = UINT32_MAX;
-		std::string name                                 = {};
-		std::optional< uint32_t > userID                 = {};
-		uint32_t channelID                               = UINT32_MAX;
-		bool mute                                        = false;
-		bool deaf                                        = false;
-		bool suppress                                    = false;
-		bool selfMute                                    = false;
-		bool selfDeaf                                    = false;
-		std::vector< std::byte > texture                 = {};
-		std::vector< std::byte > pluginContext           = {};
-		std::string pluginIdentity                       = {};
-		std::string comment                              = {};
-		std::string hash                                 = {};
-		std::vector< std::byte > commentHash             = {};
-		std::vector< std::byte > textureHash             = {};
-		bool prioritySpeaker                             = false;
-		bool recording                                   = false;
-		std::vector< std::string > temporaryAccessTokens = {};
-		std::vector< uint32_t > listeningChannelAdd      = {};
-		std::vector< uint32_t > listeningChannelRemove   = {};
+		std::optional< uint32_t > session                                   = {};
+		std::optional< uint32_t > actor                                     = {};
+		std::optional< std::string > name                                   = {};
+		std::optional< uint32_t > userID                                    = {};
+		std::optional< uint32_t > channelID                                 = {};
+		std::optional< bool > mute                                          = {};
+		std::optional< bool > deaf                                          = {};
+		std::optional< bool > suppress                                      = {};
+		std::optional< bool > selfMute                                      = {};
+		std::optional< bool > selfDeaf                                      = {};
+		std::optional< std::vector< std::byte > > texture                   = {};
+		std::optional< std::vector< std::byte > > pluginContext             = {};
+		std::optional< std::string > pluginIdentity                         = {};
+		std::optional< std::string > comment                                = {};
+		std::optional< std::string > hash                                   = {};
+		std::optional< std::vector< std::byte > > commentHash               = {};
+		std::optional< std::vector< std::byte > > textureHash               = {};
+		std::optional< bool > prioritySpeaker                               = {};
+		std::optional< bool > recording                                     = {};
+		std::optional< std::vector< std::string > > temporaryAccessTokens   = {};
+		std::optional< std::vector< uint32_t > > listeningChannelAdd        = {};
+		std::optional< std::vector< uint32_t > > listeningChannelRemove     = {};
 
 		MUMBLE_MESSAGE_COMMON(UserState)
 	};

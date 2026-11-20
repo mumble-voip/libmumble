@@ -207,35 +207,77 @@ TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 			auto &msg = static_cast< const Message::UserState & >(message);
 
 			MumbleTCP::UserState proto;
-			proto.set_session(msg.session);
-			proto.set_actor(msg.actor);
-			proto.set_name(msg.name);
+			if (msg.session) {
+				proto.set_session(msg.session.value());
+			}
+			if (msg.actor) {
+				proto.set_actor(msg.actor.value());
+			}
+			if (msg.name) {
+				proto.set_name(msg.name.value());
+			}
 			if (msg.userID) {
 				proto.set_user_id(msg.userID.value());
 			}
-			proto.set_channel_id(msg.channelID);
-			proto.set_mute(msg.mute);
-			proto.set_deaf(msg.deaf);
-			proto.set_suppress(msg.suppress);
-			proto.set_self_mute(msg.selfMute);
-			proto.set_self_deaf(msg.selfDeaf);
-			proto.set_texture(msg.texture.data(), msg.texture.size());
-			proto.set_plugin_context(msg.pluginContext.data(), msg.pluginContext.size());
-			proto.set_plugin_identity(msg.pluginIdentity);
-			proto.set_comment(msg.comment);
-			proto.set_hash(msg.hash);
-			proto.set_comment_hash(msg.commentHash.data(), msg.commentHash.size());
-			proto.set_texture_hash(msg.textureHash.data(), msg.textureHash.size());
-			proto.set_priority_speaker(msg.prioritySpeaker);
-			proto.set_recording(msg.recording);
-			for (const auto &token : msg.temporaryAccessTokens) {
-				proto.add_temporary_access_tokens(token);
+			if (msg.channelID) {
+				proto.set_channel_id(msg.channelID.value());
 			}
-			for (const auto channel : msg.listeningChannelAdd) {
-				proto.add_listening_channel_add(channel);
+			if (msg.mute) {
+				proto.set_mute(msg.mute.value());
 			}
-			for (const auto channel : msg.listeningChannelRemove) {
-				proto.add_listening_channel_remove(channel);
+			if (msg.deaf) {
+				proto.set_deaf(msg.deaf.value());
+			}
+			if (msg.suppress) {
+				proto.set_suppress(msg.suppress.value());
+			}
+			if (msg.selfMute) {
+				proto.set_self_mute(msg.selfMute.value());
+			}
+			if (msg.selfDeaf) {
+				proto.set_self_deaf(msg.selfDeaf.value());
+			}
+			if (msg.texture) {
+				proto.set_texture(msg.texture.value().data(), msg.texture.value().size());
+			}
+			if (msg.pluginContext) {
+				proto.set_plugin_context(msg.pluginContext.value().data(), msg.pluginContext.value().size());
+			}
+			if (msg.pluginIdentity) {
+				proto.set_plugin_identity(msg.pluginIdentity.value());
+			}
+			if (msg.comment) {
+				proto.set_comment(msg.comment.value());
+			}
+			if (msg.hash) {
+				proto.set_hash(msg.hash.value());
+			}
+			if (msg.commentHash) {
+				proto.set_comment_hash(msg.commentHash.value().data(), msg.commentHash.value().size());
+			}
+			if (msg.textureHash) {
+				proto.set_texture_hash(msg.textureHash.value().data(), msg.textureHash.value().size());
+			}
+			if (msg.prioritySpeaker) {
+				proto.set_priority_speaker(msg.prioritySpeaker.value());
+			}
+			if (msg.recording) {
+				proto.set_recording(msg.recording.value());
+			}
+			if (msg.temporaryAccessTokens) {
+				for (const auto &token : msg.temporaryAccessTokens.value()) {
+					proto.add_temporary_access_tokens(token);
+				}
+			}
+			if (msg.listeningChannelAdd) {
+				for (const auto channel : msg.listeningChannelAdd.value()) {
+					proto.add_listening_channel_add(channel);
+				}
+			}
+			if (msg.listeningChannelRemove) {
+				for (const auto channel : msg.listeningChannelRemove.value()) {
+					proto.add_listening_channel_remove(channel);
+				}
 			}
 
 			SET_BUF_AND_BREAK
@@ -786,34 +828,79 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			MumbleTCP::UserState proto;
 			PARSE_PROTO_MESSAGE(proto, data().data(), dataSize)
 
-			auto &msg     = static_cast< Message::UserState & >(message);
-			msg.session   = proto.session();
-			msg.actor     = proto.actor();
-			msg.name      = proto.name();
-			msg.userID    = proto.user_id();
-			msg.channelID = proto.channel_id();
-			msg.mute      = proto.mute();
-			msg.deaf      = proto.deaf();
-			msg.suppress  = proto.suppress();
-			msg.selfMute  = proto.self_mute();
-			msg.selfDeaf  = proto.self_deaf();
-			toBuf(msg.texture, proto.texture());
-			toBuf(msg.pluginContext, proto.plugin_context());
-			msg.pluginIdentity = proto.plugin_identity();
-			msg.comment        = proto.comment();
-			msg.hash           = proto.hash();
-			toBuf(msg.commentHash, proto.comment_hash());
-			toBuf(msg.textureHash, proto.texture_hash());
-			msg.prioritySpeaker = proto.priority_speaker();
-			msg.recording       = proto.recording();
+			auto &msg = static_cast< Message::UserState & >(message);
+			if (proto.has_session()) {
+				msg.session = proto.session();
+			}
+			if (proto.has_actor()) {
+				msg.actor = proto.actor();
+			}
+			if (proto.has_name()) {
+				msg.name = proto.name();
+			}
+			if (proto.has_user_id()) {
+				msg.userID = proto.user_id();
+			}
+			if (proto.has_channel_id()) {
+				msg.channelID = proto.channel_id();
+			}
+			if (proto.has_mute()) {
+				msg.mute = proto.mute();
+			}
+			if (proto.has_deaf()) {
+				msg.deaf = proto.deaf();
+			}
+			if (proto.has_suppress()) {
+				msg.suppress = proto.suppress();
+			}
+			if (proto.has_self_mute()) {
+				msg.selfMute = proto.self_mute();
+			}
+			if (proto.has_self_deaf()) {
+				msg.selfDeaf = proto.self_deaf();
+			}
+			if (proto.has_texture()) {
+				msg.texture.emplace();
+				toBuf(msg.texture.value(), proto.texture());
+			}
+			if (proto.has_plugin_context()) {
+				msg.pluginContext.emplace();
+				toBuf(msg.pluginContext.value(), proto.plugin_context());
+			}
+			if (proto.has_plugin_identity()) {
+				msg.pluginIdentity = proto.plugin_identity();
+			}
+			if (proto.has_comment()) {
+				msg.comment = proto.comment();
+			}
+			if (proto.has_hash()) {
+				msg.hash = proto.hash();
+			}
+			if (proto.has_comment_hash()) {
+				msg.commentHash.emplace();
+				toBuf(msg.commentHash.value(), proto.comment_hash());
+			}
+			if (proto.has_texture_hash()) {
+				msg.textureHash.emplace();
+				toBuf(msg.textureHash.value(), proto.texture_hash());
+			}
+			if (proto.has_priority_speaker()) {
+				msg.prioritySpeaker = proto.priority_speaker();
+			}
+			if (proto.has_recording()) {
+				msg.recording = proto.recording();
+			}
+			msg.temporaryAccessTokens.emplace();
 			for (const auto &token : proto.temporary_access_tokens()) {
-				msg.temporaryAccessTokens.push_back(token);
+				msg.temporaryAccessTokens.value().push_back(token);
 			}
+			msg.listeningChannelAdd.emplace();
 			for (const auto channel : proto.listening_channel_add()) {
-				msg.listeningChannelAdd.push_back(channel);
+				msg.listeningChannelAdd.value().push_back(channel);
 			}
+			msg.listeningChannelRemove.emplace();
 			for (const auto channel : proto.listening_channel_remove()) {
-				msg.listeningChannelRemove.push_back(channel);
+				msg.listeningChannelRemove.value().push_back(channel);
 			}
 
 			return true;
