@@ -237,11 +237,11 @@ TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 			if (msg.selfDeaf) {
 				proto.set_self_deaf(msg.selfDeaf.value());
 			}
-			if (!msg.texture.empty()) {
-				proto.set_texture(msg.texture.data(), msg.texture.size());
+			if (msg.texture) {
+				proto.set_texture(msg.texture.value().data(), msg.texture.value().size());
 			}
-			if (!msg.pluginContext.empty()) {
-				proto.set_plugin_context(msg.pluginContext.data(), msg.pluginContext.size());
+			if (msg.pluginContext) {
+				proto.set_plugin_context(msg.pluginContext.value().data(), msg.pluginContext.value().size());
 			}
 			if (msg.pluginIdentity) {
 				proto.set_plugin_identity(msg.pluginIdentity.value());
@@ -252,11 +252,11 @@ TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 			if (msg.hash) {
 				proto.set_hash(msg.hash.value());
 			}
-			if (!msg.commentHash.empty()) {
-				proto.set_comment_hash(msg.commentHash.data(), msg.commentHash.size());
+			if (msg.commentHash) {
+				proto.set_comment_hash(msg.commentHash.value().data(), msg.commentHash.value().size());
 			}
-			if (!msg.textureHash.empty()) {
-				proto.set_texture_hash(msg.textureHash.data(), msg.textureHash.size());
+			if (msg.textureHash) {
+				proto.set_texture_hash(msg.textureHash.value().data(), msg.textureHash.value().size());
 			}
 			if (msg.prioritySpeaker) {
 				proto.set_priority_speaker(msg.prioritySpeaker.value());
@@ -264,14 +264,20 @@ TCP::Pack(const Message &message, const uint32_t extraDataSize) {
 			if (msg.recording) {
 				proto.set_recording(msg.recording.value());
 			}
-			for (const auto &token : msg.temporaryAccessTokens) {
-				proto.add_temporary_access_tokens(token);
+			if (msg.temporaryAccessTokens) {
+				for (const auto &token : msg.temporaryAccessTokens.value()) {
+					proto.add_temporary_access_tokens(token);
+				}
 			}
-			for (const auto channel : msg.listeningChannelAdd) {
-				proto.add_listening_channel_add(channel);
+			if (msg.listeningChannelAdd) {
+				for (const auto channel : msg.listeningChannelAdd.value()) {
+					proto.add_listening_channel_add(channel);
+				}
 			}
-			for (const auto channel : msg.listeningChannelRemove) {
-				proto.add_listening_channel_remove(channel);
+			if (msg.listeningChannelRemove) {
+				for (const auto channel : msg.listeningChannelRemove.value()) {
+					proto.add_listening_channel_remove(channel);
+				}
 			}
 
 			SET_BUF_AND_BREAK
@@ -853,8 +859,14 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			if (proto.has_self_deaf()) {
 				msg.selfDeaf = proto.self_deaf();
 			}
-			toBuf(msg.texture, proto.texture());
-			toBuf(msg.pluginContext, proto.plugin_context());
+			if (proto.has_texture()) {
+				msg.texture.emplace();
+				toBuf(msg.texture.value(), proto.texture());
+			}
+			if (proto.has_plugin_context()) {
+				msg.pluginContext.emplace();
+				toBuf(msg.pluginContext.value(), proto.plugin_context());
+			}
 			if (proto.has_plugin_identity()) {
 				msg.pluginIdentity = proto.plugin_identity();
 			}
@@ -864,22 +876,31 @@ bool TCP::operator()(Message &message, uint32_t dataSize) const {
 			if (proto.has_hash()) {
 				msg.hash = proto.hash();
 			}
-			toBuf(msg.commentHash, proto.comment_hash());
-			toBuf(msg.textureHash, proto.texture_hash());
+			if (proto.has_comment_hash()) {
+				msg.commentHash.emplace();
+				toBuf(msg.commentHash.value(), proto.comment_hash());
+			}
+			if (proto.has_texture_hash()) {
+				msg.textureHash.emplace();
+				toBuf(msg.textureHash.value(), proto.texture_hash());
+			}
 			if (proto.has_priority_speaker()) {
 				msg.prioritySpeaker = proto.priority_speaker();
 			}
 			if (proto.has_recording()) {
 				msg.recording = proto.recording();
 			}
+			msg.temporaryAccessTokens.emplace();
 			for (const auto &token : proto.temporary_access_tokens()) {
-				msg.temporaryAccessTokens.push_back(token);
+				msg.temporaryAccessTokens.value().push_back(token);
 			}
+			msg.listeningChannelAdd.emplace();
 			for (const auto channel : proto.listening_channel_add()) {
-				msg.listeningChannelAdd.push_back(channel);
+				msg.listeningChannelAdd.value().push_back(channel);
 			}
+			msg.listeningChannelRemove.emplace();
 			for (const auto channel : proto.listening_channel_remove()) {
-				msg.listeningChannelRemove.push_back(channel);
+				msg.listeningChannelRemove.value().push_back(channel);
 			}
 
 			return true;
